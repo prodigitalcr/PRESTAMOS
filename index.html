@@ -16,7 +16,6 @@
         .img-mini { width: 50px; height: 35px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1; cursor: pointer; transition: transform 0.2s; }
         .img-mini:hover { transform: scale(1.1); }
         
-        /* Ocultar barra de scroll para limpieza visual */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -26,6 +25,8 @@
         .msg { padding: 8px 12px; border-radius: 12px; font-size: 12px; max-width: 85%; word-wrap: break-word; }
         .msg-socio { background: #e0e7ff; color: #3730a3; align-self: flex-start; border-bottom-left-radius: 0; }
         .msg-cliente { background: #dcfce7; color: #166534; align-self: flex-end; border-bottom-right-radius: 0; }
+        .msg-admin { background: #fef3c7; color: #92400e; align-self: flex-start; border-bottom-left-radius: 0; }
+        .msg-me { background: #dbeafe; color: #1e40af; align-self: flex-end; border-bottom-right-radius: 0; }
     </style>
 </head>
 <body class="antialiased text-slate-800 h-screen flex flex-col">
@@ -51,21 +52,21 @@
         </div>
     </div>
 
-    <!-- NAVEGACIÓN GLOBAL (COMÚN) -->
+    <!-- NAVEGACIÓN GLOBAL -->
     <nav id="globalNav" class="hidden text-white p-4 flex justify-between items-center shadow-lg z-40 shrink-0">
         <div class="flex items-center gap-3">
             <div id="navRoleBadge" class="px-2 py-1 rounded text-xs font-bold border">ROL</div>
-            <span id="navTitle" class="font-bold tracking-tight text-sm md:text-base">SISTEMA</span>
+            <span id="navTitle" class="font-bold tracking-tight text-sm md:text-base">SISTEMA V8</span>
         </div>
         <div class="flex items-center gap-3">
-            <button onclick="openModal('pwdModal')" class="text-xs hover:bg-white/20 transition px-3 py-2 rounded-lg font-bold border border-white/30">🔑 Cambiar Clave</button>
+            <button onclick="openModal('pwdModal')" class="text-xs hover:bg-white/20 transition px-3 py-2 rounded-lg font-bold border border-white/30">🔑 Clave</button>
             <button onclick="logout()" class="text-xs hover:bg-white/20 transition px-4 py-2 rounded-lg font-bold bg-black/20">Salir</button>
         </div>
     </nav>
 
     <!-- ==================== VISTA SOCIO ==================== -->
-    <div id="app-socio" class="hidden flex-1 flex-col h-full overflow-hidden">
-        <main class="p-4 md:p-6 max-w-7xl mx-auto w-full flex-1 overflow-y-auto">
+    <div id="app-socio" class="hidden flex-1 flex-col h-full overflow-hidden relative">
+        <main class="p-4 md:p-6 max-w-7xl mx-auto w-full flex-1 overflow-y-auto pb-20">
             <!-- Dashboard Socio -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
@@ -93,7 +94,7 @@
                         <thead class="bg-slate-50 border-b text-[10px] uppercase text-slate-500 font-black tracking-wider">
                             <tr>
                                 <th class="p-4 pl-6">Cliente</th>
-                                <th class="p-4">Fechas</th>
+                                <th class="p-4">Fechas (Mensual)</th>
                                 <th class="p-4">Estado</th>
                                 <th class="p-4">Saldo / Interés</th>
                                 <th class="p-4">Archivos</th>
@@ -105,6 +106,25 @@
                 </div>
             </div>
         </main>
+        
+        <!-- Botón flotante Chat Soporte -->
+        <button onclick="toggleSupportChat()" class="fixed bottom-6 right-6 bg-slate-900 text-white p-4 rounded-full shadow-2xl hover:bg-slate-800 transition z-50 flex items-center justify-center group">
+            <span class="text-2xl">💬</span>
+            <span class="w-0 overflow-hidden group-hover:w-auto group-hover:ml-2 group-hover:pr-2 whitespace-nowrap transition-all font-bold text-sm">Chat Soporte</span>
+        </button>
+
+        <!-- Panel de Chat Soporte Flotante -->
+        <div id="supportChatPanel" class="fixed bottom-24 right-6 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 hidden flex-col z-50 overflow-hidden h-96 transition-all">
+            <div class="bg-slate-900 text-white p-3 font-bold flex justify-between items-center">
+                <span>Comunícate con Soporte</span>
+                <button onclick="toggleSupportChat()" class="text-slate-300 hover:text-white">&times;</button>
+            </div>
+            <div id="chatGlobalSocio" class="flex-1 chat-container bg-slate-50 p-3"></div>
+            <div class="p-2 border-t flex gap-2 bg-white">
+                <input type="text" id="chatGlobalInput" class="flex-1 border rounded-lg px-2 text-sm outline-none" placeholder="Escribe al admin...">
+                <button onclick="sendGlobalMsg('socio')" class="bg-slate-900 text-white px-3 py-1 rounded-lg font-bold">→</button>
+            </div>
+        </div>
     </div>
 
     <!-- ==================== VISTA CLIENTE ==================== -->
@@ -116,23 +136,38 @@
 
     <!-- ==================== VISTA SOPORTE (ADMIN) ==================== -->
     <div id="app-admin" class="hidden flex-1 flex-col h-full overflow-hidden">
-        <main class="p-6 max-w-7xl mx-auto w-full space-y-6">
-            <h2 class="text-2xl font-bold text-slate-800">Gestión Global de Datos (Soporte)</h2>
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse min-w-[800px]">
-                        <thead class="bg-slate-900 text-white border-b text-[10px] uppercase font-black">
-                            <tr>
-                                <th class="p-4">ID Sistema</th>
-                                <th class="p-4">Nombre / Cédula</th>
-                                <th class="p-4">WhatsApp</th>
-                                <th class="p-4">Monto Original</th>
-                                <th class="p-4 text-center">Corregir Datos</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminTableBody" class="divide-y text-sm"></tbody>
-                    </table>
+        <main class="p-6 max-w-7xl mx-auto w-full flex-1 overflow-y-auto space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Columna Izquierda: Tabla Datos -->
+                <div class="lg:col-span-2 space-y-4">
+                    <h2 class="text-2xl font-bold text-slate-800">Gestión Global de Datos</h2>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-[600px]">
+                                <thead class="bg-slate-900 text-white border-b text-[10px] uppercase font-black">
+                                    <tr>
+                                        <th class="p-4">Sistema ID</th>
+                                        <th class="p-4">Cliente / Info</th>
+                                        <th class="p-4 text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminTableBody" class="divide-y text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Columna Derecha: Chat Soporte Global -->
+                <div class="flex flex-col h-[500px] bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="bg-slate-900 p-4 text-white font-bold">Chats de Soporte (Socios)</div>
+                    <div id="chatGlobalAdmin" class="flex-1 chat-container bg-slate-50 p-4"></div>
+                    <div class="p-3 border-t flex gap-2 bg-white">
+                        <input type="text" id="chatAdminInput" class="flex-1 border rounded-lg px-3 py-2 text-sm outline-none" placeholder="Respuesta de soporte...">
+                        <button onclick="sendGlobalMsg('admin')" class="bg-slate-900 text-white px-4 py-2 rounded-lg font-bold">Enviar</button>
+                    </div>
+                </div>
+
             </div>
         </main>
     </div>
@@ -159,44 +194,30 @@
         </div>
     </div>
 
-    <!-- Editar Datos (SOPORTE) -->
-    <div id="adminEditModal" class="fixed inset-0 bg-slate-900/70 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-            <h3 class="text-xl font-black mb-4 text-slate-800 text-red-600">Corrección de Soporte</h3>
-            <form id="adminEditForm" class="space-y-4">
-                <input type="text" id="admin_nombre" placeholder="Nombre" class="w-full p-3 border rounded-xl" required>
-                <input type="text" id="admin_cedula" placeholder="Cédula" class="w-full p-3 border rounded-xl" required>
-                <input type="text" id="admin_telefono" placeholder="WhatsApp" class="w-full p-3 border rounded-xl" required>
-                <input type="number" id="admin_monto" placeholder="Monto Original" class="w-full p-3 border rounded-xl" required>
-                <div class="flex gap-3">
-                    <button type="button" onclick="closeModal('adminEditModal')" class="flex-1 py-3 font-bold bg-slate-100 rounded-xl">Cancelar</button>
-                    <button type="submit" class="flex-1 bg-slate-900 text-white py-3 rounded-xl font-bold">Forzar Guardado</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Modal Registro (Socio) -->
     <div id="addModal" class="fixed inset-0 bg-slate-900/70 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 class="text-2xl font-black mb-6 text-slate-800">Registrar Cliente</h3>
-            <form id="loanForm" class="space-y-4">
+            <form id="loanForm" class="space-y-3">
                 <input type="text" id="n_nombre" placeholder="Nombre Completo" class="w-full p-3 border rounded-xl bg-slate-50" required>
                 <div class="grid grid-cols-2 gap-3">
                     <input type="text" id="n_cedula" placeholder="Número Cédula" class="w-full p-3 border rounded-xl bg-slate-50" required>
-                    <input type="text" id="n_telefono" placeholder="WhatsApp (Ej: 50688888888)" class="w-full p-3 border rounded-xl bg-slate-50" required>
+                    <input type="text" id="n_telefono" placeholder="Tel / WhatsApp" class="w-full p-3 border rounded-xl bg-slate-50" required>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
+                <input type="text" id="n_direccion" placeholder="Dirección Exacta" class="w-full p-3 border rounded-xl bg-slate-50" required>
+                <input type="text" id="n_autorizado" placeholder="¿Quién autorizó el préstamo?" class="w-full p-3 border rounded-xl bg-indigo-50 font-medium" required>
+                
+                <div class="grid grid-cols-2 gap-3 mt-2">
                     <div>
                         <label class="text-[10px] font-bold text-slate-500">MONTO PRINCIPAL</label>
                         <input type="number" id="n_monto" class="w-full p-3 border rounded-xl font-bold text-indigo-700" required>
                     </div>
                     <div>
-                        <label class="text-[10px] font-bold text-slate-500">INTERÉS (%)</label>
+                        <label class="text-[10px] font-bold text-slate-500">INTERÉS MENSUAL (%)</label>
                         <input type="number" id="n_interes_pct" class="w-full p-3 border rounded-xl font-bold" required>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3 text-xs bg-slate-100 p-4 rounded-xl">
+                <div class="grid grid-cols-2 gap-3 text-xs bg-slate-100 p-4 rounded-xl mt-2">
                     <div>
                         <label class="font-bold block mb-2 text-slate-600">📸 CÉDULA</label>
                         <input type="file" id="n_img_cedula" accept="image/*" class="w-full text-slate-500 text-[10px]">
@@ -206,111 +227,190 @@
                         <input type="file" id="n_img_prenda" accept="image/*" class="w-full text-slate-500 text-[10px]">
                     </div>
                 </div>
-                <div class="flex gap-3 pt-2">
+                <div class="flex gap-3 pt-4">
                     <button type="button" onclick="closeModal('addModal')" class="flex-1 py-3 font-bold bg-slate-100 rounded-xl">Cancelar</button>
-                    <button type="submit" id="btnSaveClient" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold">Guardar</button>
+                    <button type="submit" id="btnSaveClient" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold">Guardar y Aprobar</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal Gestión (Socio) -->
-    <div id="editModal" class="fixed inset-0 bg-slate-900/70 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] flex flex-col shadow-2xl">
-            <div class="p-6 border-b flex justify-between items-center bg-slate-50 rounded-t-2xl">
+    <!-- Modal Gestión (Socio) - FICHA COMPLETA -->
+    <div id="editModal" class="fixed inset-0 bg-slate-900/70 hidden z-[100] flex items-center justify-center p-2 md:p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl max-w-5xl w-full h-[95vh] flex flex-col shadow-2xl overflow-hidden">
+            
+            <!-- Cabecera de la ficha -->
+            <div class="p-4 md:p-6 border-b flex justify-between items-center bg-slate-50">
                 <div>
                     <h3 id="edit_titulo" class="text-2xl font-black text-slate-800"></h3>
                     <p id="edit_cedula" class="text-xs text-slate-500 font-medium"></p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="generarPDF()" class="bg-red-100 text-red-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-200">📄 PDF Reporte</button>
-                    <button onclick="closeModal('editModal')" class="text-slate-400 hover:text-slate-700 bg-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-lg">&times;</button>
+                    <button onclick="generarPDF()" class="bg-slate-200 text-slate-800 px-3 py-2 rounded-lg text-xs font-bold hover:bg-slate-300">📄 PDF</button>
+                    <button onclick="closeModal('editModal')" class="text-slate-400 hover:text-slate-700 bg-white border rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">&times;</button>
                 </div>
             </div>
             
-            <div class="p-6 overflow-y-auto flex-1 flex flex-col md:flex-row gap-6">
-                <!-- Columna Izquierda: Pagos y Reajustes -->
-                <div class="flex-1 space-y-6">
-                    <!-- Estado Manual -->
-                    <div class="bg-slate-100 p-4 rounded-xl flex items-center justify-between">
-                        <span class="text-sm font-bold text-slate-700">Estado del Cliente:</span>
-                        <select id="e_estado" class="p-2 rounded border border-slate-300 font-bold text-sm bg-white" onchange="updateStatusManual()">
-                            <option value="auto">Automático (por fecha)</option>
-                            <option value="al_dia">Forzar: Al Día</option>
-                            <option value="moroso">Forzar: Moroso</option>
-                        </select>
+            <div class="flex-1 overflow-y-auto flex flex-col md:flex-row p-4 gap-6">
+                
+                <!-- Columna Izquierda: Solicitudes, Ficha Info, Finanzas -->
+                <div class="w-full md:w-1/2 space-y-6">
+                    
+                    <!-- Bloque Solicitudes Pendientes -->
+                    <div id="solicitudContainer" class="hidden bg-amber-50 border-2 border-amber-300 p-4 rounded-xl shadow-sm">
+                        <h4 class="text-sm font-black text-amber-800 mb-2 flex items-center gap-2">📢 SOLICITUD DE PRÉSTAMO PENDIENTE</h4>
+                        <div id="solicitudDetalle" class="text-sm font-medium text-amber-900 mb-4 bg-amber-100/50 p-3 rounded-lg border border-amber-200"></div>
+                        
+                        <!-- Formulario de Aprobación -->
+                        <div id="solicitudAprobarForm" class="hidden bg-white p-3 rounded-xl border border-amber-200 mb-3 space-y-3">
+                            <h5 class="text-xs font-bold text-slate-600">Confirmar Condiciones:</h5>
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500">Monto Final</label>
+                                    <input type="number" id="ap_monto" class="w-full border p-2 rounded font-bold">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500">Interés Mensual (%)</label>
+                                    <input type="number" id="ap_interes" class="w-full border p-2 rounded font-bold">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500">Día Pago Mensual</label>
+                                    <input type="number" id="ap_dia" min="1" max="31" class="w-full border p-2 rounded font-bold">
+                                </div>
+                            </div>
+                            <button onclick="confirmarAprobacion()" class="w-full bg-emerald-600 text-white py-2 rounded font-bold text-sm">✅ Confirmar Aprobación</button>
+                        </div>
+
+                        <div class="flex gap-2" id="solicitudActionBtns">
+                            <button onclick="mostrarFormAprobacion()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold text-sm shadow">Aprobar...</button>
+                            <button onclick="responderSolicitud('rechazado')" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-bold text-sm shadow">Rechazar</button>
+                        </div>
                     </div>
 
-                    <!-- Abono Rapido -->
-                    <div class="bg-emerald-50 p-5 rounded-2xl border border-emerald-200 shadow-sm">
-                        <label class="block text-sm font-black text-emerald-800 mb-2">REGISTRAR ABONO</label>
-                        <div class="flex flex-col gap-3">
-                            <div class="relative">
-                                <span class="absolute left-4 top-3 text-emerald-600 font-bold">₡</span>
-                                <input type="number" id="abono_monto" class="w-full pl-8 pr-4 py-2 border-2 rounded-xl border-emerald-300 font-bold text-emerald-900 outline-none" placeholder="Monto entregado">
+                    <!-- Ficha del Cliente (Edición Total) -->
+                    <div class="bg-white border rounded-xl p-4 shadow-sm">
+                        <h4 class="font-black text-slate-800 mb-3 text-sm flex justify-between">
+                            📝 FICHA DEL CLIENTE 
+                            <button onclick="deleteCurrentClient()" class="text-red-600 hover:bg-red-50 px-2 py-1 rounded text-xs">🗑️ Eliminar Cliente</button>
+                        </h4>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div class="col-span-2">
+                                <label class="text-[10px] font-bold text-slate-500">NOMBRE COMPLETO</label>
+                                <input type="text" id="f_nombre" class="w-full p-2 border rounded bg-slate-50">
                             </div>
-                            <div class="flex items-center gap-2">
-                                <input type="file" id="abono_img" accept="image/*" class="text-[10px] w-full text-slate-500">
-                                <button onclick="calculateAndAddPayment()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl font-bold whitespace-nowrap">ABONAR</button>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500">CÉDULA</label>
+                                <input type="text" id="f_cedula" class="w-full p-2 border rounded bg-slate-50">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500">TELÉFONO</label>
+                                <input type="text" id="f_telefono" class="w-full p-2 border rounded bg-slate-50">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="text-[10px] font-bold text-slate-500">DIRECCIÓN</label>
+                                <input type="text" id="f_direccion" class="w-full p-2 border rounded bg-slate-50">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="text-[10px] font-bold text-indigo-500">AUTORIZADO POR</label>
+                                <input type="text" id="f_autorizado" class="w-full p-2 border border-indigo-200 rounded bg-indigo-50 font-medium">
                             </div>
                         </div>
+                        <button onclick="guardarFicha()" class="mt-3 w-full bg-slate-800 text-white py-2 rounded-lg font-bold text-xs">Guardar Cambios de Ficha</button>
                     </div>
 
-                    <!-- Reajuste Manual -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-slate-50 p-3 rounded-xl border">
-                            <label class="text-[10px] font-black text-slate-400 block mb-1">REAJUSTE SALDO</label>
-                            <input type="number" id="e_saldo" class="w-full p-2 border rounded-lg font-bold text-indigo-700">
+                    <!-- Finanzas y Reajustes -->
+                    <div class="bg-white border rounded-xl p-4 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between bg-slate-100 p-2 rounded-lg">
+                            <span class="text-xs font-bold text-slate-600">Estado Mensual:</span>
+                            <select id="e_estado" class="p-1 rounded border text-xs font-bold" onchange="updateStatusManual()">
+                                <option value="auto">Automático (Día de pago)</option>
+                                <option value="al_dia">Forzar: Al Día</option>
+                                <option value="moroso">Forzar: Moroso</option>
+                            </select>
                         </div>
-                        <div class="bg-slate-50 p-3 rounded-xl border">
-                            <label class="text-[10px] font-black text-slate-400 block mb-1">REAJUSTE INTERÉS (%)</label>
-                            <input type="number" id="e_interes_pct" class="w-full p-2 border rounded-lg font-bold text-indigo-700">
+                        
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="col-span-1">
+                                <label class="text-[10px] font-black text-slate-500 block mb-1">DÍA DE PAGO</label>
+                                <input type="number" id="e_dia" min="1" max="31" class="w-full p-2 border rounded-lg font-bold text-indigo-700 text-center">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="text-[10px] font-black text-slate-500 block mb-1">SALDO (₡)</label>
+                                <input type="number" id="e_saldo" class="w-full p-2 border rounded-lg font-bold text-indigo-700">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="text-[10px] font-black text-slate-500 block mb-1">INTERÉS (%)</label>
+                                <input type="number" id="e_interes_pct" class="w-full p-2 border rounded-lg font-bold text-indigo-700">
+                            </div>
+                            <button onclick="updateAmounts()" class="col-span-3 bg-slate-200 hover:bg-slate-300 text-slate-800 py-2 rounded-lg font-bold text-xs mt-1">Aplicar Reajustes Numéricos</button>
                         </div>
-                        <button onclick="updateAmounts()" class="col-span-2 bg-slate-800 text-white py-2 rounded-xl font-bold text-xs">APLICAR REAJUSTES</button>
                     </div>
                 </div>
 
-                <!-- Columna Derecha: Chat y Solicitudes -->
-                <div class="flex-1 flex flex-col gap-4">
-                    <!-- Solicitudes Pendientes -->
-                    <div id="solicitudContainer" class="hidden bg-amber-50 border border-amber-200 p-4 rounded-xl">
-                        <h4 class="text-xs font-bold text-amber-800 mb-2">📢 NUEVA SOLICITUD DE PRÉSTAMO</h4>
-                        <p id="solicitudDetalle" class="text-sm font-bold text-amber-900 mb-3"></p>
-                        <div class="flex gap-2">
-                            <button onclick="responderSolicitud('aprobado')" class="flex-1 bg-emerald-600 text-white py-2 rounded font-bold text-xs">Aprobar</button>
-                            <button onclick="responderSolicitud('rechazado')" class="flex-1 bg-red-600 text-white py-2 rounded font-bold text-xs">Rechazar</button>
+                <!-- Columna Derecha: Abono Rápido, Chat e Historial -->
+                <div class="w-full md:w-1/2 flex flex-col gap-4">
+                    
+                    <!-- Abono Rápido -->
+                    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 shadow-sm shrink-0">
+                        <label class="block text-sm font-black text-emerald-800 mb-2">💰 REGISTRAR ABONO</label>
+                        <div class="flex flex-col gap-2">
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-emerald-600 font-bold">₡</span>
+                                <input type="number" id="abono_monto" class="w-full pl-8 pr-3 py-2 border border-emerald-300 rounded-lg font-bold text-emerald-900 outline-none" placeholder="Monto entregado">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="file" id="abono_img" accept="image/*" class="text-[10px] w-full text-slate-500 bg-white p-1 rounded border">
+                                <button onclick="calculateAndAddPayment()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold whitespace-nowrap shadow">ABONAR</button>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Chat -->
-                    <div class="bg-white border rounded-xl flex-1 flex flex-col overflow-hidden h-[300px] md:h-auto">
+                    <div class="bg-white border rounded-xl flex flex-col overflow-hidden h-[250px] shrink-0">
                         <div class="bg-indigo-50 p-2 border-b text-xs font-bold text-indigo-800 text-center">Chat Directo con Cliente</div>
                         <div id="chatSocio" class="flex-1 p-3 chat-container bg-slate-50"></div>
                         <div class="p-2 bg-white border-t flex gap-2">
-                            <input type="text" id="chatInputSocio" class="flex-1 border rounded-lg px-3 py-1 text-sm outline-none" placeholder="Escribe un mensaje...">
+                            <input type="text" id="chatInputSocio" class="flex-1 border rounded-lg px-2 text-sm outline-none" placeholder="Mensaje...">
                             <button onclick="sendMsg('socio')" class="bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm font-bold">→</button>
                         </div>
                     </div>
+
+                    <!-- Historial Expandido -->
+                    <div class="bg-slate-50 border rounded-xl p-4 flex-1 overflow-y-auto shadow-inner">
+                        <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-3 border-b pb-2">Historial de Pagos</h4>
+                        <div id="historyBody" class="space-y-3 text-sm"></div>
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Historial Abajo -->
-            <div class="p-6 border-t bg-slate-50 rounded-b-2xl max-h-[30vh] overflow-y-auto">
-                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Historial de Pagos</h4>
-                <div id="historyBody" class="space-y-2 text-sm" data-pdf-content></div>
             </div>
         </div>
     </div>
 
-    <!-- Contenedor oculto para impresión PDF -->
+    <!-- Modal Editar Datos (Admin/Soporte) -->
+    <div id="adminEditModal" class="fixed inset-0 bg-slate-900/70 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <h3 class="text-xl font-black mb-4 text-slate-800 text-red-600">Corrección de Soporte</h3>
+            <form id="adminEditForm" class="space-y-4">
+                <input type="text" id="admin_nombre" placeholder="Nombre" class="w-full p-3 border rounded-xl" required>
+                <input type="text" id="admin_cedula" placeholder="Cédula" class="w-full p-3 border rounded-xl" required>
+                <input type="text" id="admin_telefono" placeholder="Teléfono" class="w-full p-3 border rounded-xl" required>
+                <input type="number" id="admin_monto" placeholder="Monto Original" class="w-full p-3 border rounded-xl" required>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeModal('adminEditModal')" class="flex-1 py-3 font-bold bg-slate-100 rounded-xl">Cancelar</button>
+                    <button type="submit" class="flex-1 bg-slate-900 text-white py-3 rounded-xl font-bold">Forzar Guardado</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contenedor PDF -->
     <div id="pdf-container" class="hidden p-8 bg-white text-black"></div>
 
-    <!-- Notificaciones y Confirmaciones -->
-    <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-300 translate-y-32 opacity-0 z-[600] font-bold text-sm flex items-center gap-3">
+    <!-- Notificaciones -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-300 translate-y-32 opacity-0 z-[600] font-bold text-sm flex items-center gap-3">
         <span id="toastIcon">✅</span><span id="toastMsg">Mensaje</span>
     </div>
 
-    <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 hidden z-[300] flex items-center justify-center p-4">
+    <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 hidden z-[700] flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-sm w-full p-8 shadow-2xl text-center">
             <h3 class="text-xl font-black mb-2 text-slate-800">¿Estás seguro?</h3>
             <p id="confirmMessage" class="text-sm text-slate-500 mb-6">Acción irreversible.</p>
@@ -321,13 +421,14 @@
         </div>
     </div>
 
-    <!-- LÓGICA PRINCIPAL (FIREBASE) -->
+    <!-- SCRIPT PRINCIPAL -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+        // Fallback robusto incluyendo la configuración del usuario
+        const fallbackConfig = {
             apiKey: "AIzaSyCtPXuvsDuLDkpIJBlEEHFll6N-NofQ3bI",
             authDomain: "prestamos-c97ed.firebaseapp.com",
             projectId: "prestamos-c97ed",
@@ -336,18 +437,22 @@
             appId: "1:511457800969:web:18b8e97383fdb630b319d8",
             measurementId: "G-N0HK4HPLP1"
         };
+        
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : fallbackConfig;
         const appFirebaseId = typeof __app_id !== 'undefined' ? __app_id : 'prestamos-c97ed';
+        
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const dbFirestore = getFirestore(app);
 
         let dbLocal = [];
         let dbUsers = {};
+        let chatGlobalList = [];
         let currentRole = null; 
         let currentUsername = null;
         let currentEditId = null;
 
-        // AUTH & BOOTSTRAP
+        // AUTH
         const initAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -355,22 +460,21 @@
                 } else {
                     await signInAnonymously(auth);
                 }
-            } catch (err) { showToast("Error conectando al servidor", "❌"); }
+            } catch (err) { console.error(err); showToast("Error conectando", "❌"); }
         };
 
-        let unsubClientes = null;
-        let unsubUsers = null;
+        let unsubClientes = null, unsubUsers = null, unsubSoporte = null;
 
         function subscribeData() {
             if(unsubClientes) unsubClientes();
             if(unsubUsers) unsubUsers();
+            if(unsubSoporte) unsubSoporte();
             
             // Listeners
             unsubUsers = onSnapshot(collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios'), (snap) => {
                 dbUsers = {};
                 snap.forEach(d => dbUsers[d.id] = d.data());
                 
-                // Generar usuarios default si no existen
                 if(Object.keys(dbUsers).length === 0) {
                     setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'socio'), { password: 'Carpi0_2026*', role: 'socio' });
                     setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'admin'), { password: 'soporte', role: 'admin' });
@@ -385,28 +489,40 @@
                 document.getElementById('loginLoader').classList.add('hidden');
                 routeAndRender();
             }, e => console.error(e));
+
+            unsubSoporte = onSnapshot(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'soporte', 'chat_global'), (docSnap) => {
+                if(docSnap.exists()) {
+                    chatGlobalList = docSnap.data().mensajes || [];
+                    renderChatGlobal();
+                } else {
+                    setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'soporte', 'chat_global'), {mensajes: []});
+                }
+            }, e => console.error(e));
         }
 
-        // FECHAS Y ESTADOS
+        // FECHAS (Mensuales)
         function getEstadoCalculado(cliente) {
             if (cliente.estadoManual && cliente.estadoManual !== 'auto') return cliente.estadoManual;
             const hoy = new Date();
-            const diaHoy = hoy.getDate();
-            return (diaHoy > cliente.diaPago) ? 'moroso' : 'al_dia';
-        }
-
-        function is24hAlert(diaPago) {
-            const hoy = new Date();
-            return hoy.getDate() === (diaPago - 1);
+            return (hoy.getDate() > cliente.diaPago) ? 'moroso' : 'al_dia';
         }
 
         function calculateNextPayment(diaPago) {
             const hoy = new Date();
             let mes = hoy.getMonth();
             let anio = hoy.getFullYear();
-            if (hoy.getDate() > diaPago) mes++;
+            // Si el dia de pago ya pasó este mes, el próximo es el mes siguiente
+            if (hoy.getDate() > diaPago) {
+                mes++;
+            }
             if (mes > 11) { mes = 0; anio++; }
-            return new Date(anio, mes, diaPago, 23, 59, 59);
+            // Manejar meses cortos (ej: 31 de feb -> 28 feb)
+            let date = new Date(anio, mes, diaPago);
+            if (date.getMonth() !== mes) {
+                date = new Date(anio, mes + 1, 0); // ultimo dia del mes
+            }
+            date.setHours(23, 59, 59);
+            return date;
         }
 
         // HELPERS UI
@@ -445,7 +561,6 @@
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
-                        // Máxima compresión para evitar límites de Firestore
                         const MAX_WIDTH = 600;
                         const scale = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1;
                         canvas.width = img.width * scale;
@@ -457,7 +572,7 @@
             });
         }
 
-        // LOGIN Y RUTEO
+        // LOGIN
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const u = document.getElementById('username').value.trim();
@@ -471,16 +586,13 @@
                 currentUsername = u;
                 document.getElementById('loginOverlay').classList.add('hidden');
                 
-                // Setup Nav
                 document.getElementById('globalNav').classList.remove('hidden');
                 let navColor = currentRole === 'socio' ? 'bg-indigo-900' : currentRole === 'admin' ? 'bg-slate-900' : 'bg-emerald-900';
                 document.getElementById('globalNav').className = `text-white p-4 flex justify-between items-center shadow-lg z-40 shrink-0 ${navColor}`;
                 document.getElementById('navRoleBadge').innerText = currentRole.toUpperCase();
                 
                 routeAndRender();
-            } else {
-                errEl.classList.remove('hidden');
-            }
+            } else { errEl.classList.remove('hidden'); }
         });
 
         window.logout = () => {
@@ -492,16 +604,13 @@
             if(countdownInterval) clearInterval(countdownInterval);
         };
 
-        // ACTUALIZAR CONTRASEÑA
         document.getElementById('pwdForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const newPwd = document.getElementById('newPwd').value;
             try {
-                const ref = doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', currentUsername);
-                await setDoc(ref, { password: newPwd }, { merge: true });
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', currentUsername), { password: newPwd }, { merge: true });
                 showToast("Contraseña actualizada", "🔒");
-                closeModal('pwdModal');
-                e.target.reset();
+                closeModal('pwdModal'); e.target.reset();
             } catch(err) { showToast("Error", "❌"); }
         });
 
@@ -509,32 +618,28 @@
             if(!currentRole) return;
             ['app-socio', 'app-admin', 'app-cliente'].forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById(`app-${currentRole}`).classList.remove('hidden');
-
             if(currentRole === 'socio') renderSocio();
             if(currentRole === 'admin') renderAdmin();
             if(currentRole === 'cliente') renderCliente();
+            renderChatGlobal();
         }
 
-        // ================= SOCIO LOGIC =================
+        // ================= SOCIO =================
         function renderSocio() {
             const body = document.getElementById('tableBody');
             body.innerHTML = '';
-            
             let cAlDia = 0, cMorosos = 0;
             
             dbLocal.forEach(item => {
                 const estado = getEstadoCalculado(item);
                 if (estado === 'al_dia') cAlDia++; else cMorosos++;
-                
-                const alerta24h = estado === 'al_dia' && is24hAlert(item.diaPago);
                 const intMonto = (item.saldo * (item.interesPct / 100));
                 
                 let bColor = estado === 'moroso' ? 'bg-red-50 border-l-4 border-red-500' : 'hover:bg-slate-50 transition';
                 let stBadge = estado === 'moroso' ? '<span class="bg-red-600 text-white px-2 py-1 rounded text-[10px] font-bold">MOROSO</span>' : 
                              '<span class="bg-emerald-500 text-white px-2 py-1 rounded text-[10px] font-bold">AL DÍA</span>';
-                if(alerta24h) stBadge += '<span class="ml-2 alert-prevencion text-white px-2 py-1 rounded text-[10px] font-bold">VENCE MAÑANA</span>';
 
-                const reqBadge = item.solicitudPrestamo && item.solicitudPrestamo.estado === 'pendiente' ? '<div class="text-[10px] text-amber-600 font-bold mt-1 animate-pulse">NUEVA SOLICITUD</div>' : '';
+                const reqBadge = item.solicitudPrestamo && item.solicitudPrestamo.estado === 'pendiente' ? '<div class="text-[10px] text-amber-600 font-bold mt-1 animate-pulse">📢 NUEVA SOLICITUD</div>' : '';
                 const unreadBadge = item.chat && item.chat.length > 0 && item.chat[item.chat.length-1].sender === 'cliente' ? '💬 ' : '';
 
                 body.innerHTML += `
@@ -545,7 +650,7 @@
                             ${reqBadge}
                         </td>
                         <td class="p-4">
-                            <div class="text-xs text-slate-700">Día de pago: <b class="text-sm">${item.diaPago}</b></div>
+                            <div class="text-xs text-slate-700">Día de pago: <b class="text-sm">Todos los ${item.diaPago}</b></div>
                             <div class="text-[10px] text-slate-400">Inicio: ${item.fecha}</div>
                         </td>
                         <td class="p-4">${stBadge}</td>
@@ -554,12 +659,11 @@
                             <div class="text-[10px] text-emerald-600 font-bold">Int: ₡${intMonto.toLocaleString()}</div>
                         </td>
                         <td class="p-4 flex gap-1">
-                            ${item.imgCedula ? `<img src="${item.imgCedula}" class="img-mini" onclick="viewImage(this.src)">` : ''}
-                            ${item.imgPrenda ? `<img src="${item.imgPrenda}" class="img-mini" onclick="viewImage(this.src)">` : ''}
+                            ${item.imgCedula ? `<img src="${item.imgCedula}" class="img-mini" onclick="viewImage(this.src)" title="Cédula">` : ''}
+                            ${item.imgPrenda ? `<img src="${item.imgPrenda}" class="img-mini" onclick="viewImage(this.src)" title="Prenda">` : ''}
                         </td>
                         <td class="p-4 pr-6 text-right space-y-1">
-                            <button onclick="openEdit(${item.id})" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold w-full">GESTIÓN / CHAT</button>
-                            <button onclick="sendWA('${item.telefono}', '${item.nombre}', ${item.saldo}, ${intMonto})" class="${alerta24h ? 'alert-prevencion' : 'bg-emerald-500'} text-white px-3 py-1.5 rounded-lg text-xs font-bold w-full">WHATSAPP</button>
+                            <button onclick="openEdit(${item.id})" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold w-full shadow">FICHA / GESTIÓN</button>
                         </td>
                     </tr>
                 `;
@@ -585,11 +689,13 @@
                     nombre: document.getElementById('n_nombre').value,
                     cedula: cedula,
                     telefono: document.getElementById('n_telefono').value,
+                    direccion: document.getElementById('n_direccion').value,
+                    autorizadoPor: document.getElementById('n_autorizado').value,
                     montoOriginal: parseFloat(document.getElementById('n_monto').value),
                     saldo: parseFloat(document.getElementById('n_monto').value),
                     interesPct: parseFloat(document.getElementById('n_interes_pct').value),
                     fecha: now.toLocaleDateString('es-CR'),
-                    diaPago: now.getDate(),
+                    diaPago: now.getDate(), // Se fija el día actual como día de pago mensual
                     estadoManual: 'auto',
                     imgCedula: await compressImage(document.getElementById('n_img_cedula').files[0]),
                     imgPrenda: await compressImage(document.getElementById('n_img_prenda').files[0]),
@@ -597,53 +703,133 @@
                     chat: []
                 };
 
-                // Save client
                 await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', newId.toString()), nuevo);
-                // Create user for client
                 await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', cedula), { role: 'cliente', password: cedula, clienteId: newId });
                 
-                closeModal('addModal'); e.target.reset(); showToast("Cliente registrado");
+                closeModal('addModal'); e.target.reset(); showToast("Préstamo y Cliente creados");
             } catch (err) { showToast("Error", "❌"); console.error(err); }
-            finally { btn.disabled = false; btn.innerText = "Guardar"; }
+            finally { btn.disabled = false; btn.innerText = "Guardar y Aprobar"; }
         });
 
         window.openEdit = (id) => {
             currentEditId = id;
             const item = dbLocal.find(l => l.id === id);
             document.getElementById('edit_titulo').innerText = item.nombre;
-            document.getElementById('edit_cedula').innerText = `ID: ${item.cedula} | Tel: ${item.telefono}`;
+            document.getElementById('edit_cedula').innerText = `Cédula: ${item.cedula} | Autorizado por: ${item.autorizadoPor || 'N/A'}`;
+            
+            // Llenar Ficha Editable
+            document.getElementById('f_nombre').value = item.nombre;
+            document.getElementById('f_cedula').value = item.cedula;
+            document.getElementById('f_telefono').value = item.telefono || '';
+            document.getElementById('f_direccion').value = item.direccion || '';
+            document.getElementById('f_autorizado').value = item.autorizadoPor || '';
+
+            // Llenar Finanzas
             document.getElementById('e_saldo').value = item.saldo;
             document.getElementById('e_interes_pct').value = item.interesPct;
+            document.getElementById('e_dia').value = item.diaPago;
             document.getElementById('e_estado').value = item.estadoManual || 'auto';
             
-            // Render Requests
+            // Render Solicitudes
             const solContainer = document.getElementById('solicitudContainer');
+            const frmAprobar = document.getElementById('solicitudAprobarForm');
+            const actionBtns = document.getElementById('solicitudActionBtns');
             if(item.solicitudPrestamo && item.solicitudPrestamo.estado === 'pendiente') {
                 solContainer.classList.remove('hidden');
-                document.getElementById('solicitudDetalle').innerText = `Monto: ₡${item.solicitudPrestamo.monto.toLocaleString()} - Fecha: ${item.solicitudPrestamo.fecha}`;
-            } else { solContainer.classList.add('hidden'); }
+                frmAprobar.classList.add('hidden');
+                actionBtns.classList.remove('hidden');
+                
+                let imgReqHtml = item.solicitudPrestamo.imgCedula ? `<br><img src="${item.solicitudPrestamo.imgCedula}" class="h-12 rounded cursor-pointer mt-2 border" onclick="viewImage(this.src)">` : '';
+                document.getElementById('solicitudDetalle').innerHTML = `
+                    <b>Monto Solicitado:</b> ₡${item.solicitudPrestamo.monto.toLocaleString()}<br>
+                    <b>Dirección:</b> ${item.solicitudPrestamo.direccion}<br>
+                    <b>Teléfono:</b> ${item.solicitudPrestamo.telefono}
+                    ${imgReqHtml}
+                `;
+                // Precargar formulario aprobación
+                document.getElementById('ap_monto').value = item.saldo + item.solicitudPrestamo.monto;
+                document.getElementById('ap_interes').value = item.interesPct;
+                document.getElementById('ap_dia').value = item.diaPago;
+            } else { 
+                solContainer.classList.add('hidden'); 
+            }
 
-            // Render History
+            // Render Historial
+            renderHistory(item);
+            renderChat('socio', item.chat || []);
+            openModal('editModal');
+        };
+
+        function renderHistory(item) {
             const hBody = document.getElementById('historyBody');
-            hBody.innerHTML = item.historial.length ? '' : '<p class="text-slate-400 italic">No hay pagos registrados</p>';
-            item.historial.slice().reverse().forEach(h => {
-                let imgHtml = h.img ? `<img src="${h.img}" class="h-8 w-12 object-cover rounded cursor-pointer border" onclick="viewImage(this.src)">` : '';
+            hBody.innerHTML = item.historial.length ? '' : '<p class="text-slate-400 italic text-center">No hay pagos registrados</p>';
+            item.historial.slice().reverse().forEach((h, idxReversed) => {
+                const realIdx = item.historial.length - 1 - idxReversed;
+                let imgHtml = h.img ? `<img src="${h.img}" class="h-8 w-12 object-cover rounded cursor-pointer border shadow-sm" onclick="viewImage(this.src)">` : '';
                 hBody.innerHTML += `
-                    <div class="bg-white p-3 rounded flex flex-wrap sm:flex-nowrap items-center justify-between border gap-2">
-                        <span class="font-bold bg-slate-100 px-2 py-1 rounded text-xs">${h.fecha}</span>
-                        <div class="flex gap-3 text-xs">
-                            <span class="text-emerald-700 font-bold">Ab: ₡${h.total.toLocaleString()}</span>
-                            <span class="text-amber-600">Int: ₡${h.int.toLocaleString()}</span>
-                            <span class="text-blue-600">Cap: ₡${h.cap.toLocaleString()}</span>
+                    <div class="bg-white p-3 rounded-lg flex flex-col md:flex-row items-start md:items-center justify-between border border-slate-200 shadow-sm gap-2">
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold bg-slate-100 text-slate-700 px-2 py-1 rounded text-[10px]">${h.fecha}</span>
+                            <div class="flex gap-2 text-[11px]">
+                                <span class="text-emerald-700 font-bold bg-emerald-50 px-1 rounded">Ab: ₡${h.total.toLocaleString()}</span>
+                                <span class="text-amber-600 bg-amber-50 px-1 rounded">Int: ₡${h.int.toLocaleString()}</span>
+                                <span class="text-blue-600 bg-blue-50 px-1 rounded">Cap: ₡${h.cap.toLocaleString()}</span>
+                            </div>
                         </div>
-                        <span class="font-black text-indigo-700">S.Final: ₡${h.sFinal.toLocaleString()}</span>
-                        ${imgHtml}
+                        <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+                            <span class="font-black text-indigo-700 text-xs">S.Final: ₡${h.sFinal.toLocaleString()}</span>
+                            <div class="flex items-center gap-2">
+                                ${imgHtml}
+                                <button onclick="deleteHistoryItem(${item.id}, ${realIdx})" class="text-red-400 hover:text-red-600 p-1" title="Eliminar pago">🗑️</button>
+                            </div>
+                        </div>
                     </div>
                 `;
             });
+        }
 
-            renderChat('socio', item.chat || []);
-            openModal('editModal');
+        window.deleteHistoryItem = (clientId, index) => {
+            openConfirm("¿Eliminar este registro de pago? Esto NO restaurará automáticamente el saldo, deberás ajustarlo numéricamente si es necesario.", async () => {
+                const item = dbLocal.find(l => l.id === clientId);
+                item.historial.splice(index, 1);
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+                showToast("Pago eliminado");
+                openEdit(clientId);
+            });
+        };
+
+        window.guardarFicha = async () => {
+            const item = dbLocal.find(l => l.id === currentEditId);
+            const oldCedula = item.cedula;
+            
+            item.nombre = document.getElementById('f_nombre').value;
+            item.cedula = document.getElementById('f_cedula').value;
+            item.telefono = document.getElementById('f_telefono').value;
+            item.direccion = document.getElementById('f_direccion').value;
+            item.autorizadoPor = document.getElementById('f_autorizado').value;
+
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+            
+            if(oldCedula !== item.cedula && dbUsers[oldCedula]) {
+                const ud = dbUsers[oldCedula];
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', item.cedula), ud);
+                await deleteDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', oldCedula));
+            }
+            showToast("Ficha actualizada");
+            document.getElementById('edit_titulo').innerText = item.nombre;
+        };
+
+        window.deleteCurrentClient = () => {
+            openConfirm("Eliminar absolutamente todo el registro e historial de este cliente. ¡Acción permanente!", async () => {
+                const id = currentEditId;
+                const item = dbLocal.find(l => l.id === id);
+                await deleteDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', id.toString()));
+                if(item && dbUsers[item.cedula]) {
+                    await deleteDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', item.cedula));
+                }
+                showToast("Cliente eliminado", "🗑️");
+                closeModal('editModal');
+            });
         };
 
         window.updateStatusManual = async () => {
@@ -683,69 +869,90 @@
             const item = dbLocal.find(l => l.id === currentEditId);
             item.saldo = parseFloat(document.getElementById('e_saldo').value);
             item.interesPct = parseFloat(document.getElementById('e_interes_pct').value);
+            item.diaPago = parseInt(document.getElementById('e_dia').value) || item.diaPago;
             await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
             showToast("Reajuste aplicado");
+            openEdit(currentEditId);
+        };
+
+        // Flujo Aprobación Solicitudes
+        window.mostrarFormAprobacion = () => {
+            document.getElementById('solicitudActionBtns').classList.add('hidden');
+            document.getElementById('solicitudAprobarForm').classList.remove('hidden');
+        };
+
+        window.confirmarAprobacion = async () => {
+            const item = dbLocal.find(l => l.id === currentEditId);
+            const n_monto = parseFloat(document.getElementById('ap_monto').value);
+            const n_interes = parseFloat(document.getElementById('ap_interes').value);
+            const n_dia = parseInt(document.getElementById('ap_dia').value);
+
+            item.saldo = n_monto;
+            item.montoOriginal = n_monto;
+            item.interesPct = n_interes;
+            item.diaPago = n_dia;
+            item.direccion = item.solicitudPrestamo.direccion || item.direccion;
+            item.telefono = item.solicitudPrestamo.telefono || item.telefono;
+            if(item.solicitudPrestamo.imgCedula) item.imgCedula = item.solicitudPrestamo.imgCedula;
+            
+            item.solicitudPrestamo.estado = 'aprobado';
+            item.chat.push({ sender: 'socio', msg: `✅ Solicitud Aprobada. Saldo Final: ₡${n_monto}. Interés: ${n_interes}%. Día de pago mensual: ${n_dia}.`, time: new Date().toLocaleString('es-CR')});
+            
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+            showToast("Préstamo Aprobado y Actualizado");
             openEdit(currentEditId);
         };
 
         window.responderSolicitud = async (res) => {
             const item = dbLocal.find(l => l.id === currentEditId);
             item.solicitudPrestamo.estado = res;
-            if (res === 'aprobado') {
-                item.saldo += item.solicitudPrestamo.monto;
-                item.montoOriginal += item.solicitudPrestamo.monto;
-                item.chat.push({ sender: 'socio', msg: `✅ Tu solicitud de ampliación por ₡${item.solicitudPrestamo.monto} ha sido APROBADA.`, time: new Date().toLocaleString('es-CR')});
-            } else {
-                item.chat.push({ sender: 'socio', msg: `❌ Tu solicitud de ampliación ha sido RECHAZADA.`, time: new Date().toLocaleString('es-CR')});
-            }
+            item.chat.push({ sender: 'socio', msg: `❌ Tu solicitud ha sido RECHAZADA por la administración.`, time: new Date().toLocaleString('es-CR')});
             await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
-            showToast("Solicitud procesada");
+            showToast("Solicitud Rechazada");
             openEdit(currentEditId);
-        };
-
-        window.sendWA = (t, n, s, i) => {
-            const msg = `Hola ${n.split(' ')[0]}. Recordatorio de cuota pendiente: ₡${(s*(i/100)).toLocaleString()} (Solo Interés) o el abono acordado. Saldo global: ₡${s.toLocaleString()}.`;
-            window.open(`https://wa.me/${t}?text=${encodeURIComponent(msg)}`, '_blank');
         };
 
         window.generarPDF = () => {
             const item = dbLocal.find(l => l.id === currentEditId);
             const container = document.getElementById('pdf-container');
             container.innerHTML = `
-                <h1 style="font-size:24px; font-weight:bold; margin-bottom:10px; color:#333;">Reporte de Préstamo</h1>
-                <p><strong>Cliente:</strong> ${item.nombre}</p>
-                <p><strong>Cédula:</strong> ${item.cedula}</p>
-                <p><strong>Fecha Inicio:</strong> ${item.fecha}</p>
-                <p><strong>Monto Original:</strong> ₡${item.montoOriginal.toLocaleString()}</p>
-                <p><strong>Saldo Actual:</strong> ₡${item.saldo.toLocaleString()}</p>
-                <hr style="margin:20px 0;">
-                <h3 style="font-size:18px; margin-bottom:10px;">Historial de Pagos</h3>
-                <table style="width:100%; border-collapse: collapse; font-size:12px;">
-                    <tr style="background:#f1f5f9; text-align:left;">
-                        <th style="padding:8px; border:1px solid #ddd;">Fecha</th>
-                        <th style="padding:8px; border:1px solid #ddd;">Abono</th>
-                        <th style="padding:8px; border:1px solid #ddd;">A Capital</th>
-                        <th style="padding:8px; border:1px solid #ddd;">A Interés</th>
-                        <th style="padding:8px; border:1px solid #ddd;">Saldo Resultante</th>
-                    </tr>
-                    ${item.historial.map(h => `
-                        <tr>
-                            <td style="padding:8px; border:1px solid #ddd;">${h.fecha}</td>
-                            <td style="padding:8px; border:1px solid #ddd;">₡${h.total.toLocaleString()}</td>
-                            <td style="padding:8px; border:1px solid #ddd;">₡${h.cap.toLocaleString()}</td>
-                            <td style="padding:8px; border:1px solid #ddd;">₡${h.int.toLocaleString()}</td>
-                            <td style="padding:8px; border:1px solid #ddd;">₡${h.sFinal.toLocaleString()}</td>
+                <div style="font-family:sans-serif;">
+                    <h1 style="font-size:24px; font-weight:bold; margin-bottom:10px; color:#333;">Ficha de Préstamo</h1>
+                    <table style="width:100%; text-align:left; font-size:14px; margin-bottom:20px;">
+                        <tr><td><strong>Cliente:</strong> ${item.nombre}</td><td><strong>Cédula:</strong> ${item.cedula}</td></tr>
+                        <tr><td><strong>Teléfono:</strong> ${item.telefono}</td><td><strong>Día Pago:</strong> Cada ${item.diaPago} del mes</td></tr>
+                        <tr><td><strong>Dirección:</strong> ${item.direccion}</td><td><strong>Autorizado:</strong> ${item.autorizadoPor || 'N/A'}</td></tr>
+                        <tr><td><strong>Saldo Actual:</strong> ₡${item.saldo.toLocaleString()}</td><td><strong>Interés Mensual:</strong> ${item.interesPct}%</td></tr>
+                    </table>
+                    <hr style="margin:20px 0;">
+                    <h3 style="font-size:18px; margin-bottom:10px;">Historial de Pagos</h3>
+                    <table style="width:100%; border-collapse: collapse; font-size:12px;">
+                        <tr style="background:#f1f5f9; text-align:left;">
+                            <th style="padding:8px; border:1px solid #ddd;">Fecha</th>
+                            <th style="padding:8px; border:1px solid #ddd;">Abono</th>
+                            <th style="padding:8px; border:1px solid #ddd;">A Capital</th>
+                            <th style="padding:8px; border:1px solid #ddd;">A Interés</th>
+                            <th style="padding:8px; border:1px solid #ddd;">Saldo Resultante</th>
                         </tr>
-                    `).join('')}
-                </table>
+                        ${item.historial.map(h => `
+                            <tr>
+                                <td style="padding:8px; border:1px solid #ddd;">${h.fecha}</td>
+                                <td style="padding:8px; border:1px solid #ddd;">₡${h.total.toLocaleString()}</td>
+                                <td style="padding:8px; border:1px solid #ddd;">₡${h.cap.toLocaleString()}</td>
+                                <td style="padding:8px; border:1px solid #ddd;">₡${h.int.toLocaleString()}</td>
+                                <td style="padding:8px; border:1px solid #ddd;">₡${h.sFinal.toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                </div>
             `;
             container.classList.remove('hidden');
-            html2pdf().from(container).save(`Reporte_${item.cedula}.pdf`).then(() => {
+            html2pdf().from(container).save(`Ficha_${item.cedula}.pdf`).then(() => {
                 container.classList.add('hidden');
             });
         };
 
-        // ================= CLIENTE LOGIC =================
+        // ================= CLIENTE =================
         let countdownInterval;
         
         function renderCliente() {
@@ -765,9 +972,12 @@
 
             content.innerHTML = `
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden mb-6">
-                    <div class="mb-6">
-                        <h2 class="text-2xl font-black text-slate-800">Hola, ${cliente.nombre.split(' ')[0]}</h2>
-                        <p class="text-xs text-slate-500">Préstamo iniciado el: <b>${cliente.fecha}</b></p>
+                    <div class="mb-6 flex justify-between items-start">
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-800">Hola, ${cliente.nombre.split(' ')[0]}</h2>
+                            <p class="text-xs text-slate-500">Préstamo iniciado el: <b>${cliente.fecha}</b></p>
+                        </div>
+                        <button onclick="openModal('reqLoanModal')" class="bg-slate-800 text-white px-4 py-2 rounded-lg font-bold text-xs shadow hover:bg-slate-700">➕ Solicitar Préstamo</button>
                     </div>
 
                     ${reqStatusHtml}
@@ -783,30 +993,30 @@
                         </div>
                     </div>
 
-                    <div class="bg-indigo-900 text-white p-5 rounded-2xl shadow-lg mb-6 text-center">
-                        <p class="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-2">Próximo Pago</p>
-                        <p class="text-xl font-bold mb-3">${nextDate.toLocaleDateString('es-CR', {weekday:'long', day:'numeric', month:'long'})}</p>
-                        <div id="countdown" class="text-3xl font-black tracking-widest font-mono">--:--:--</div>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                        <button onclick="openModal('reqLoanModal')" class="bg-slate-800 text-white py-3 rounded-xl font-bold text-sm shadow">Solicitar Más Capital</button>
+                    <div class="bg-indigo-900 text-white p-5 rounded-2xl shadow-lg mb-6 text-center relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIj48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDBMOCA4Wk04IDBMMCA4WiIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjEiPjwvcGF0aD4KPC9zdmc+')]"></div>
+                        <p class="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-2 relative z-10">Próximo Pago Mensual</p>
+                        <p class="text-xl font-bold mb-2 relative z-10">${nextDate.toLocaleDateString('es-CR', {weekday:'long', day:'numeric', month:'long'})}</p>
+                        <div id="countdown" class="text-3xl font-black tracking-widest font-mono text-emerald-300 relative z-10">--:--:--</div>
                     </div>
                 </div>
 
+                <!-- Botón Especial para Comprobante -->
+                <div class="bg-emerald-600 rounded-2xl shadow-lg p-1 mb-6 transform hover:scale-[1.02] transition-transform">
+                    <label class="flex items-center justify-center gap-3 w-full py-4 px-6 cursor-pointer text-white font-black">
+                        <span class="text-2xl">📤</span> 
+                        <span>ENVIAR COMPROBANTE DE ABONO AL SOCIO</span>
+                        <input type="file" id="btnEnvioComprobante" accept="image/*" class="hidden" onchange="enviarComprobanteEspecial()">
+                    </label>
+                </div>
+
                 <!-- Chat Cliente -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-6 flex flex-col h-[350px]">
-                    <h3 class="font-black text-slate-800 mb-2 border-b pb-2">💬 Chat con Socio</h3>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-6 flex flex-col h-[300px]">
+                    <h3 class="font-black text-slate-800 mb-2 border-b pb-2">💬 Mensajes con el Socio</h3>
                     <div id="chatCliente" class="flex-1 chat-container bg-slate-50 p-2 border rounded-lg mb-3"></div>
                     <div class="flex gap-2">
-                        <input type="text" id="chatInputCliente" class="flex-1 border rounded-lg px-3 py-2 text-sm outline-none" placeholder="Escribe un mensaje...">
+                        <input type="text" id="chatInputCliente" class="flex-1 border rounded-lg px-3 py-2 text-sm outline-none" placeholder="Escribe al socio...">
                         <button onclick="sendMsg('cliente')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold">Enviar</button>
-                    </div>
-                    <div class="mt-2 text-right">
-                        <label class="text-[10px] text-indigo-600 font-bold cursor-pointer hover:underline">
-                            + Enviar Comprobante (Imagen)
-                            <input type="file" id="chatImgCliente" accept="image/*" class="hidden" onchange="sendImgMsg('cliente')">
-                        </label>
                     </div>
                 </div>
 
@@ -816,25 +1026,46 @@
                         <div class="bg-white p-4 rounded-xl flex justify-between border shadow-sm items-center gap-3">
                             <div>
                                 <span class="font-bold text-slate-700 block text-sm">${h.fecha}</span>
-                                <span class="text-[10px] text-slate-400">Total pagado: ₡${h.total.toLocaleString()}</span>
+                                <span class="text-[10px] text-slate-400">Pagado: ₡${h.total.toLocaleString()}</span>
                             </div>
                             <div class="text-right">
-                                <span class="block text-sm font-black text-emerald-600">Restante: ₡${h.sFinal.toLocaleString()}</span>
+                                <span class="block text-sm font-black text-emerald-600">Saldo: ₡${h.sFinal.toLocaleString()}</span>
                                 <span class="text-[10px] font-medium text-slate-400">Int: ₡${h.int.toLocaleString()} | Cap: ₡${h.cap.toLocaleString()}</span>
                             </div>
                         </div>
                     `).join('') : '<p class="text-sm text-slate-400 text-center py-4">No hay pagos registrados</p>'}
                 </div>
 
-                <!-- Modal Solicitar Préstamo -->
+                <!-- Modal Solicitar Préstamo (Cliente) -->
                 <div id="reqLoanModal" class="fixed inset-0 bg-slate-900/70 hidden z-[200] flex items-center justify-center p-4">
-                    <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-                        <h3 class="text-xl font-black mb-4">Solicitar Capital</h3>
-                        <input type="number" id="req_monto" placeholder="Monto deseado (₡)" class="w-full p-3 border rounded-xl outline-none focus:ring-2 mb-4" required>
-                        <div class="flex gap-2">
-                            <button onclick="closeModal('reqLoanModal')" class="flex-1 py-3 font-bold bg-slate-100 rounded-xl">Cancelar</button>
-                            <button onclick="submitLoanReq()" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold">Enviar</button>
-                        </div>
+                    <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+                        <h3 class="text-xl font-black mb-4">Solicitud de Préstamo</h3>
+                        <form id="clientLoanForm" onsubmit="submitLoanReq(event)" class="space-y-3">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500">NOMBRE COMPLETO</label>
+                                <input type="text" id="req_nombre" value="${cliente.nombre}" class="w-full p-2 border rounded-lg bg-slate-50" required>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500">DIRECCIÓN</label>
+                                <input type="text" id="req_direccion" value="${cliente.direccion || ''}" class="w-full p-2 border rounded-lg" required>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500">TELÉFONO</label>
+                                <input type="text" id="req_telefono" value="${cliente.telefono}" class="w-full p-2 border rounded-lg" required>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500">NUEVA FOTO DE CÉDULA (Opcional)</label>
+                                <input type="file" id="req_img_cedula" accept="image/*" class="w-full text-xs text-slate-500 p-1 border rounded">
+                            </div>
+                            <div class="pt-2">
+                                <label class="text-[10px] font-bold text-indigo-600">MONTO SOLICITADO (₡)</label>
+                                <input type="number" id="req_monto" class="w-full p-3 border-2 border-indigo-200 rounded-lg font-bold text-indigo-800" required>
+                            </div>
+                            <div class="flex gap-2 pt-4">
+                                <button type="button" onclick="closeModal('reqLoanModal')" class="flex-1 py-3 font-bold bg-slate-100 rounded-xl">Cancelar</button>
+                                <button type="submit" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold">Enviar Solicitud</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             `;
@@ -849,7 +1080,7 @@
             countdownInterval = setInterval(() => {
                 const now = new Date().getTime();
                 const dist = targetDate.getTime() - now;
-                if(dist < 0) { el.innerText = "¡VENCIDO!"; return; }
+                if(dist < 0) { el.innerText = "¡DÍA DE PAGO!"; return; }
                 const d = Math.floor(dist / (1000 * 60 * 60 * 24));
                 const h = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
@@ -857,25 +1088,59 @@
             }, 1000);
         }
 
-        window.submitLoanReq = async () => {
+        window.submitLoanReq = async (e) => {
+            e.preventDefault();
             const monto = parseFloat(document.getElementById('req_monto').value);
-            if(!monto) return;
+            const direccion = document.getElementById('req_direccion').value;
+            const telefono = document.getElementById('req_telefono').value;
+            const imgFile = document.getElementById('req_img_cedula').files[0];
+            
+            let imgB64 = null;
+            if(imgFile) imgB64 = await compressImage(imgFile);
+
             const userDoc = dbUsers[currentUsername];
             const item = dbLocal.find(c => c.id === userDoc.clienteId);
-            item.solicitudPrestamo = { monto, fecha: new Date().toLocaleDateString('es-CR'), estado: 'pendiente' };
+            
+            item.solicitudPrestamo = { 
+                monto, direccion, telefono, imgCedula: imgB64, 
+                fecha: new Date().toLocaleDateString('es-CR'), estado: 'pendiente' 
+            };
+            
             await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
-            showToast("Solicitud enviada");
+            showToast("Solicitud enviada al Socio");
             closeModal('reqLoanModal');
         };
 
-        // CHAT GLOBAL
+        window.enviarComprobanteEspecial = async () => {
+            const input = document.getElementById('btnEnvioComprobante');
+            if(!input.files[0]) return;
+            showToast("Subiendo comprobante...", "⏳");
+            
+            const imgB64 = await compressImage(input.files[0]);
+            const userDoc = dbUsers[currentUsername];
+            const item = dbLocal.find(c => c.id === userDoc.clienteId);
+            
+            if(!item.chat) item.chat = [];
+            item.chat.push({ 
+                sender: 'cliente', 
+                msg: "🧾 He enviado un comprobante de abono.", 
+                img: imgB64, 
+                time: new Date().toLocaleString('es-CR') 
+            });
+            
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+            input.value = '';
+            showToast("Comprobante enviado al Socio", "✅");
+        };
+
+        // CHAT CLIENTE-SOCIO
         function renderChat(view, chatArray) {
             const container = document.getElementById(`chat${view.charAt(0).toUpperCase() + view.slice(1)}`);
             if(!container) return;
             container.innerHTML = chatArray.map(m => {
                 const cls = m.sender === view ? `msg-${view}` : (m.sender==='socio' ? 'msg-socio' : 'msg-cliente');
                 let content = m.msg;
-                if(m.img) content += `<br><img src="${m.img}" class="mt-2 rounded max-w-full cursor-pointer" onclick="viewImage(this.src)">`;
+                if(m.img) content += `<br><img src="${m.img}" class="mt-2 rounded max-w-full cursor-pointer border shadow-sm" onclick="viewImage(this.src)">`;
                 return `<div class="msg ${cls}"><b>${m.sender.toUpperCase()}:</b><br>${content}<div class="text-[8px] text-right mt-1 opacity-70">${m.time}</div></div>`;
             }).join('');
             container.scrollTop = container.scrollHeight;
@@ -897,37 +1162,20 @@
             input.value = '';
         };
 
-        window.sendImgMsg = async (sender) => {
-            const input = document.getElementById(`chatImg${sender.charAt(0).toUpperCase() + sender.slice(1)}`);
-            if(!input.files[0]) return;
-            const imgB64 = await compressImage(input.files[0]);
-            
-            let cid = currentEditId; 
-            if(sender === 'cliente') { const ud = dbUsers[currentUsername]; cid = ud.clienteId; }
-            
-            const item = dbLocal.find(l => l.id === cid);
-            if(!item.chat) item.chat = [];
-            item.chat.push({ sender, msg: "Envió un comprobante", img: imgB64, time: new Date().toLocaleString('es-CR') });
-            
-            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
-            input.value = '';
-            showToast("Imagen enviada");
-        };
-
-        // ================= SOPORTE (ADMIN) LOGIC =================
+        // ================= SOPORTE (ADMIN) & CHAT GLOBAL =================
         function renderAdmin() {
             const body = document.getElementById('adminTableBody');
             body.innerHTML = '';
             dbLocal.forEach(item => {
                 body.innerHTML += `
                     <tr class="hover:bg-slate-50 border-b">
-                        <td class="p-4 font-mono text-xs text-slate-500">${item.id}</td>
-                        <td class="p-4 font-bold">${item.nombre}<br><span class="text-[10px] text-slate-400 font-normal">ID: ${item.cedula}</span></td>
-                        <td class="p-4">${item.telefono}</td>
-                        <td class="p-4 font-bold text-indigo-700">₡${item.montoOriginal.toLocaleString()}</td>
+                        <td class="p-4 font-mono text-[10px] text-slate-500">${item.id}</td>
+                        <td class="p-4">
+                            <span class="font-bold block">${item.nombre}</span>
+                            <span class="text-[10px] text-slate-400">ID: ${item.cedula} | Tel: ${item.telefono}</span>
+                        </td>
                         <td class="p-4 text-center">
-                            <button onclick="openAdminEdit(${item.id})" class="bg-slate-800 text-white px-3 py-1.5 rounded text-[10px] font-bold">EDITAR INFO</button>
-                            <button onclick="deleteClientFn(${item.id})" class="text-red-500 hover:text-red-700 ml-2">🗑️</button>
+                            <button onclick="openAdminEdit(${item.id})" class="bg-slate-800 text-white px-3 py-1.5 rounded text-[10px] font-bold">INFO</button>
                         </td>
                     </tr>
                 `;
@@ -954,32 +1202,66 @@
             item.telefono = document.getElementById('admin_telefono').value;
             item.montoOriginal = parseFloat(document.getElementById('admin_monto').value);
 
-            // Update client doc
             await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
             
-            // If cedula changed, recreate auth doc
             if(oldCedula !== item.cedula && dbUsers[oldCedula]) {
                 const ud = dbUsers[oldCedula];
                 await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', item.cedula), ud);
                 await deleteDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', oldCedula));
             }
-
-            closeModal('adminEditModal');
-            showToast("Datos corregidos");
+            closeModal('adminEditModal'); showToast("Datos corregidos");
         });
 
-        window.deleteClientFn = (id) => {
-            openConfirm("Borrar todo el historial de este cliente de forma irreversible.", async () => {
-                const item = dbLocal.find(l => l.id === id);
-                await deleteDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', id.toString()));
-                if(item && dbUsers[item.cedula]) {
-                    await deleteDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', item.cedula));
-                }
-                showToast("Cliente eliminado", "🗑️");
-            });
+        // Chat Global Lógica
+        window.toggleSupportChat = () => {
+            const panel = document.getElementById('supportChatPanel');
+            panel.classList.toggle('hidden');
+            panel.classList.toggle('flex');
+            if(!panel.classList.contains('hidden')) {
+                const c = document.getElementById('chatGlobalSocio');
+                c.scrollTop = c.scrollHeight;
+            }
         };
 
-        // BOOTSTRAP INIT
+        function renderChatGlobal() {
+            if(currentRole === 'socio') {
+                const c = document.getElementById('chatGlobalSocio');
+                if(!c) return;
+                c.innerHTML = chatGlobalList.map(m => {
+                    const cls = m.role === 'socio' ? 'msg-me' : 'msg-admin';
+                    return `<div class="msg ${cls}"><b class="text-[10px] opacity-70 block mb-1">${m.role.toUpperCase()}</b>${m.msg}<div class="text-[8px] text-right mt-1 opacity-70">${m.time}</div></div>`;
+                }).join('');
+                c.scrollTop = c.scrollHeight;
+            }
+            if(currentRole === 'admin') {
+                const c = document.getElementById('chatGlobalAdmin');
+                if(!c) return;
+                c.innerHTML = chatGlobalList.map(m => {
+                    const cls = m.role === 'admin' ? 'msg-me' : 'msg-socio';
+                    return `<div class="msg ${cls}"><b class="text-[10px] opacity-70 block mb-1">${m.role.toUpperCase()}</b>${m.msg}<div class="text-[8px] text-right mt-1 opacity-70">${m.time}</div></div>`;
+                }).join('');
+                c.scrollTop = c.scrollHeight;
+            }
+        }
+
+        window.sendGlobalMsg = async (role) => {
+            const input = document.getElementById(role === 'socio' ? 'chatGlobalInput' : 'chatAdminInput');
+            const txt = input.value.trim();
+            if(!txt) return;
+
+            const newMsg = { role: role, msg: txt, time: new Date().toLocaleString('es-CR') };
+            const docRef = doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'soporte', 'chat_global');
+            
+            try {
+                const docSnap = await getDoc(docRef);
+                let msgs = docSnap.exists() ? docSnap.data().mensajes || [] : [];
+                msgs.push(newMsg);
+                await setDoc(docRef, {mensajes: msgs});
+                input.value = '';
+            } catch(e) { console.error(e); }
+        };
+
+        // INIT
         onAuthStateChanged(auth, (user) => {
             if (user) { subscribeData(); } 
             else { document.getElementById('loginLoader').classList.add('hidden'); }
