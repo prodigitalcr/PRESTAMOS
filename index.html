@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plataforma de Préstamos V7 - Firebase</title>
+    <title>Plataforma de Préstamos V8 - Completa</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
@@ -12,13 +13,19 @@
         .alert-mora { animation: pulse-red 2s infinite; background-color: #dc2626 !important; }
         @keyframes pulse-amber { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
         @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        .img-mini { width: 50px; height: 35px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1; }
+        .img-mini { width: 50px; height: 35px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1; cursor: pointer; transition: transform 0.2s; }
+        .img-mini:hover { transform: scale(1.1); }
         
         /* Ocultar barra de scroll para limpieza visual */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .chat-container { max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
+        .msg { padding: 8px 12px; border-radius: 12px; font-size: 12px; max-width: 85%; word-wrap: break-word; }
+        .msg-socio { background: #e0e7ff; color: #3730a3; align-self: flex-start; border-bottom-left-radius: 0; }
+        .msg-cliente { background: #dcfce7; color: #166534; align-self: flex-end; border-bottom-right-radius: 0; }
     </style>
 </head>
 <body class="antialiased text-slate-800 h-screen flex flex-col">
@@ -28,7 +35,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-t-4 border-indigo-600 relative overflow-hidden">
             <div id="loginLoader" class="absolute inset-0 bg-white/90 flex flex-col items-center justify-center z-10">
                 <div class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-3"></div>
-                <p class="text-sm font-bold text-slate-500 tracking-wider">CONECTANDO A FIREBASE...</p>
+                <p class="text-sm font-bold text-slate-500 tracking-wider">CONECTANDO...</p>
             </div>
             
             <div class="text-center mb-6">
@@ -41,40 +48,55 @@
                 <button type="submit" class="w-full bg-indigo-700 text-white py-3 rounded-xl font-bold hover:bg-indigo-800 transition-colors shadow-lg shadow-indigo-200">Ingresar a mi cuenta</button>
                 <p id="loginError" class="text-red-500 text-sm mt-4 text-center hidden font-medium bg-red-50 p-2 rounded-lg border border-red-100">Credenciales Incorrectas</p>
             </form>
-            <div class="mt-6 text-center text-[10px] text-slate-400">
-                Plataforma Optimizada V7
-            </div>
         </div>
     </div>
 
-    <!-- ==================== VISTA SOCIO (Antiguo Admin) ==================== -->
-    <div id="app-socio" class="hidden flex-1 flex flex-col h-full overflow-hidden">
-        <nav class="bg-indigo-900 text-white p-4 flex justify-between items-center shadow-lg z-40 shrink-0">
-            <div class="flex items-center gap-3">
-                <div class="bg-indigo-700 px-2 py-1 rounded text-xs font-bold border border-indigo-500">SOCIO</div>
-                <span class="font-bold tracking-tight text-sm md:text-base">SISTEMA DE CARTERA V7</span>
-            </div>
-            <button onclick="logout()" class="text-xs bg-indigo-800 hover:bg-indigo-700 transition px-4 py-2 rounded-lg font-bold">Salir</button>
-        </nav>
+    <!-- NAVEGACIÓN GLOBAL (COMÚN) -->
+    <nav id="globalNav" class="hidden text-white p-4 flex justify-between items-center shadow-lg z-40 shrink-0">
+        <div class="flex items-center gap-3">
+            <div id="navRoleBadge" class="px-2 py-1 rounded text-xs font-bold border">ROL</div>
+            <span id="navTitle" class="font-bold tracking-tight text-sm md:text-base">SISTEMA</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="openModal('pwdModal')" class="text-xs hover:bg-white/20 transition px-3 py-2 rounded-lg font-bold border border-white/30">🔑 Cambiar Clave</button>
+            <button onclick="logout()" class="text-xs hover:bg-white/20 transition px-4 py-2 rounded-lg font-bold bg-black/20">Salir</button>
+        </div>
+    </nav>
 
+    <!-- ==================== VISTA SOCIO ==================== -->
+    <div id="app-socio" class="hidden flex-1 flex-col h-full overflow-hidden">
         <main class="p-4 md:p-6 max-w-7xl mx-auto w-full flex-1 overflow-y-auto">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
-                <div>
-                    <h2 class="text-2xl md:text-3xl font-black text-slate-800">Cartera Activa</h2>
-                    <p id="counter" class="text-sm text-slate-500 font-medium"></p>
+            <!-- Dashboard Socio -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="text-slate-500 font-bold text-xs uppercase mb-1">Total Clientes</h3>
+                    <p class="text-3xl font-black text-slate-800" id="s-totales">0</p>
                 </div>
-                <button onclick="openModal('addModal')" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95 w-full md:w-auto">+ Nuevo Préstamo</button>
+                <div class="bg-emerald-50 p-5 rounded-2xl border border-emerald-200">
+                    <h3 class="text-emerald-700 font-bold text-xs uppercase mb-1">Al Día</h3>
+                    <p class="text-3xl font-black text-emerald-800" id="s-aldia">0</p>
+                </div>
+                <div class="bg-red-50 p-5 rounded-2xl border border-red-200">
+                    <h3 class="text-red-700 font-bold text-xs uppercase mb-1">Morosos</h3>
+                    <p class="text-3xl font-black text-red-800" id="s-morosos">0</p>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-end mb-4">
+                <h2 class="text-xl font-bold text-slate-800">Cartera Activa</h2>
+                <button onclick="openModal('addModal')" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">+ Nuevo Préstamo</button>
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse min-w-[800px]">
+                    <table class="w-full text-left border-collapse min-w-[900px]">
                         <thead class="bg-slate-50 border-b text-[10px] uppercase text-slate-500 font-black tracking-wider">
                             <tr>
-                                <th class="p-4 pl-6">Cliente y Cédula</th>
-                                <th class="p-4">Registro</th>
-                                <th class="p-4">Estado Financiero</th>
-                                <th class="p-4">Garantías</th>
+                                <th class="p-4 pl-6">Cliente</th>
+                                <th class="p-4">Fechas</th>
+                                <th class="p-4">Estado</th>
+                                <th class="p-4">Saldo / Interés</th>
+                                <th class="p-4">Archivos</th>
                                 <th class="p-4 text-center pr-6">Acciones</th>
                             </tr>
                         </thead>
@@ -86,40 +108,30 @@
     </div>
 
     <!-- ==================== VISTA CLIENTE ==================== -->
-    <div id="app-cliente" class="hidden flex-1 flex flex-col h-full overflow-hidden bg-slate-50">
-        <nav class="bg-emerald-900 text-white p-4 flex justify-between items-center shadow-lg z-40 shrink-0">
-            <div class="flex items-center gap-3">
-                <div class="bg-emerald-700 px-2 py-1 rounded text-xs font-bold border border-emerald-500">CLIENTE</div>
-                <span class="font-bold tracking-tight text-sm md:text-base">MI PRESTAMO</span>
-            </div>
-            <button onclick="logout()" class="text-xs bg-emerald-800 hover:bg-emerald-700 transition px-4 py-2 rounded-lg font-bold">Salir</button>
-        </nav>
-        <main class="p-4 max-w-2xl mx-auto w-full flex-1 overflow-y-auto" id="cliente-content">
+    <div id="app-cliente" class="hidden flex-1 flex-col h-full overflow-hidden bg-slate-50">
+        <main class="p-4 max-w-4xl mx-auto w-full flex-1 overflow-y-auto" id="cliente-content">
             <!-- Renderizado Dinámico -->
         </main>
     </div>
 
-    <!-- ==================== VISTA SOPORTE (Nuevo Admin) ==================== -->
-    <div id="app-admin" class="hidden flex-1 flex flex-col h-full overflow-hidden">
-        <nav class="bg-slate-900 text-white p-4 flex justify-between items-center shadow-lg z-40 shrink-0">
-            <div class="flex items-center gap-3">
-                <div class="bg-slate-700 px-2 py-1 rounded text-xs font-bold border border-slate-600">SOPORTE</div>
-                <span class="font-bold tracking-tight text-sm md:text-base">MÉTRICAS DE SISTEMA</span>
-            </div>
-            <button onclick="logout()" class="text-xs bg-slate-800 hover:bg-slate-700 transition px-4 py-2 rounded-lg font-bold">Salir</button>
-        </nav>
-        <main class="p-6 max-w-5xl mx-auto w-full space-y-6">
-            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold mb-6 text-slate-800">Panel de Diagnóstico</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
-                        <h3 class="text-slate-500 font-bold text-sm tracking-wide uppercase mb-1">Total Clientes Registrados</h3>
-                        <p class="text-5xl font-black text-slate-800" id="adm-clientes">0</p>
-                    </div>
-                    <div class="bg-indigo-50 p-6 rounded-xl border border-indigo-100">
-                        <h3 class="text-indigo-600 font-bold text-sm tracking-wide uppercase mb-1">Capital Colocado Activo</h3>
-                        <p class="text-5xl font-black text-indigo-700" id="adm-capital">₡0</p>
-                    </div>
+    <!-- ==================== VISTA SOPORTE (ADMIN) ==================== -->
+    <div id="app-admin" class="hidden flex-1 flex-col h-full overflow-hidden">
+        <main class="p-6 max-w-7xl mx-auto w-full space-y-6">
+            <h2 class="text-2xl font-bold text-slate-800">Gestión Global de Datos (Soporte)</h2>
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[800px]">
+                        <thead class="bg-slate-900 text-white border-b text-[10px] uppercase font-black">
+                            <tr>
+                                <th class="p-4">ID Sistema</th>
+                                <th class="p-4">Nombre / Cédula</th>
+                                <th class="p-4">WhatsApp</th>
+                                <th class="p-4">Monto Original</th>
+                                <th class="p-4 text-center">Corregir Datos</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody" class="divide-y text-sm"></tbody>
+                    </table>
                 </div>
             </div>
         </main>
@@ -127,39 +139,76 @@
 
     <!-- ==================== MODALES ==================== -->
 
+    <!-- Visor de Imágenes Grandes -->
+    <div id="lightbox" class="fixed inset-0 bg-black/90 hidden z-[500] flex items-center justify-center p-4 cursor-pointer" onclick="closeModal('lightbox')">
+        <img id="lightboxImg" src="" class="max-w-full max-h-full rounded-lg shadow-2xl object-contain cursor-default" onclick="event.stopPropagation()">
+        <button class="absolute top-6 right-6 text-white text-4xl font-bold">&times;</button>
+    </div>
+
+    <!-- Cambio de Contraseña -->
+    <div id="pwdModal" class="fixed inset-0 bg-slate-900/70 hidden z-[200] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+            <h3 class="text-xl font-black mb-4 text-slate-800">Cambiar Contraseña</h3>
+            <form id="pwdForm" class="space-y-4">
+                <input type="password" id="newPwd" placeholder="Nueva Contraseña" class="w-full p-3 border rounded-xl outline-none focus:ring-2" required>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeModal('pwdModal')" class="flex-1 py-3 font-bold text-slate-500 bg-slate-100 rounded-xl hover:bg-slate-200">Cancelar</button>
+                    <button type="submit" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700">Actualizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Editar Datos (SOPORTE) -->
+    <div id="adminEditModal" class="fixed inset-0 bg-slate-900/70 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <h3 class="text-xl font-black mb-4 text-slate-800 text-red-600">Corrección de Soporte</h3>
+            <form id="adminEditForm" class="space-y-4">
+                <input type="text" id="admin_nombre" placeholder="Nombre" class="w-full p-3 border rounded-xl" required>
+                <input type="text" id="admin_cedula" placeholder="Cédula" class="w-full p-3 border rounded-xl" required>
+                <input type="text" id="admin_telefono" placeholder="WhatsApp" class="w-full p-3 border rounded-xl" required>
+                <input type="number" id="admin_monto" placeholder="Monto Original" class="w-full p-3 border rounded-xl" required>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeModal('adminEditModal')" class="flex-1 py-3 font-bold bg-slate-100 rounded-xl">Cancelar</button>
+                    <button type="submit" class="flex-1 bg-slate-900 text-white py-3 rounded-xl font-bold">Forzar Guardado</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal Registro (Socio) -->
     <div id="addModal" class="fixed inset-0 bg-slate-900/70 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 md:p-8 shadow-2xl transform transition-all scale-100">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
             <h3 class="text-2xl font-black mb-6 text-slate-800">Registrar Cliente</h3>
             <form id="loanForm" class="space-y-4">
-                <input type="text" id="n_nombre" placeholder="Nombre Completo" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-600 bg-slate-50" required>
+                <input type="text" id="n_nombre" placeholder="Nombre Completo" class="w-full p-3 border rounded-xl bg-slate-50" required>
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="text" id="n_cedula" placeholder="Número Cédula" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-600 bg-slate-50" required>
-                    <input type="text" id="n_telefono" placeholder="WhatsApp" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-600 bg-slate-50" required>
+                    <input type="text" id="n_cedula" placeholder="Número Cédula" class="w-full p-3 border rounded-xl bg-slate-50" required>
+                    <input type="text" id="n_telefono" placeholder="WhatsApp (Ej: 50688888888)" class="w-full p-3 border rounded-xl bg-slate-50" required>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-[10px] font-bold text-slate-500 ml-1">MONTO PRINCIPAL</label>
-                        <input type="number" id="n_monto" placeholder="₡ Monto" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-600 font-bold text-indigo-700" required>
+                        <label class="text-[10px] font-bold text-slate-500">MONTO PRINCIPAL</label>
+                        <input type="number" id="n_monto" class="w-full p-3 border rounded-xl font-bold text-indigo-700" required>
                     </div>
                     <div>
-                        <label class="text-[10px] font-bold text-slate-500 ml-1">INTERÉS (%)</label>
-                        <input type="number" id="n_interes_pct" placeholder="% Mensual" class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-600 font-bold" required>
+                        <label class="text-[10px] font-bold text-slate-500">INTERÉS (%)</label>
+                        <input type="number" id="n_interes_pct" class="w-full p-3 border rounded-xl font-bold" required>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3 text-xs bg-slate-100 p-4 rounded-xl border border-slate-200">
+                <div class="grid grid-cols-2 gap-3 text-xs bg-slate-100 p-4 rounded-xl">
                     <div>
-                        <label class="font-bold block mb-2 text-slate-600">📸 FOTO CÉDULA</label>
-                        <input type="file" id="n_img_cedula" accept="image/*" class="w-full text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200">
+                        <label class="font-bold block mb-2 text-slate-600">📸 CÉDULA</label>
+                        <input type="file" id="n_img_cedula" accept="image/*" class="w-full text-slate-500 text-[10px]">
                     </div>
                     <div>
-                        <label class="font-bold block mb-2 text-slate-600">📸 FOTO PRENDA</label>
-                        <input type="file" id="n_img_prenda" accept="image/*" class="w-full text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200">
+                        <label class="font-bold block mb-2 text-slate-600">📸 PRENDA</label>
+                        <input type="file" id="n_img_prenda" accept="image/*" class="w-full text-slate-500 text-[10px]">
                     </div>
                 </div>
-                <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeModal('addModal')" class="flex-1 py-3 font-bold text-slate-500 bg-slate-100 rounded-xl hover:bg-slate-200 transition">Cancelar</button>
-                    <button type="submit" id="btnSaveClient" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition">Guardar Cliente</button>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeModal('addModal')" class="flex-1 py-3 font-bold bg-slate-100 rounded-xl">Cancelar</button>
+                    <button type="submit" id="btnSaveClient" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold">Guardar</button>
                 </div>
             </form>
         </div>
@@ -167,79 +216,118 @@
 
     <!-- Modal Gestión (Socio) -->
     <div id="editModal" class="fixed inset-0 bg-slate-900/70 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[95vh] flex flex-col shadow-2xl">
+        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] flex flex-col shadow-2xl">
             <div class="p-6 border-b flex justify-between items-center bg-slate-50 rounded-t-2xl">
                 <div>
                     <h3 id="edit_titulo" class="text-2xl font-black text-slate-800"></h3>
                     <p id="edit_cedula" class="text-xs text-slate-500 font-medium"></p>
                 </div>
-                <button onclick="closeModal('editModal')" class="text-slate-400 hover:text-slate-700 bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-sm font-bold text-lg">&times;</button>
+                <div class="flex items-center gap-2">
+                    <button onclick="generarPDF()" class="bg-red-100 text-red-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-200">📄 PDF Reporte</button>
+                    <button onclick="closeModal('editModal')" class="text-slate-400 hover:text-slate-700 bg-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-lg">&times;</button>
+                </div>
             </div>
             
-            <div class="p-6 overflow-y-auto space-y-6">
-                <!-- Abono Rapido -->
-                <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-200 shadow-sm relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-100 rounded-full -mr-10 -mt-10 opacity-50"></div>
-                    <label class="block text-sm font-black text-emerald-800 mb-3 relative z-10">REGISTRAR ABONO DEL CLIENTE</label>
-                    <div class="flex flex-col sm:flex-row gap-3 relative z-10">
-                        <div class="relative flex-1">
-                            <span class="absolute left-4 top-3.5 text-emerald-600 font-bold">₡</span>
-                            <input type="number" id="abono_monto" class="w-full pl-8 pr-4 py-3 border-2 rounded-xl border-emerald-300 bg-white font-bold text-emerald-900 outline-none focus:border-emerald-500" placeholder="Monto total entregado">
+            <div class="p-6 overflow-y-auto flex-1 flex flex-col md:flex-row gap-6">
+                <!-- Columna Izquierda: Pagos y Reajustes -->
+                <div class="flex-1 space-y-6">
+                    <!-- Estado Manual -->
+                    <div class="bg-slate-100 p-4 rounded-xl flex items-center justify-between">
+                        <span class="text-sm font-bold text-slate-700">Estado del Cliente:</span>
+                        <select id="e_estado" class="p-2 rounded border border-slate-300 font-bold text-sm bg-white" onchange="updateStatusManual()">
+                            <option value="auto">Automático (por fecha)</option>
+                            <option value="al_dia">Forzar: Al Día</option>
+                            <option value="moroso">Forzar: Moroso</option>
+                        </select>
+                    </div>
+
+                    <!-- Abono Rapido -->
+                    <div class="bg-emerald-50 p-5 rounded-2xl border border-emerald-200 shadow-sm">
+                        <label class="block text-sm font-black text-emerald-800 mb-2">REGISTRAR ABONO</label>
+                        <div class="flex flex-col gap-3">
+                            <div class="relative">
+                                <span class="absolute left-4 top-3 text-emerald-600 font-bold">₡</span>
+                                <input type="number" id="abono_monto" class="w-full pl-8 pr-4 py-2 border-2 rounded-xl border-emerald-300 font-bold text-emerald-900 outline-none" placeholder="Monto entregado">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="file" id="abono_img" accept="image/*" class="text-[10px] w-full text-slate-500">
+                                <button onclick="calculateAndAddPayment()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl font-bold whitespace-nowrap">ABONAR</button>
+                            </div>
                         </div>
-                        <button onclick="calculateAndAddPayment()" class="bg-emerald-600 hover:bg-emerald-700 transition-colors text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-emerald-200">APLICAR ABONO</button>
                     </div>
-                    <p class="text-[10px] text-emerald-700 mt-3 font-medium relative z-10">El sistema descontará el interés primero y el resto se aplicará al capital.</p>
+
+                    <!-- Reajuste Manual -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 p-3 rounded-xl border">
+                            <label class="text-[10px] font-black text-slate-400 block mb-1">REAJUSTE SALDO</label>
+                            <input type="number" id="e_saldo" class="w-full p-2 border rounded-lg font-bold text-indigo-700">
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl border">
+                            <label class="text-[10px] font-black text-slate-400 block mb-1">REAJUSTE INTERÉS (%)</label>
+                            <input type="number" id="e_interes_pct" class="w-full p-2 border rounded-lg font-bold text-indigo-700">
+                        </div>
+                        <button onclick="updateAmounts()" class="col-span-2 bg-slate-800 text-white py-2 rounded-xl font-bold text-xs">APLICAR REAJUSTES</button>
+                    </div>
                 </div>
 
-                <!-- Reajuste Manual -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <label class="text-[10px] font-black text-slate-400 block mb-2">REAJUSTE DE SALDO (₡)</label>
-                        <input type="number" id="e_saldo" class="w-full p-3 border rounded-lg font-bold text-indigo-700 bg-white outline-none focus:border-indigo-500">
+                <!-- Columna Derecha: Chat y Solicitudes -->
+                <div class="flex-1 flex flex-col gap-4">
+                    <!-- Solicitudes Pendientes -->
+                    <div id="solicitudContainer" class="hidden bg-amber-50 border border-amber-200 p-4 rounded-xl">
+                        <h4 class="text-xs font-bold text-amber-800 mb-2">📢 NUEVA SOLICITUD DE PRÉSTAMO</h4>
+                        <p id="solicitudDetalle" class="text-sm font-bold text-amber-900 mb-3"></p>
+                        <div class="flex gap-2">
+                            <button onclick="responderSolicitud('aprobado')" class="flex-1 bg-emerald-600 text-white py-2 rounded font-bold text-xs">Aprobar</button>
+                            <button onclick="responderSolicitud('rechazado')" class="flex-1 bg-red-600 text-white py-2 rounded font-bold text-xs">Rechazar</button>
+                        </div>
                     </div>
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <label class="text-[10px] font-black text-slate-400 block mb-2">REAJUSTE INTERÉS (%)</label>
-                        <input type="number" id="e_interes_pct" class="w-full p-3 border rounded-lg font-bold text-indigo-700 bg-white outline-none focus:border-indigo-500">
-                    </div>
-                    <button onclick="updateAmounts()" class="sm:col-span-2 bg-slate-800 hover:bg-slate-900 transition text-white py-3 rounded-xl font-bold text-xs tracking-wide">APLICAR REAJUSTE MANUAL</button>
-                </div>
 
-                <!-- Historial -->
-                <div class="space-y-3 pt-4 border-t">
-                    <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Historial de Pagos</h4>
-                    <div id="historyBody" class="space-y-3 text-sm"></div>
+                    <!-- Chat -->
+                    <div class="bg-white border rounded-xl flex-1 flex flex-col overflow-hidden h-[300px] md:h-auto">
+                        <div class="bg-indigo-50 p-2 border-b text-xs font-bold text-indigo-800 text-center">Chat Directo con Cliente</div>
+                        <div id="chatSocio" class="flex-1 p-3 chat-container bg-slate-50"></div>
+                        <div class="p-2 bg-white border-t flex gap-2">
+                            <input type="text" id="chatInputSocio" class="flex-1 border rounded-lg px-3 py-1 text-sm outline-none" placeholder="Escribe un mensaje...">
+                            <button onclick="sendMsg('socio')" class="bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm font-bold">→</button>
+                        </div>
+                    </div>
                 </div>
+            </div>
+            
+            <!-- Historial Abajo -->
+            <div class="p-6 border-t bg-slate-50 rounded-b-2xl max-h-[30vh] overflow-y-auto">
+                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Historial de Pagos</h4>
+                <div id="historyBody" class="space-y-2 text-sm" data-pdf-content></div>
             </div>
         </div>
     </div>
 
-    <!-- Notificaciones (Toast) -->
-    <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-300 translate-y-32 opacity-0 z-[300] font-bold text-sm flex items-center gap-3">
-        <span id="toastIcon">✅</span>
-        <span id="toastMsg">Mensaje</span>
+    <!-- Contenedor oculto para impresión PDF -->
+    <div id="pdf-container" class="hidden p-8 bg-white text-black"></div>
+
+    <!-- Notificaciones y Confirmaciones -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-300 translate-y-32 opacity-0 z-[600] font-bold text-sm flex items-center gap-3">
+        <span id="toastIcon">✅</span><span id="toastMsg">Mensaje</span>
     </div>
 
-    <!-- Modal Confirmación -->
-    <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 hidden z-[300] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-8 shadow-2xl text-center transform scale-100 transition-all">
-            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">⚠️</div>
+    <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 hidden z-[300] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-8 shadow-2xl text-center">
             <h3 class="text-xl font-black mb-2 text-slate-800">¿Estás seguro?</h3>
-            <p id="confirmMessage" class="text-sm text-slate-500 mb-8 font-medium">Esta acción no se puede deshacer.</p>
+            <p id="confirmMessage" class="text-sm text-slate-500 mb-6">Acción irreversible.</p>
             <div class="flex gap-3">
-                <button onclick="closeConfirm()" class="flex-1 py-3 font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition">Cancelar</button>
-                <button id="confirmBtn" class="flex-1 bg-red-600 hover:bg-red-700 transition text-white py-3 rounded-xl font-bold shadow-lg shadow-red-200">Sí, Eliminar</button>
+                <button onclick="closeConfirm()" class="flex-1 py-3 font-bold bg-slate-100 rounded-xl">Cancelar</button>
+                <button id="confirmBtn" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold">Sí, proceder</button>
             </div>
         </div>
     </div>
 
-    <!-- LOGICA CON FIREBASE MODULAR -->
+    <!-- LÓGICA PRINCIPAL (FIREBASE) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // CONFIGURACIÓN DE FIREBASE (Usa el entorno del Canvas o la provista por el usuario como respaldo)
-        const userProvidedConfig = {
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "AIzaSyCtPXuvsDuLDkpIJBlEEHFll6N-NofQ3bI",
             authDomain: "prestamos-c97ed.firebaseapp.com",
             projectId: "prestamos-c97ed",
@@ -248,21 +336,18 @@
             appId: "1:511457800969:web:18b8e97383fdb630b319d8",
             measurementId: "G-N0HK4HPLP1"
         };
-        
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : userProvidedConfig;
         const appFirebaseId = typeof __app_id !== 'undefined' ? __app_id : 'prestamos-c97ed';
-
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const dbFirestore = getFirestore(app);
 
-        // Variables de Estado
         let dbLocal = [];
+        let dbUsers = {};
         let currentRole = null; 
-        let currentUserIdentifier = null; 
+        let currentUsername = null;
         let currentEditId = null;
 
-        // INICIALIZACIÓN DE AUTH REQUERIDA (Regla #3)
+        // AUTH & BOOTSTRAP
         const initAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -270,16 +355,63 @@
                 } else {
                     await signInAnonymously(auth);
                 }
-            } catch (err) {
-                console.error("Auth error:", err);
-                showToast("Error conectando al servidor", "❌");
-            }
+            } catch (err) { showToast("Error conectando al servidor", "❌"); }
         };
 
-        // UI Helpers Globales
-        window.openModal = (id) => { document.getElementById(id).classList.remove('hidden'); };
-        window.closeModal = (id) => { document.getElementById(id).classList.add('hidden'); };
-        
+        let unsubClientes = null;
+        let unsubUsers = null;
+
+        function subscribeData() {
+            if(unsubClientes) unsubClientes();
+            if(unsubUsers) unsubUsers();
+            
+            // Listeners
+            unsubUsers = onSnapshot(collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios'), (snap) => {
+                dbUsers = {};
+                snap.forEach(d => dbUsers[d.id] = d.data());
+                
+                // Generar usuarios default si no existen
+                if(Object.keys(dbUsers).length === 0) {
+                    setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'socio'), { password: 'Carpi0_2026*', role: 'socio' });
+                    setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'admin'), { password: 'soporte', role: 'admin' });
+                }
+            }, e => console.error(e));
+
+            unsubClientes = onSnapshot(collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes'), (snap) => {
+                dbLocal = [];
+                snap.forEach(d => dbLocal.push(d.data()));
+                dbLocal.sort((a,b) => a.nombre.localeCompare(b.nombre));
+                
+                document.getElementById('loginLoader').classList.add('hidden');
+                routeAndRender();
+            }, e => console.error(e));
+        }
+
+        // FECHAS Y ESTADOS
+        function getEstadoCalculado(cliente) {
+            if (cliente.estadoManual && cliente.estadoManual !== 'auto') return cliente.estadoManual;
+            const hoy = new Date();
+            const diaHoy = hoy.getDate();
+            return (diaHoy > cliente.diaPago) ? 'moroso' : 'al_dia';
+        }
+
+        function is24hAlert(diaPago) {
+            const hoy = new Date();
+            return hoy.getDate() === (diaPago - 1);
+        }
+
+        function calculateNextPayment(diaPago) {
+            const hoy = new Date();
+            let mes = hoy.getMonth();
+            let anio = hoy.getFullYear();
+            if (hoy.getDate() > diaPago) mes++;
+            if (mes > 11) { mes = 0; anio++; }
+            return new Date(anio, mes, diaPago, 23, 59, 59);
+        }
+
+        // HELPERS UI
+        window.openModal = (id) => document.getElementById(id).classList.remove('hidden');
+        window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
         window.showToast = (msg, icon = "✅") => {
             const toast = document.getElementById('toast');
             document.getElementById('toastMsg').innerText = msg;
@@ -287,413 +419,571 @@
             toast.classList.remove('translate-y-32', 'opacity-0');
             setTimeout(() => toast.classList.add('translate-y-32', 'opacity-0'), 3500);
         };
+        window.viewImage = (src) => {
+            if(!src) return;
+            document.getElementById('lightboxImg').src = src;
+            openModal('lightbox');
+        };
 
         let confirmCallback = null;
         window.openConfirm = (msg, callback) => {
             document.getElementById('confirmMessage').innerText = msg;
             confirmCallback = callback;
-            document.getElementById('confirmModal').classList.remove('hidden');
+            openModal('confirmModal');
         };
-        window.closeConfirm = () => {
-            document.getElementById('confirmModal').classList.add('hidden');
-            confirmCallback = null;
-        };
-        document.getElementById('confirmBtn').onclick = () => {
-            if(confirmCallback) confirmCallback();
-            closeConfirm();
-        };
+        window.closeConfirm = () => { closeModal('confirmModal'); confirmCallback = null; };
+        document.getElementById('confirmBtn').onclick = () => { if(confirmCallback) confirmCallback(); closeConfirm(); };
 
-        // Compresor de imágenes
         async function compressImage(file) {
             if (!file) return null;
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
-                reader.onload = (event) => {
+                reader.onload = (e) => {
                     const img = new Image();
-                    img.src = event.target.result;
+                    img.src = e.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 400;
-                        const scaleSize = MAX_WIDTH / img.width;
-                        canvas.width = MAX_WIDTH;
-                        canvas.height = img.height * scaleSize;
                         const ctx = canvas.getContext('2d');
+                        // Máxima compresión para evitar límites de Firestore
+                        const MAX_WIDTH = 600;
+                        const scale = img.width > MAX_WIDTH ? MAX_WIDTH / img.width : 1;
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.6));
+                        resolve(canvas.toDataURL('image/jpeg', 0.5));
                     };
                 };
             });
         }
 
-        // Suscripción a datos en tiempo real (Reglas #1 y #2)
-        let unsubscribeSnapshot = null;
-        function subscribeData() {
-            if(unsubscribeSnapshot) unsubscribeSnapshot();
-            
-            // Usamos path estricto según la regla para evitar problemas de permisos
-            const colRef = collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes');
-            
-            unsubscribeSnapshot = onSnapshot(colRef, (snapshot) => {
-                dbLocal = [];
-                snapshot.forEach(doc => {
-                    dbLocal.push(doc.data());
-                });
-                
-                // Ordenar por nombre localmente (Regla #2: sin orderBy en consulta)
-                dbLocal.sort((a,b) => a.nombre.localeCompare(b.nombre));
-                
-                routeAndRender();
-                document.getElementById('loginLoader').classList.add('hidden');
-            }, (error) => {
-                console.error("Error fetching data:", error);
-                document.getElementById('loginLoader').classList.add('hidden');
-                showToast("Error de lectura de datos", "❌");
-            });
-        }
-
-        // Lógica de Renderizado según Rol
-        function routeAndRender() {
-            if(!currentRole) return;
-            
-            document.getElementById('app-socio').classList.add('hidden');
-            document.getElementById('app-admin').classList.add('hidden');
-            document.getElementById('app-cliente').classList.add('hidden');
-
-            if(currentRole === 'socio') {
-                document.getElementById('app-socio').classList.remove('hidden');
-                renderSocio();
-            } else if(currentRole === 'admin') {
-                document.getElementById('app-admin').classList.remove('hidden');
-                renderAdmin();
-            } else if(currentRole === 'cliente') {
-                document.getElementById('app-cliente').classList.remove('hidden');
-                renderCliente();
-            }
-        }
-
-        function renderSocio() {
-            const body = document.getElementById('tableBody');
-            body.innerHTML = '';
-            document.getElementById('counter').innerText = `${dbLocal.length} Clientes Activos`;
-            
-            dbLocal.forEach(item => {
-                const alerta = checkAlert(item.diaPago);
-                const intMonto = (item.saldo * (item.interesPct / 100));
-                
-                let btnColor = "bg-emerald-500 hover:bg-emerald-600";
-                if(alerta === 'prev') btnColor = "alert-prevencion";
-                if(alerta === 'mora') btnColor = "alert-mora";
-
-                body.innerHTML += `
-                    <tr class="hover:bg-indigo-50/50 transition-colors border-b border-slate-100">
-                        <td class="p-4 pl-6">
-                            <div class="font-black text-slate-800 text-base">${item.nombre}</div>
-                            <div class="text-xs font-medium text-slate-500 mt-0.5">ID: ${item.cedula} | 📞 ${item.telefono}</div>
-                        </td>
-                        <td class="p-4">
-                            <div class="font-bold text-slate-700">${item.fecha}</div>
-                            <div class="text-xs text-slate-400 font-medium">Día de pago: ${item.diaPago}</div>
-                        </td>
-                        <td class="p-4">
-                            <div class="font-black text-indigo-700 text-lg">₡${item.saldo.toLocaleString()}</div>
-                            <div class="text-xs text-emerald-600 font-bold bg-emerald-50 inline-block px-2 py-1 rounded border border-emerald-100">
-                                Int. Mensual: ₡${intMonto.toLocaleString()}
-                            </div>
-                        </td>
-                        <td class="p-4">
-                            <div class="flex gap-2">
-                                ${item.imgCedula ? `<img src="${item.imgCedula}" class="img-mini shadow-sm" title="Cédula">` : '<div class="img-mini bg-slate-100 flex items-center justify-center text-[10px] text-slate-400">N/A</div>'}
-                                ${item.imgPrenda ? `<img src="${item.imgPrenda}" class="img-mini shadow-sm" title="Prenda">` : '<div class="img-mini bg-slate-100 flex items-center justify-center text-[10px] text-slate-400">N/A</div>'}
-                            </div>
-                        </td>
-                        <td class="p-4 pr-6">
-                            <div class="flex gap-2 justify-end items-center">
-                                <button onclick="openEdit(${item.id})" class="bg-slate-800 hover:bg-slate-900 transition text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md">GESTIÓN</button>
-                                <button onclick="sendWA('${item.telefono}', '${item.nombre}', ${item.saldo}, ${intMonto})" 
-                                        class="${btnColor} transition text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md">WHATSAPP</button>
-                                <button onclick="deleteClientFn(${item.id})" class="text-slate-300 hover:text-red-500 transition-colors p-2 text-lg" title="Eliminar Cliente">🗑️</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function renderAdmin() {
-            const totalClientes = dbLocal.length;
-            const capitalActivo = dbLocal.reduce((sum, item) => sum + item.saldo, 0);
-            document.getElementById('adm-clientes').innerText = totalClientes;
-            document.getElementById('adm-capital').innerText = `₡${capitalActivo.toLocaleString()}`;
-        }
-
-        function renderCliente() {
-            const cliente = dbLocal.find(c => c.cedula === currentUserIdentifier);
-            const content = document.getElementById('cliente-content');
-            
-            if(!cliente) {
-                content.innerHTML = `<div class="bg-red-50 p-6 rounded-2xl border border-red-200 text-center mt-10"><h2 class="text-red-600 font-bold text-xl">Préstamo no encontrado</h2><p class="text-red-500 text-sm mt-2">No se encontraron registros activos para tu cédula.</p></div>`;
-                return;
-            }
-
-            const intMonto = (cliente.saldo * (cliente.interesPct / 100));
-            
-            content.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full -mr-16 -mt-16 z-0"></div>
-                    <div class="relative z-10">
-                        <div class="mb-8">
-                            <p class="text-sm font-bold text-emerald-600 tracking-wide uppercase mb-1">Estado de Cuenta</p>
-                            <h2 class="text-2xl sm:text-3xl font-black text-slate-800">Hola, ${cliente.nombre.split(' ')[0]}</h2>
-                            <p class="text-sm font-medium text-slate-500 mt-1">Cédula: ${cliente.cedula}</p>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                            <div class="bg-gradient-to-br from-slate-50 to-slate-100 p-5 rounded-2xl border border-slate-200 shadow-sm">
-                                <span class="text-xs text-slate-500 font-bold tracking-wide uppercase block mb-1">SALDO ACTUAL</span>
-                                <span class="text-3xl font-black text-slate-800">₡${cliente.saldo.toLocaleString()}</span>
-                            </div>
-                            <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 p-5 rounded-2xl border border-emerald-200 shadow-sm">
-                                <span class="text-xs text-emerald-700 font-bold tracking-wide uppercase block mb-1">INTERÉS MENSUAL</span>
-                                <span class="text-3xl font-black text-emerald-700">₡${intMonto.toLocaleString()}</span>
-                            </div>
-                            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm sm:col-span-2 flex items-center justify-between">
-                                <div>
-                                    <span class="text-xs text-slate-500 font-bold tracking-wide uppercase block mb-1">DÍA DE PAGO ASIGNADO</span>
-                                    <span class="text-xl font-black text-slate-700">${cliente.diaPago} de cada mes</span>
-                                </div>
-                                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-xl shadow-sm border border-slate-100">📅</div>
-                            </div>
-                        </div>
-
-                        <h3 class="font-black text-slate-800 mb-4 text-base flex items-center gap-2">
-                            <span>Historial de Pagos</span>
-                            <span class="bg-slate-100 text-slate-500 py-0.5 px-2 rounded-full text-xs">${cliente.historial.length}</span>
-                        </h3>
-                        <div class="space-y-3">
-                            ${cliente.historial.length ? cliente.historial.slice().reverse().map(h => `
-                                <div class="bg-white p-4 rounded-xl flex flex-wrap sm:flex-nowrap justify-between border border-slate-100 shadow-sm items-center gap-3 hover:border-indigo-200 transition-colors">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 font-bold">✓</div>
-                                        <div>
-                                            <span class="font-bold text-slate-700 block">${h.fecha.split(',')[0]}</span>
-                                            <span class="text-[10px] font-medium text-slate-400 uppercase">${h.fecha.split(',')[1]}</span>
-                                        </div>
-                                    </div>
-                                    <div class="text-right flex-1 sm:flex-none">
-                                        <span class="block text-lg font-black text-emerald-600">₡${h.total.toLocaleString()}</span>
-                                        <span class="text-[10px] font-bold text-slate-400">ABONO TOTAL</span>
-                                    </div>
-                                </div>
-                            `).join('') : '<div class="text-center p-8 border-2 border-dashed border-slate-200 rounded-2xl"><p class="text-slate-400 font-bold">Aún no hay pagos registrados</p></div>'}
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Utilidad de Fecha
-        function checkAlert(diaRegistro) {
-            const hoy = new Date();
-            const diaHoy = hoy.getDate();
-            if(diaHoy === diaRegistro - 1) return 'prev';
-            if(diaHoy >= diaRegistro) return 'mora';
-            return 'ok';
-        }
-
-        // Lógica de Login
+        // LOGIN Y RUTEO
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const u = document.getElementById('username').value.trim();
             const p = document.getElementById('password').value.trim();
-            
             const errEl = document.getElementById('loginError');
             errEl.classList.add('hidden');
 
-            if(u === 'socio' && p === 'Carpi0_2026*') {
-                currentRole = 'socio';
-            } else if (u === 'admin' && p === 'soporte') {
-                currentRole = 'admin';
+            const userDoc = dbUsers[u];
+            if (userDoc && userDoc.password === p) {
+                currentRole = userDoc.role;
+                currentUsername = u;
+                document.getElementById('loginOverlay').classList.add('hidden');
+                
+                // Setup Nav
+                document.getElementById('globalNav').classList.remove('hidden');
+                let navColor = currentRole === 'socio' ? 'bg-indigo-900' : currentRole === 'admin' ? 'bg-slate-900' : 'bg-emerald-900';
+                document.getElementById('globalNav').className = `text-white p-4 flex justify-between items-center shadow-lg z-40 shrink-0 ${navColor}`;
+                document.getElementById('navRoleBadge').innerText = currentRole.toUpperCase();
+                
+                routeAndRender();
             } else {
-                // Chequeo de cliente (Cédula como user y pass)
-                const isCliente = dbLocal.some(c => c.cedula === u);
-                if (isCliente && p === u) {
-                    currentRole = 'cliente';
-                    currentUserIdentifier = u;
-                } else {
-                    errEl.classList.remove('hidden');
-                    return;
-                }
+                errEl.classList.remove('hidden');
             }
-
-            document.getElementById('loginOverlay').classList.add('hidden');
-            routeAndRender();
         });
 
         window.logout = () => {
-            currentRole = null;
-            currentUserIdentifier = null;
+            currentRole = null; currentUsername = null;
             document.getElementById('loginForm').reset();
+            document.getElementById('globalNav').classList.add('hidden');
             document.getElementById('loginOverlay').classList.remove('hidden');
-            document.getElementById('app-socio').classList.add('hidden');
-            document.getElementById('app-admin').classList.add('hidden');
-            document.getElementById('app-cliente').classList.add('hidden');
+            ['app-socio', 'app-admin', 'app-cliente'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            if(countdownInterval) clearInterval(countdownInterval);
         };
 
-        // Acciones CRUD con Firebase
+        // ACTUALIZAR CONTRASEÑA
+        document.getElementById('pwdForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPwd = document.getElementById('newPwd').value;
+            try {
+                const ref = doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', currentUsername);
+                await setDoc(ref, { password: newPwd }, { merge: true });
+                showToast("Contraseña actualizada", "🔒");
+                closeModal('pwdModal');
+                e.target.reset();
+            } catch(err) { showToast("Error", "❌"); }
+        });
+
+        function routeAndRender() {
+            if(!currentRole) return;
+            ['app-socio', 'app-admin', 'app-cliente'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById(`app-${currentRole}`).classList.remove('hidden');
+
+            if(currentRole === 'socio') renderSocio();
+            if(currentRole === 'admin') renderAdmin();
+            if(currentRole === 'cliente') renderCliente();
+        }
+
+        // ================= SOCIO LOGIC =================
+        function renderSocio() {
+            const body = document.getElementById('tableBody');
+            body.innerHTML = '';
+            
+            let cAlDia = 0, cMorosos = 0;
+            
+            dbLocal.forEach(item => {
+                const estado = getEstadoCalculado(item);
+                if (estado === 'al_dia') cAlDia++; else cMorosos++;
+                
+                const alerta24h = estado === 'al_dia' && is24hAlert(item.diaPago);
+                const intMonto = (item.saldo * (item.interesPct / 100));
+                
+                let bColor = estado === 'moroso' ? 'bg-red-50 border-l-4 border-red-500' : 'hover:bg-slate-50 transition';
+                let stBadge = estado === 'moroso' ? '<span class="bg-red-600 text-white px-2 py-1 rounded text-[10px] font-bold">MOROSO</span>' : 
+                             '<span class="bg-emerald-500 text-white px-2 py-1 rounded text-[10px] font-bold">AL DÍA</span>';
+                if(alerta24h) stBadge += '<span class="ml-2 alert-prevencion text-white px-2 py-1 rounded text-[10px] font-bold">VENCE MAÑANA</span>';
+
+                const reqBadge = item.solicitudPrestamo && item.solicitudPrestamo.estado === 'pendiente' ? '<div class="text-[10px] text-amber-600 font-bold mt-1 animate-pulse">NUEVA SOLICITUD</div>' : '';
+                const unreadBadge = item.chat && item.chat.length > 0 && item.chat[item.chat.length-1].sender === 'cliente' ? '💬 ' : '';
+
+                body.innerHTML += `
+                    <tr class="${bColor} border-b">
+                        <td class="p-4 pl-6">
+                            <div class="font-black text-slate-800">${unreadBadge}${item.nombre}</div>
+                            <div class="text-xs text-slate-500">ID: ${item.cedula}</div>
+                            ${reqBadge}
+                        </td>
+                        <td class="p-4">
+                            <div class="text-xs text-slate-700">Día de pago: <b class="text-sm">${item.diaPago}</b></div>
+                            <div class="text-[10px] text-slate-400">Inicio: ${item.fecha}</div>
+                        </td>
+                        <td class="p-4">${stBadge}</td>
+                        <td class="p-4">
+                            <div class="font-black text-indigo-700 text-lg">₡${item.saldo.toLocaleString()}</div>
+                            <div class="text-[10px] text-emerald-600 font-bold">Int: ₡${intMonto.toLocaleString()}</div>
+                        </td>
+                        <td class="p-4 flex gap-1">
+                            ${item.imgCedula ? `<img src="${item.imgCedula}" class="img-mini" onclick="viewImage(this.src)">` : ''}
+                            ${item.imgPrenda ? `<img src="${item.imgPrenda}" class="img-mini" onclick="viewImage(this.src)">` : ''}
+                        </td>
+                        <td class="p-4 pr-6 text-right space-y-1">
+                            <button onclick="openEdit(${item.id})" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold w-full">GESTIÓN / CHAT</button>
+                            <button onclick="sendWA('${item.telefono}', '${item.nombre}', ${item.saldo}, ${intMonto})" class="${alerta24h ? 'alert-prevencion' : 'bg-emerald-500'} text-white px-3 py-1.5 rounded-lg text-xs font-bold w-full">WHATSAPP</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('s-totales').innerText = dbLocal.length;
+            document.getElementById('s-aldia').innerText = cAlDia;
+            document.getElementById('s-morosos').innerText = cMorosos;
+        }
+
         document.getElementById('loanForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnSaveClient');
-            btn.disabled = true;
-            btn.innerText = "Guardando...";
+            btn.disabled = true; btn.innerText = "Guardando...";
 
             try {
                 const now = new Date();
                 const newId = Date.now();
+                const cedula = document.getElementById('n_cedula').value.trim();
                 
                 const nuevo = {
                     id: newId,
                     nombre: document.getElementById('n_nombre').value,
-                    cedula: document.getElementById('n_cedula').value,
+                    cedula: cedula,
                     telefono: document.getElementById('n_telefono').value,
-                    monto: parseFloat(document.getElementById('n_monto').value),
+                    montoOriginal: parseFloat(document.getElementById('n_monto').value),
                     saldo: parseFloat(document.getElementById('n_monto').value),
                     interesPct: parseFloat(document.getElementById('n_interes_pct').value),
                     fecha: now.toLocaleDateString('es-CR'),
-                    hora: now.toLocaleTimeString('es-CR', {hour:'2-digit', minute:'2-digit'}),
                     diaPago: now.getDate(),
+                    estadoManual: 'auto',
                     imgCedula: await compressImage(document.getElementById('n_img_cedula').files[0]),
                     imgPrenda: await compressImage(document.getElementById('n_img_prenda').files[0]),
-                    historial: []
+                    historial: [],
+                    chat: []
                 };
 
-                const docRef = doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', newId.toString());
-                await setDoc(docRef, nuevo);
+                // Save client
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', newId.toString()), nuevo);
+                // Create user for client
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', cedula), { role: 'cliente', password: cedula, clienteId: newId });
                 
-                closeModal('addModal');
-                e.target.reset();
-                showToast("Cliente registrado exitosamente");
-            } catch (error) {
-                console.error("Error guardando cliente", error);
-                showToast("Error al guardar cliente", "❌");
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "Guardar Cliente";
-            }
+                closeModal('addModal'); e.target.reset(); showToast("Cliente registrado");
+            } catch (err) { showToast("Error", "❌"); console.error(err); }
+            finally { btn.disabled = false; btn.innerText = "Guardar"; }
         });
 
         window.openEdit = (id) => {
             currentEditId = id;
             const item = dbLocal.find(l => l.id === id);
-            if(!item) return;
-
             document.getElementById('edit_titulo').innerText = item.nombre;
-            document.getElementById('edit_cedula').innerText = `Cédula: ${item.cedula} | Saldo: ₡${item.saldo.toLocaleString()}`;
+            document.getElementById('edit_cedula').innerText = `ID: ${item.cedula} | Tel: ${item.telefono}`;
             document.getElementById('e_saldo').value = item.saldo;
             document.getElementById('e_interes_pct').value = item.interesPct;
+            document.getElementById('e_estado').value = item.estadoManual || 'auto';
             
+            // Render Requests
+            const solContainer = document.getElementById('solicitudContainer');
+            if(item.solicitudPrestamo && item.solicitudPrestamo.estado === 'pendiente') {
+                solContainer.classList.remove('hidden');
+                document.getElementById('solicitudDetalle').innerText = `Monto: ₡${item.solicitudPrestamo.monto.toLocaleString()} - Fecha: ${item.solicitudPrestamo.fecha}`;
+            } else { solContainer.classList.add('hidden'); }
+
+            // Render History
             const hBody = document.getElementById('historyBody');
-            hBody.innerHTML = item.historial.length ? '' : '<p class="text-slate-400 italic text-center p-4 bg-slate-50 rounded-xl">No hay pagos registrados</p>';
-            
+            hBody.innerHTML = item.historial.length ? '' : '<p class="text-slate-400 italic">No hay pagos registrados</p>';
             item.historial.slice().reverse().forEach(h => {
+                let imgHtml = h.img ? `<img src="${h.img}" class="h-8 w-12 object-cover rounded cursor-pointer border" onclick="viewImage(this.src)">` : '';
                 hBody.innerHTML += `
-                    <div class="bg-white p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between border border-slate-100 shadow-sm gap-2">
-                        <span class="font-bold text-slate-700 bg-slate-50 px-3 py-1 rounded-lg w-fit">${h.fecha}</span>
-                        <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs">
-                            <span class="text-emerald-700 font-bold">Abono: ₡${h.total.toLocaleString()}</span>
-                            <span class="text-amber-600 font-medium">Int: ₡${h.int.toLocaleString()}</span>
-                            <span class="text-blue-600 font-medium">Cap: ₡${h.cap.toLocaleString()}</span>
+                    <div class="bg-white p-3 rounded flex flex-wrap sm:flex-nowrap items-center justify-between border gap-2">
+                        <span class="font-bold bg-slate-100 px-2 py-1 rounded text-xs">${h.fecha}</span>
+                        <div class="flex gap-3 text-xs">
+                            <span class="text-emerald-700 font-bold">Ab: ₡${h.total.toLocaleString()}</span>
+                            <span class="text-amber-600">Int: ₡${h.int.toLocaleString()}</span>
+                            <span class="text-blue-600">Cap: ₡${h.cap.toLocaleString()}</span>
                         </div>
-                        <span class="font-black text-indigo-700 sm:text-right mt-2 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">S.Final: ₡${h.sFinal.toLocaleString()}</span>
+                        <span class="font-black text-indigo-700">S.Final: ₡${h.sFinal.toLocaleString()}</span>
+                        ${imgHtml}
                     </div>
                 `;
             });
+
+            renderChat('socio', item.chat || []);
             openModal('editModal');
         };
 
+        window.updateStatusManual = async () => {
+            const val = document.getElementById('e_estado').value;
+            const item = dbLocal.find(l => l.id === currentEditId);
+            item.estadoManual = val;
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item, {merge: true});
+            showToast("Estado actualizado");
+        };
+
         window.calculateAndAddPayment = async () => {
-            const montoInput = document.getElementById('abono_monto');
-            const monto = parseFloat(montoInput.value);
-            if(!monto || monto <= 0) {
-                showToast("Ingrese un monto válido", "⚠️");
-                return;
-            }
+            const monto = parseFloat(document.getElementById('abono_monto').value);
+            if(!monto || monto <= 0) return showToast("Monto inválido", "⚠️");
             
             const item = dbLocal.find(l => l.id === currentEditId);
             const intMensual = (item.saldo * (item.interesPct / 100));
             
             let pInt = Math.min(monto, intMensual);
             let pCap = Math.max(0, monto - intMensual);
-            
-            item.saldo -= pCap;
-            
-            // Si por alguna razon el saldo da negativo, se ajusta a 0
-            if(item.saldo < 0) item.saldo = 0;
+            item.saldo = Math.max(0, item.saldo - pCap);
+
+            const imgB64 = await compressImage(document.getElementById('abono_img').files[0]);
 
             item.historial.push({
-                fecha: new Date().toLocaleString('es-CR'),
-                total: monto,
-                int: pInt,
-                cap: pCap,
-                sFinal: item.saldo
+                fecha: new Date().toLocaleDateString('es-CR'),
+                total: monto, int: pInt, cap: pCap, sFinal: item.saldo, img: imgB64
             });
             
-            try {
-                const docRef = doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString());
-                await setDoc(docRef, item);
-                montoInput.value = '';
-                showToast("Abono registrado con éxito", "💰");
-                openEdit(currentEditId); // Refresca modal
-            } catch(e) {
-                showToast("Error al guardar abono", "❌");
-                console.error(e);
-            }
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+            document.getElementById('abono_monto').value = '';
+            document.getElementById('abono_img').value = '';
+            showToast("Abono registrado", "💰");
+            openEdit(currentEditId);
         };
 
         window.updateAmounts = async () => {
             const item = dbLocal.find(l => l.id === currentEditId);
             item.saldo = parseFloat(document.getElementById('e_saldo').value);
             item.interesPct = parseFloat(document.getElementById('e_interes_pct').value);
-            
-            try {
-                const docRef = doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString());
-                await setDoc(docRef, item);
-                showToast("Montos reajustados correctamente");
-                openEdit(currentEditId);
-            } catch(e) {
-                showToast("Error al actualizar montos", "❌");
-                console.error(e);
-            }
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+            showToast("Reajuste aplicado");
+            openEdit(currentEditId);
         };
 
-        window.deleteClientFn = (id) => {
-            openConfirm("¿Eliminar este cliente de forma permanente? Se borrará todo su historial.", async () => {
-                try {
-                    const docRef = doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', id.toString());
-                    await deleteDoc(docRef);
-                    showToast("Cliente eliminado", "🗑️");
-                } catch(e) {
-                    showToast("Error al eliminar", "❌");
-                    console.error(e);
-                }
-            });
+        window.responderSolicitud = async (res) => {
+            const item = dbLocal.find(l => l.id === currentEditId);
+            item.solicitudPrestamo.estado = res;
+            if (res === 'aprobado') {
+                item.saldo += item.solicitudPrestamo.monto;
+                item.montoOriginal += item.solicitudPrestamo.monto;
+                item.chat.push({ sender: 'socio', msg: `✅ Tu solicitud de ampliación por ₡${item.solicitudPrestamo.monto} ha sido APROBADA.`, time: new Date().toLocaleString('es-CR')});
+            } else {
+                item.chat.push({ sender: 'socio', msg: `❌ Tu solicitud de ampliación ha sido RECHAZADA.`, time: new Date().toLocaleString('es-CR')});
+            }
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+            showToast("Solicitud procesada");
+            openEdit(currentEditId);
         };
 
         window.sendWA = (t, n, s, i) => {
-            const msg = `Hola ${n.split(' ')[0]}. Le recordamos su saldo pendiente de ₡${s.toLocaleString()}. Interés mensual: ₡${i.toLocaleString()}. Quedamos a su disposición.`;
+            const msg = `Hola ${n.split(' ')[0]}. Recordatorio de cuota pendiente: ₡${(s*(i/100)).toLocaleString()} (Solo Interés) o el abono acordado. Saldo global: ₡${s.toLocaleString()}.`;
             window.open(`https://wa.me/${t}?text=${encodeURIComponent(msg)}`, '_blank');
         };
 
-        // Bootstrapping
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                subscribeData();
-            } else {
-                document.getElementById('loginLoader').classList.add('hidden');
+        window.generarPDF = () => {
+            const item = dbLocal.find(l => l.id === currentEditId);
+            const container = document.getElementById('pdf-container');
+            container.innerHTML = `
+                <h1 style="font-size:24px; font-weight:bold; margin-bottom:10px; color:#333;">Reporte de Préstamo</h1>
+                <p><strong>Cliente:</strong> ${item.nombre}</p>
+                <p><strong>Cédula:</strong> ${item.cedula}</p>
+                <p><strong>Fecha Inicio:</strong> ${item.fecha}</p>
+                <p><strong>Monto Original:</strong> ₡${item.montoOriginal.toLocaleString()}</p>
+                <p><strong>Saldo Actual:</strong> ₡${item.saldo.toLocaleString()}</p>
+                <hr style="margin:20px 0;">
+                <h3 style="font-size:18px; margin-bottom:10px;">Historial de Pagos</h3>
+                <table style="width:100%; border-collapse: collapse; font-size:12px;">
+                    <tr style="background:#f1f5f9; text-align:left;">
+                        <th style="padding:8px; border:1px solid #ddd;">Fecha</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Abono</th>
+                        <th style="padding:8px; border:1px solid #ddd;">A Capital</th>
+                        <th style="padding:8px; border:1px solid #ddd;">A Interés</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Saldo Resultante</th>
+                    </tr>
+                    ${item.historial.map(h => `
+                        <tr>
+                            <td style="padding:8px; border:1px solid #ddd;">${h.fecha}</td>
+                            <td style="padding:8px; border:1px solid #ddd;">₡${h.total.toLocaleString()}</td>
+                            <td style="padding:8px; border:1px solid #ddd;">₡${h.cap.toLocaleString()}</td>
+                            <td style="padding:8px; border:1px solid #ddd;">₡${h.int.toLocaleString()}</td>
+                            <td style="padding:8px; border:1px solid #ddd;">₡${h.sFinal.toLocaleString()}</td>
+                        </tr>
+                    `).join('')}
+                </table>
+            `;
+            container.classList.remove('hidden');
+            html2pdf().from(container).save(`Reporte_${item.cedula}.pdf`).then(() => {
+                container.classList.add('hidden');
+            });
+        };
+
+        // ================= CLIENTE LOGIC =================
+        let countdownInterval;
+        
+        function renderCliente() {
+            const userDoc = dbUsers[currentUsername];
+            const cliente = dbLocal.find(c => c.id === userDoc.clienteId);
+            const content = document.getElementById('cliente-content');
+            
+            if(!cliente) { content.innerHTML = `<p class="text-center text-red-500 mt-10 font-bold">Datos no encontrados</p>`; return; }
+
+            const nextDate = calculateNextPayment(cliente.diaPago);
+            const intMonto = (cliente.saldo * (cliente.interesPct / 100));
+            
+            let reqStatusHtml = '';
+            if(cliente.solicitudPrestamo && cliente.solicitudPrestamo.estado === 'pendiente') {
+                reqStatusHtml = `<div class="bg-amber-100 text-amber-800 p-3 rounded-xl mb-4 text-xs font-bold text-center animate-pulse">⏳ Tienes una solicitud de ₡${cliente.solicitudPrestamo.monto} en revisión.</div>`;
             }
+
+            content.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden mb-6">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-black text-slate-800">Hola, ${cliente.nombre.split(' ')[0]}</h2>
+                        <p class="text-xs text-slate-500">Préstamo iniciado el: <b>${cliente.fecha}</b></p>
+                    </div>
+
+                    ${reqStatusHtml}
+
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <span class="text-[10px] text-slate-500 font-bold block mb-1">SALDO ACTUAL</span>
+                            <span class="text-2xl font-black text-slate-800">₡${cliente.saldo.toLocaleString()}</span>
+                        </div>
+                        <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200">
+                            <span class="text-[10px] text-emerald-700 font-bold block mb-1">INTERÉS MENSUAL</span>
+                            <span class="text-2xl font-black text-emerald-700">₡${intMonto.toLocaleString()}</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-indigo-900 text-white p-5 rounded-2xl shadow-lg mb-6 text-center">
+                        <p class="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-2">Próximo Pago</p>
+                        <p class="text-xl font-bold mb-3">${nextDate.toLocaleDateString('es-CR', {weekday:'long', day:'numeric', month:'long'})}</p>
+                        <div id="countdown" class="text-3xl font-black tracking-widest font-mono">--:--:--</div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                        <button onclick="openModal('reqLoanModal')" class="bg-slate-800 text-white py-3 rounded-xl font-bold text-sm shadow">Solicitar Más Capital</button>
+                    </div>
+                </div>
+
+                <!-- Chat Cliente -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-6 flex flex-col h-[350px]">
+                    <h3 class="font-black text-slate-800 mb-2 border-b pb-2">💬 Chat con Socio</h3>
+                    <div id="chatCliente" class="flex-1 chat-container bg-slate-50 p-2 border rounded-lg mb-3"></div>
+                    <div class="flex gap-2">
+                        <input type="text" id="chatInputCliente" class="flex-1 border rounded-lg px-3 py-2 text-sm outline-none" placeholder="Escribe un mensaje...">
+                        <button onclick="sendMsg('cliente')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold">Enviar</button>
+                    </div>
+                    <div class="mt-2 text-right">
+                        <label class="text-[10px] text-indigo-600 font-bold cursor-pointer hover:underline">
+                            + Enviar Comprobante (Imagen)
+                            <input type="file" id="chatImgCliente" accept="image/*" class="hidden" onchange="sendImgMsg('cliente')">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <h3 class="font-black text-slate-800 text-sm ml-1">Tu Historial de Pagos</h3>
+                    ${cliente.historial.length ? cliente.historial.slice().reverse().map(h => `
+                        <div class="bg-white p-4 rounded-xl flex justify-between border shadow-sm items-center gap-3">
+                            <div>
+                                <span class="font-bold text-slate-700 block text-sm">${h.fecha}</span>
+                                <span class="text-[10px] text-slate-400">Total pagado: ₡${h.total.toLocaleString()}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="block text-sm font-black text-emerald-600">Restante: ₡${h.sFinal.toLocaleString()}</span>
+                                <span class="text-[10px] font-medium text-slate-400">Int: ₡${h.int.toLocaleString()} | Cap: ₡${h.cap.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    `).join('') : '<p class="text-sm text-slate-400 text-center py-4">No hay pagos registrados</p>'}
+                </div>
+
+                <!-- Modal Solicitar Préstamo -->
+                <div id="reqLoanModal" class="fixed inset-0 bg-slate-900/70 hidden z-[200] flex items-center justify-center p-4">
+                    <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl">
+                        <h3 class="text-xl font-black mb-4">Solicitar Capital</h3>
+                        <input type="number" id="req_monto" placeholder="Monto deseado (₡)" class="w-full p-3 border rounded-xl outline-none focus:ring-2 mb-4" required>
+                        <div class="flex gap-2">
+                            <button onclick="closeModal('reqLoanModal')" class="flex-1 py-3 font-bold bg-slate-100 rounded-xl">Cancelar</button>
+                            <button onclick="submitLoanReq()" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold">Enviar</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            renderChat('cliente', cliente.chat || []);
+            startCountdown(nextDate);
+        }
+
+        function startCountdown(targetDate) {
+            if(countdownInterval) clearInterval(countdownInterval);
+            const el = document.getElementById('countdown');
+            countdownInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const dist = targetDate.getTime() - now;
+                if(dist < 0) { el.innerText = "¡VENCIDO!"; return; }
+                const d = Math.floor(dist / (1000 * 60 * 60 * 24));
+                const h = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
+                el.innerText = `${d}d ${h.toString().padStart(2,'0')}h ${m.toString().padStart(2,'0')}m`;
+            }, 1000);
+        }
+
+        window.submitLoanReq = async () => {
+            const monto = parseFloat(document.getElementById('req_monto').value);
+            if(!monto) return;
+            const userDoc = dbUsers[currentUsername];
+            const item = dbLocal.find(c => c.id === userDoc.clienteId);
+            item.solicitudPrestamo = { monto, fecha: new Date().toLocaleDateString('es-CR'), estado: 'pendiente' };
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+            showToast("Solicitud enviada");
+            closeModal('reqLoanModal');
+        };
+
+        // CHAT GLOBAL
+        function renderChat(view, chatArray) {
+            const container = document.getElementById(`chat${view.charAt(0).toUpperCase() + view.slice(1)}`);
+            if(!container) return;
+            container.innerHTML = chatArray.map(m => {
+                const cls = m.sender === view ? `msg-${view}` : (m.sender==='socio' ? 'msg-socio' : 'msg-cliente');
+                let content = m.msg;
+                if(m.img) content += `<br><img src="${m.img}" class="mt-2 rounded max-w-full cursor-pointer" onclick="viewImage(this.src)">`;
+                return `<div class="msg ${cls}"><b>${m.sender.toUpperCase()}:</b><br>${content}<div class="text-[8px] text-right mt-1 opacity-70">${m.time}</div></div>`;
+            }).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        window.sendMsg = async (sender) => {
+            const input = document.getElementById(`chatInput${sender.charAt(0).toUpperCase() + sender.slice(1)}`);
+            const txt = input.value.trim();
+            if(!txt) return;
+            
+            let cid = currentEditId; 
+            if(sender === 'cliente') { const ud = dbUsers[currentUsername]; cid = ud.clienteId; }
+            
+            const item = dbLocal.find(l => l.id === cid);
+            if(!item.chat) item.chat = [];
+            item.chat.push({ sender, msg: txt, time: new Date().toLocaleString('es-CR') });
+            
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+            input.value = '';
+        };
+
+        window.sendImgMsg = async (sender) => {
+            const input = document.getElementById(`chatImg${sender.charAt(0).toUpperCase() + sender.slice(1)}`);
+            if(!input.files[0]) return;
+            const imgB64 = await compressImage(input.files[0]);
+            
+            let cid = currentEditId; 
+            if(sender === 'cliente') { const ud = dbUsers[currentUsername]; cid = ud.clienteId; }
+            
+            const item = dbLocal.find(l => l.id === cid);
+            if(!item.chat) item.chat = [];
+            item.chat.push({ sender, msg: "Envió un comprobante", img: imgB64, time: new Date().toLocaleString('es-CR') });
+            
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+            input.value = '';
+            showToast("Imagen enviada");
+        };
+
+        // ================= SOPORTE (ADMIN) LOGIC =================
+        function renderAdmin() {
+            const body = document.getElementById('adminTableBody');
+            body.innerHTML = '';
+            dbLocal.forEach(item => {
+                body.innerHTML += `
+                    <tr class="hover:bg-slate-50 border-b">
+                        <td class="p-4 font-mono text-xs text-slate-500">${item.id}</td>
+                        <td class="p-4 font-bold">${item.nombre}<br><span class="text-[10px] text-slate-400 font-normal">ID: ${item.cedula}</span></td>
+                        <td class="p-4">${item.telefono}</td>
+                        <td class="p-4 font-bold text-indigo-700">₡${item.montoOriginal.toLocaleString()}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="openAdminEdit(${item.id})" class="bg-slate-800 text-white px-3 py-1.5 rounded text-[10px] font-bold">EDITAR INFO</button>
+                            <button onclick="deleteClientFn(${item.id})" class="text-red-500 hover:text-red-700 ml-2">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.openAdminEdit = (id) => {
+            currentEditId = id;
+            const item = dbLocal.find(l => l.id === id);
+            document.getElementById('admin_nombre').value = item.nombre;
+            document.getElementById('admin_cedula').value = item.cedula;
+            document.getElementById('admin_telefono').value = item.telefono;
+            document.getElementById('admin_monto').value = item.montoOriginal;
+            openModal('adminEditModal');
+        };
+
+        document.getElementById('adminEditForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const item = dbLocal.find(l => l.id === currentEditId);
+            const oldCedula = item.cedula;
+            
+            item.nombre = document.getElementById('admin_nombre').value;
+            item.cedula = document.getElementById('admin_cedula').value;
+            item.telefono = document.getElementById('admin_telefono').value;
+            item.montoOriginal = parseFloat(document.getElementById('admin_monto').value);
+
+            // Update client doc
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+            
+            // If cedula changed, recreate auth doc
+            if(oldCedula !== item.cedula && dbUsers[oldCedula]) {
+                const ud = dbUsers[oldCedula];
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', item.cedula), ud);
+                await deleteDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', oldCedula));
+            }
+
+            closeModal('adminEditModal');
+            showToast("Datos corregidos");
         });
 
-        // Iniciar el proceso de Auth de Firebase al cargar
+        window.deleteClientFn = (id) => {
+            openConfirm("Borrar todo el historial de este cliente de forma irreversible.", async () => {
+                const item = dbLocal.find(l => l.id === id);
+                await deleteDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', id.toString()));
+                if(item && dbUsers[item.cedula]) {
+                    await deleteDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', item.cedula));
+                }
+                showToast("Cliente eliminado", "🗑️");
+            });
+        };
+
+        // BOOTSTRAP INIT
+        onAuthStateChanged(auth, (user) => {
+            if (user) { subscribeData(); } 
+            else { document.getElementById('loginLoader').classList.add('hidden'); }
+        });
         initAuth();
 
     </script>
