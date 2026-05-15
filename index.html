@@ -255,7 +255,6 @@
         </div>
     </div>
 
-    <!-- El resto del HTML estructural se mantiene idéntico, saltamos directo al script principal para enfocarnos en la seguridad -->
     <div id="addModal" class="fixed inset-0 bg-slate-900/70 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto"><h3 class="text-2xl font-black mb-6 text-slate-800">Registrar Préstamo</h3><form id="loanForm" class="space-y-3"><input type="text" id="n_nombre" placeholder="Nombre del Cliente" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><div class="grid grid-cols-2 gap-3"><input type="text" id="n_cedula" placeholder="Cédula" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><input type="text" id="n_password" placeholder="Contraseña Prov." class="w-full p-3 border border-indigo-200 rounded-xl bg-indigo-50 text-sm font-bold placeholder-indigo-300 text-indigo-800" required></div><input type="text" id="n_telefono" placeholder="WhatsApp" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><input type="text" id="n_direccion" placeholder="Dirección Exacta" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><input type="text" id="n_autorizado" placeholder="Autorizado por..." class="w-full p-3 border rounded-xl bg-indigo-50 font-medium text-sm" required><div class="grid grid-cols-2 gap-3 mt-2"><div><label class="text-[10px] font-bold text-slate-500">MONTO (₡)</label><input type="number" id="n_monto" class="w-full p-3 border rounded-xl font-black text-indigo-700 text-lg" required></div><div><label class="text-[10px] font-bold text-slate-500">INTERÉS MENS. (%)</label><input type="number" id="n_interes_pct" class="w-full p-3 border rounded-xl font-black text-lg text-center" required></div></div><div class="grid grid-cols-2 gap-3 text-xs bg-slate-100 p-4 rounded-xl mt-2 border border-slate-200"><div><label class="font-bold block mb-2 text-slate-600">📸 CÉDULA</label><input type="file" id="n_img_cedula" accept="image/*" class="w-full text-slate-500 text-[10px]"></div><div><label class="font-bold block mb-2 text-slate-600">📸 PRENDA</label><input type="file" id="n_img_prenda" accept="image/*" class="w-full text-slate-500 text-[10px]"></div></div><div class="flex gap-2 pt-4"><button type="button" onclick="closeModal('addModal')" class="flex-1 py-3 font-bold bg-slate-200 text-slate-700 rounded-xl">Cancelar</button><button type="submit" id="btnSaveClient" class="flex-[2] bg-indigo-600 text-white py-3 rounded-xl font-black shadow-lg">Crear y Aprobar</button></div></form></div></div>
 
     <div id="editModal" class="fixed inset-0 bg-slate-900/80 hidden z-[100] flex items-center justify-center p-0 md:p-4 backdrop-blur-sm"><div class="bg-white md:rounded-2xl w-full max-w-5xl h-full md:h-[95vh] flex flex-col shadow-2xl overflow-hidden"><div class="p-4 border-b flex justify-between items-center bg-slate-50 shrink-0"><div><h3 id="edit_titulo" class="text-xl md:text-2xl font-black text-slate-800 leading-none"></h3><p id="edit_cedula" class="text-[10px] md:text-xs text-slate-500 font-bold mt-1"></p></div><div class="flex items-center gap-2"><button onclick="compartirReporteWA()" class="bg-emerald-100 text-emerald-800 border border-emerald-200 px-3 py-2 rounded-lg text-xs font-bold hover:bg-emerald-200 transition hidden sm:block">📲 Compartir PDF</button><button onclick="generarPDF()" class="bg-slate-200 text-slate-800 px-3 py-2 rounded-lg text-xs font-bold hover:bg-slate-300">📄 PDF</button><button onclick="closeModal('editModal')" class="text-slate-400 hover:text-slate-700 bg-white border rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">&times;</button></div></div><div class="flex-1 overflow-y-auto flex flex-col lg:flex-row p-4 gap-6 bg-slate-100"><div class="w-full lg:w-1/2 space-y-4"><div id="solicitudContainer" class="hidden bg-amber-100 border border-amber-300 p-4 rounded-xl shadow-sm"><h4 class="text-sm font-black text-amber-800 mb-2 flex items-center gap-2">📢 NUEVA SOLICITUD DE PRÉSTAMO</h4><div id="solicitudDetalle" class="text-sm font-medium text-amber-900 mb-3 bg-white p-3 rounded-lg border border-amber-200"></div><div id="solicitudAprobarForm" class="hidden bg-white p-3 rounded-xl border border-amber-200 mb-3 space-y-3"><h5 class="text-xs font-bold text-slate-600">Nuevas Condiciones:</h5><div class="grid grid-cols-2 gap-2 text-sm"><div><label class="block text-[10px] font-bold text-slate-500">Monto Final</label><input type="number" id="ap_monto" class="w-full border p-2 rounded font-bold bg-slate-50"></div><div><label class="block text-[10px] font-bold text-slate-500">Interés (%)</label><input type="number" id="ap_interes" class="w-full border p-2 rounded font-bold bg-slate-50"></div><div class="col-span-2"><label class="block text-[10px] font-bold text-slate-500">Día Pago Mensual (1-31)</label><input type="number" id="ap_dia" min="1" max="31" class="w-full border p-2 rounded font-bold bg-slate-50"></div></div><button onclick="confirmarAprobacion()" class="w-full bg-emerald-600 text-white py-2.5 rounded-lg font-black shadow">✅ Confirmar Aprobación</button></div><div class="flex gap-2" id="solicitudActionBtns"><button onclick="mostrarFormAprobacion()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold text-sm shadow">Aprobar...</button><button onclick="responderSolicitud('rechazado')" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-bold text-sm shadow">Rechazar</button></div></div><div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative"><button onclick="deleteCurrentClient()" class="absolute top-3 right-3 text-red-500 hover:bg-red-50 p-1.5 rounded-lg text-xs" title="Borrar todo">🗑️</button><h4 class="font-black text-slate-800 mb-3 text-sm">📝 DATOS DEL CLIENTE</h4><div class="grid grid-cols-2 gap-3 text-xs"><div class="col-span-2"><label class="font-bold text-slate-400">NOMBRE</label><input type="text" id="f_nombre" class="w-full p-2 border rounded bg-slate-50 font-bold"></div><div><label class="font-bold text-slate-400">CÉDULA</label><input type="text" id="f_cedula" class="w-full p-2 border rounded bg-slate-50" readonly></div><div><label class="font-bold text-slate-400">TELÉFONO</label><input type="text" id="f_telefono" class="w-full p-2 border rounded bg-slate-50"></div><div class="col-span-2"><label class="font-bold text-slate-400">DIRECCIÓN</label><input type="text" id="f_direccion" class="w-full p-2 border rounded bg-slate-50"></div><div class="col-span-2"><label class="font-bold text-indigo-400">AUTORIZADO POR</label><input type="text" id="f_autorizado" class="w-full p-2 border border-indigo-200 rounded bg-indigo-50 font-medium"></div></div><button onclick="guardarFicha()" class="mt-4 w-full bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg font-bold text-xs shadow">Guardar Cambios Personales</button></div><div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm"><h4 class="font-black text-slate-800 mb-3 text-sm">📊 FINANZAS Y CONDICIONES</h4><div class="flex items-center justify-between bg-slate-50 border p-2 rounded-lg mb-3"><span class="text-[11px] font-bold text-slate-600">Estado Cálculo:</span><select id="e_estado" class="p-1 rounded border text-xs font-bold outline-none" onchange="updateStatusManual()"><option value="auto">Automático (Mensual)</option><option value="al_dia">Forzar: Al Día</option><option value="moroso">Forzar: Moroso</option></select></div><div class="grid grid-cols-3 gap-2 text-xs"><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">DÍA PAGO</label><input type="number" id="e_dia" min="1" max="31" class="w-full p-2 border rounded-lg font-bold text-indigo-700 text-center bg-slate-50"></div><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">SALDO ₡</label><input type="number" id="e_saldo" class="w-full p-2 border rounded-lg font-bold text-indigo-700 bg-slate-50"></div><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">INTERÉS %</label><input type="number" id="e_interes_pct" class="w-full p-2 border rounded-lg font-bold text-indigo-700 bg-slate-50 text-center"></div><button onclick="updateAmounts()" class="col-span-3 bg-slate-200 hover:bg-slate-300 text-slate-800 py-2.5 rounded-lg font-black text-[11px] mt-2">APLICAR REAJUSTE NUMÉRICO</button></div></div></div><div class="w-full lg:w-1/2 flex flex-col gap-4"><div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 shadow-sm shrink-0"><label class="block text-sm font-black text-emerald-800 mb-2">💰 REGISTRAR ABONO</label><div class="flex flex-col gap-2"><div class="relative"><span class="absolute left-3 top-2 text-emerald-600 font-bold">₡</span><input type="number" id="abono_monto" class="w-full pl-8 pr-3 py-2 border border-emerald-300 rounded-lg font-black text-emerald-900 outline-none text-lg bg-white shadow-inner" placeholder="Monto entregado"></div><div class="flex items-center gap-2"><input type="file" id="abono_img" accept="image/*" class="text-[10px] w-full text-slate-500 bg-white p-1.5 rounded-lg border"><button onclick="calculateAndAddPayment()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-black shadow-md whitespace-nowrap">ABONAR</button></div></div></div><div id="historialComprasSocio" class="bg-white border rounded-xl p-3 shadow-sm shrink-0 hidden"><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-b pb-1">Pedidos de Tienda de este Cliente</h4><div id="comprasBodySocio" class="space-y-2 text-xs max-h-48 overflow-y-auto"></div></div><div class="bg-white border border-slate-200 rounded-xl flex flex-col overflow-hidden h-[200px] shrink-0 shadow-sm"><div class="bg-indigo-50 p-2 border-b text-[10px] font-black tracking-widest text-indigo-800 text-center uppercase">Chat Interno con Cliente</div><div id="chatSocio" class="flex-1 p-2 chat-container bg-slate-50"></div><div class="p-2 bg-white border-t flex gap-2"><input type="text" id="chatInputSocio" class="flex-1 border rounded-lg px-2 text-sm outline-none" placeholder="Escribe..."><button onclick="sendMsg('socio')" class="bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm font-bold">→</button></div></div><div class="bg-white border border-slate-200 rounded-xl p-4 flex-1 overflow-y-auto shadow-sm min-h-[200px]"><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-b pb-2">Historial de Pagos</h4><div id="historyBody" class="space-y-2 text-sm"></div></div></div></div></div></div>
@@ -461,11 +460,11 @@
                 const email = `${cedula}@v8prestamos.com`;
 
                 const userCred = await createUserWithEmailAndPassword(auth, email, pwd);
+                const userUid = userCred.user.uid;
                 
-                const newId = Date.now();
                 const nuevo = {
-                    id: newId,
-                    userId: userCred.user.uid,
+                    id: userUid,         // AHORA EL ID ES EL UID DE AUTENTICACIÓN
+                    userId: userUid,     // EL USERID Y EL ID DE DOCUMENTO SON IDÉNTICOS
                     nombre: nombre,
                     cedula: cedula,
                     telefono: telefono,
@@ -478,7 +477,7 @@
                     historial: [], chat: [], compras: []
                 };
 
-                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', newId.toString()), nuevo);
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', userUid), nuevo);
                 
                 closeModal('registerModal'); e.target.reset();
                 showToast("Cuenta Creada. Ya estás conectado.", "✅");
@@ -738,7 +737,8 @@
             await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'ventas', numFactura), nuevaVenta);
 
             if(isClienteLogueado && clienteDoc) {
-                await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', clienteDoc.id.toString()), {
+                // USAR .userId EN LUGAR DE .id
+                await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', clienteDoc.userId), {
                     compras: arrayUnion(nuevaVenta)
                 });
             }
@@ -759,10 +759,11 @@
                     await deleteDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'ventas', idFactura));
 
                     if(clienteId && clienteId !== 'publico') {
-                        const cliente = dbLocal.find(c => c.id.toString() === clienteId.toString());
+                        const cliente = dbLocal.find(c => c.userId === clienteId);
                         if(cliente && cliente.compras) {
                             cliente.compras = cliente.compras.filter(c => c.idFactura !== idFactura);
-                            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.id.toString()), cliente);
+                            // USAR .userId EN LUGAR DE .id
+                            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.userId), cliente);
                         }
                     }
 
@@ -809,7 +810,8 @@
                 } else if (currentRole === 'cliente') {
                     if(dbLocal.length > 0) {
                         const cliente = dbLocal[0];
-                        await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.id.toString()), {
+                        // USAR .userId EN LUGAR DE .id
+                        await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.userId), {
                             nombre: sanitizeInput(document.getElementById('perfil_nombre').value)
                         });
                     }
@@ -864,7 +866,7 @@
                         </td>
                         <td class="p-3 pr-4 text-right flex gap-1 justify-end">
                             <button onclick="window.open('https://wa.me/${DOMPurify.sanitize(item.telefono)}', '_blank')" class="bg-emerald-100 text-emerald-700 border border-emerald-200 p-2 rounded-lg hover:bg-emerald-200" title="Contactar WhatsApp">💬</button>
-                            <button onclick="openEdit(${item.id})" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow hover:bg-slate-700">FICHA</button>
+                            <button onclick="openEdit('${item.userId}')" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow hover:bg-slate-700">FICHA</button>
                         </td>
                     </tr>
                 `;
@@ -897,11 +899,10 @@
                 } catch(e) { console.error("Error Auth", e); }
 
                 const now = new Date();
-                const newId = Date.now();
                 
                 const nuevo = {
-                    id: newId,
-                    userId: newUid,
+                    id: newUid,         // AHORA EL ID ES EL UID DE AUTENTICACIÓN
+                    userId: newUid,     // EL USERID Y EL ID DE DOCUMENTO SON IDÉNTICOS
                     nombre: sanitizeInput(document.getElementById('n_nombre').value),
                     cedula: cedula,
                     telefono: sanitizeInput(document.getElementById('n_telefono').value),
@@ -917,7 +918,7 @@
                     historial: [], chat: [], compras: []
                 };
 
-                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', newId.toString()), nuevo);
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', newUid), nuevo);
                 
                 closeModal('addModal'); e.target.reset(); showToast("Préstamo y Cliente creados");
             } catch (err) { showToast("Error", "❌"); console.error(err); }
@@ -1119,7 +1120,7 @@
 
         // SOCIO: Gestión de Cliente
         window.openEdit = (id) => {
-            currentEditId = id; const item = dbLocal.find(l => l.id === id);
+            currentEditId = id; const item = dbLocal.find(l => l.userId === id);
             document.getElementById('edit_titulo').innerText = DOMPurify.sanitize(item.nombre);
             document.getElementById('edit_cedula').innerText = `Cédula: ${DOMPurify.sanitize(item.cedula)} | Autorizado por: ${DOMPurify.sanitize(item.autorizadoPor || 'N/A')}`;
             
@@ -1144,7 +1145,7 @@
                         <div class="flex justify-between font-bold text-slate-700 mb-1"><span class="text-sm bg-indigo-50 px-2 py-0.5 rounded text-indigo-700">${DOMPurify.sanitize(c.idFactura)}</span><span class="text-emerald-600">₡${fColones(c.total)}</span></div>
                         <div class="flex justify-between items-center mb-2"><div class="text-[10px] text-slate-500">${DOMPurify.sanitize(c.fecha)}</div><div class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">${DOMPurify.sanitize(c.estado)}</div></div>
                         <div class="text-xs text-slate-600 italic bg-slate-50 p-2 rounded mb-2">${DOMPurify.sanitize(c.articulos)}</div>
-                        <button onclick="cancelarPedido('${c.idFactura}', '${item.id}')" class="w-full text-[10px] bg-red-100 text-red-600 hover:bg-red-200 py-1.5 rounded-lg font-bold border border-red-200 transition shadow-sm">❌ Cancelar Pedido</button>
+                        <button onclick="cancelarPedido('${c.idFactura}', '${item.userId}')" class="w-full text-[10px] bg-red-100 text-red-600 hover:bg-red-200 py-1.5 rounded-lg font-bold border border-red-200 transition shadow-sm">❌ Cancelar Pedido</button>
                     </div>`).join('');
             } else { boxCompras.classList.add('hidden'); }
 
@@ -1169,7 +1170,7 @@
                         </div>
                         <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
                             <span class="font-black text-indigo-700 text-xs bg-indigo-50 px-2 py-1 rounded">S.Final: ₡${fColones(h.sFinal)}</span>
-                            <div class="flex items-center gap-2">${imgHtml}<button onclick="deleteHistoryItem(${item.id}, ${realIdx})" class="text-red-400 hover:bg-red-50 rounded p-1" title="Eliminar pago">🗑️</button></div>
+                            <div class="flex items-center gap-2">${imgHtml}<button onclick="deleteHistoryItem('${item.userId}', ${realIdx})" class="text-red-400 hover:bg-red-50 rounded p-1" title="Eliminar pago">🗑️</button></div>
                         </div>
                     </div>`;
             });
@@ -1177,36 +1178,39 @@
 
         window.deleteHistoryItem = (clientId, index) => {
             openConfirm("¿Eliminar este registro de pago?", async () => {
-                const item = dbLocal.find(l => l.id === clientId);
+                const item = dbLocal.find(l => l.userId === clientId);
                 item.historial.splice(index, 1);
-                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+                // USAR .userId EN LUGAR DE .id
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.userId), item);
                 showToast("Pago eliminado"); openEdit(clientId);
             });
         };
 
         window.guardarFicha = async () => {
-            const item = dbLocal.find(l => l.id === currentEditId);
+            const item = dbLocal.find(l => l.userId === currentEditId);
             item.nombre = sanitizeInput(document.getElementById('f_nombre').value);
             item.telefono = sanitizeInput(document.getElementById('f_telefono').value);
             item.direccion = sanitizeInput(document.getElementById('f_direccion').value);
             item.autorizadoPor = sanitizeInput(document.getElementById('f_autorizado').value);
 
-            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+            // USAR .userId EN LUGAR DE .id
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.userId), item);
             showToast("Ficha actualizada"); document.getElementById('edit_titulo').innerText = item.nombre;
         };
 
         window.deleteCurrentClient = () => {
             openConfirm("Eliminar absolutamente todo el registro e historial de este cliente. ¡Acción permanente!", async () => {
-                await deleteDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', currentEditId.toString()));
+                await deleteDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', currentEditId));
                 showToast("Cliente eliminado exitosamente", "🗑️"); 
                 closeModal('editModal');
             });
         };
 
         window.updateStatusManual = async () => {
-            const val = document.getElementById('e_estado').value; const item = dbLocal.find(l => l.id === currentEditId);
+            const val = document.getElementById('e_estado').value; const item = dbLocal.find(l => l.userId === currentEditId);
             item.estadoManual = val;
-            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item, {merge: true});
+            // USAR .userId EN LUGAR DE .id
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.userId), item, {merge: true});
             showToast("Estado actualizado");
         };
 
@@ -1214,7 +1218,7 @@
             const monto = parseFloat(document.getElementById('abono_monto').value);
             if(!monto || monto <= 0) return showToast("Monto inválido", "⚠️");
             
-            const item = dbLocal.find(l => l.id === currentEditId);
+            const item = dbLocal.find(l => l.userId === currentEditId);
             const intMensual = (item.saldo * (item.interesPct / 100));
             let pInt = Math.min(monto, intMensual); let pCap = Math.max(0, monto - intMensual);
             item.saldo = Math.max(0, item.saldo - pCap);
@@ -1222,24 +1226,26 @@
             const imgB64 = await compressImage(document.getElementById('abono_img').files[0]);
 
             item.historial.push({ fecha: new Date().toLocaleDateString('es-CR'), total: monto, int: pInt, cap: pCap, sFinal: item.saldo, img: imgB64 });
-            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+            // USAR .userId EN LUGAR DE .id
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.userId), item);
             document.getElementById('abono_monto').value = ''; document.getElementById('abono_img').value = '';
             showToast("Abono registrado", "💰"); openEdit(currentEditId);
         };
 
         window.updateAmounts = async () => {
-            const item = dbLocal.find(l => l.id === currentEditId);
+            const item = dbLocal.find(l => l.userId === currentEditId);
             item.saldo = parseFloat(document.getElementById('e_saldo').value);
             item.interesPct = parseFloat(document.getElementById('e_interes_pct').value);
             item.diaPago = parseInt(document.getElementById('e_dia').value) || item.diaPago;
-            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+            // USAR .userId EN LUGAR DE .id
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.userId), item);
             showToast("Reajuste aplicado"); openEdit(currentEditId);
         };
 
         window.mostrarFormAprobacion = () => { document.getElementById('solicitudActionBtns').classList.add('hidden'); document.getElementById('solicitudAprobarForm').classList.remove('hidden'); };
 
         window.confirmarAprobacion = async () => {
-            const item = dbLocal.find(l => l.id === currentEditId);
+            const item = dbLocal.find(l => l.userId === currentEditId);
             const n_monto = parseFloat(document.getElementById('ap_monto').value);
             const n_interes = parseFloat(document.getElementById('ap_interes').value);
             const n_dia = parseInt(document.getElementById('ap_dia').value);
@@ -1251,21 +1257,23 @@
             item.solicitudPrestamo.estado = 'aprobado';
             item.chat.push({ sender: 'socio', msg: `✅ Solicitud Aprobada. Saldo Final: ₡${fColones(n_monto)}. Interés: ${n_interes}%. Día de pago mensual: ${n_dia}.`, time: new Date().toLocaleString('es-CR')});
             
-            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+            // USAR .userId EN LUGAR DE .id
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.userId), item);
             showToast("Préstamo Aprobado y Actualizado"); openEdit(currentEditId);
         };
 
         window.responderSolicitud = async (res) => {
-            const item = dbLocal.find(l => l.id === currentEditId);
+            const item = dbLocal.find(l => l.userId === currentEditId);
             item.solicitudPrestamo.estado = res;
             item.chat.push({ sender: 'socio', msg: `❌ Tu solicitud ha sido RECHAZADA.`, time: new Date().toLocaleString('es-CR')});
-            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+            // USAR .userId EN LUGAR DE .id
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.userId), item);
             showToast("Solicitud Rechazada"); openEdit(currentEditId);
         };
 
         window.generarPDF = (silent = false) => {
             return new Promise((resolve) => {
-                const item = dbLocal.find(l => l.id === currentEditId);
+                const item = dbLocal.find(l => l.userId === currentEditId);
                 const container = document.getElementById('pdf-container');
                 container.innerHTML = `
                     <div style="font-family:sans-serif;">
@@ -1293,7 +1301,7 @@
         };
 
         window.compartirReporteWA = async () => {
-            const item = dbLocal.find(l => l.id === currentEditId);
+            const item = dbLocal.find(l => l.userId === currentEditId);
             showToast("Generando PDF...", "⏳"); await generarPDF(true); showToast("Guarda el PDF y envíalo por WhatsApp", "📤");
             setTimeout(() => {
                 const msg = `Hola ${item.nombre.split(' ')[0]}, adjunto el reporte de tu préstamo en formato PDF.`;
@@ -1375,7 +1383,7 @@
                     ${cliente.compras.slice().reverse().map(c => `
                         <div class="bg-slate-50 p-4 rounded-xl flex flex-col sm:flex-row justify-between border border-slate-200 shadow-sm gap-2">
                             <div class="flex-1"><span class="font-black text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded text-sm inline-block mb-1">${DOMPurify.sanitize(c.idFactura)}</span><div class="text-[10px] text-slate-500 font-bold">${DOMPurify.sanitize(c.fecha)}</div><p class="text-xs text-slate-600 mt-2 bg-white p-2 rounded border border-slate-100">${DOMPurify.sanitize(c.articulos)}</p></div>
-                            <div class="text-left sm:text-right flex flex-col justify-between items-start sm:items-end mt-2 sm:mt-0 w-full sm:w-auto"><div><span class="block text-lg font-black text-emerald-600">₡${fColones(c.total)}</span><span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block mt-1">${DOMPurify.sanitize(c.estado)}</span></div><button onclick="cancelarPedido('${c.idFactura}', '${cliente.id}')" class="mt-3 text-[10px] bg-red-100 text-red-600 hover:bg-red-200 px-3 py-2 rounded-lg font-bold border border-red-200 transition shadow-sm w-full sm:w-auto text-center">❌ Cancelar Pedido</button></div>
+                            <div class="text-left sm:text-right flex flex-col justify-between items-start sm:items-end mt-2 sm:mt-0 w-full sm:w-auto"><div><span class="block text-lg font-black text-emerald-600">₡${fColones(c.total)}</span><span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block mt-1">${DOMPurify.sanitize(c.estado)}</span></div><button onclick="cancelarPedido('${c.idFactura}', '${cliente.userId}')" class="mt-3 text-[10px] bg-red-100 text-red-600 hover:bg-red-200 px-3 py-2 rounded-lg font-bold border border-red-200 transition shadow-sm w-full sm:w-auto text-center">❌ Cancelar Pedido</button></div>
                         </div>`).join('')}
                 </div>` : ''}
 
@@ -1427,9 +1435,8 @@
 
             const cliente = dbLocal[0];
             
-            // Según tus reglas: "cliente puede editar si no toca saldo, interesPct, etc."
-            // Por lo que hacer esto SÍ pasa las reglas de Firestore (es correcto)
-            await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.id.toString()), {
+            // USAR .userId EN LUGAR DE .id
+            await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.userId), {
                 solicitudPrestamo: { monto, direccion: direccion, telefono: telefono, imgCedula: imgB64, fecha: new Date().toLocaleDateString('es-CR'), estado: 'pendiente' }
             });
             showToast("Solicitud enviada al Socio"); closeModal('reqLoanModal');
@@ -1442,7 +1449,8 @@
             const imgB64 = await compressImage(input.files[0]);
             const cliente = dbLocal[0];
             
-            await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.id.toString()), {
+            // USAR .userId EN LUGAR DE .id
+            await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.userId), {
                 chat: arrayUnion({ sender: 'cliente', msg: "🧾 He enviado un comprobante de abono al SINPE indicado.", img: imgB64, time: new Date().toLocaleString('es-CR') })
             });
             input.value = ''; showToast("Comprobante enviado al Socio", "✅");
@@ -1464,10 +1472,11 @@
             const input = document.getElementById(`chatInput${sender.charAt(0).toUpperCase() + sender.slice(1)}`);
             const txt = sanitizeInput(input.value); if(!txt) return;
             
-            let cid = currentRole === 'cliente' ? dbLocal[0].id : currentEditId; 
-            const item = dbLocal.find(l => l.id === cid);
+            let cid = currentRole === 'cliente' ? dbLocal[0].userId : currentEditId; 
+            const item = dbLocal.find(l => l.userId === cid);
             
-            await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), {
+            // USAR .userId EN LUGAR DE .id
+            await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.userId), {
                 chat: arrayUnion({ sender, msg: txt, time: new Date().toLocaleString('es-CR') })
             });
             input.value = '';
