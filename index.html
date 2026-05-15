@@ -287,8 +287,9 @@
                 <input type="text" id="n_nombre" placeholder="Nombre del Cliente" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required>
                 <div class="grid grid-cols-2 gap-3">
                     <input type="text" id="n_cedula" placeholder="Cédula" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required>
-                    <input type="text" id="n_telefono" placeholder="WhatsApp" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required>
+                    <input type="text" id="n_password" placeholder="Contraseña Prov." class="w-full p-3 border border-indigo-200 rounded-xl bg-indigo-50 text-sm font-bold placeholder-indigo-300 text-indigo-800" required>
                 </div>
+                <input type="text" id="n_telefono" placeholder="WhatsApp" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required>
                 <input type="text" id="n_direccion" placeholder="Dirección Exacta" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required>
                 <input type="text" id="n_autorizado" placeholder="Autorizado por..." class="w-full p-3 border rounded-xl bg-indigo-50 font-medium text-sm" required>
                 
@@ -575,22 +576,21 @@
             return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
         };
 
-        // BOOTSTRAP DE DATOS PÚBLICOS (Para Landing Page, se ejecuta de inmediato)
+        // BOOTSTRAP DE DATOS PÚBLICOS
         let unsubProductos = null, unsubConfig = null, unsubClientes = null, unsubVentas = null;
 
+        // Se ejecuta globalmente para TODOS (Anónimos o Logueados) para que la tienda nunca se quede vacía
         function subscribePublicData() {
-            // Cargar productos en tiempo real (Para el Landing Page y Tienda)
             if (!unsubProductos) {
                 unsubProductos = onSnapshot(collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'productos'), (snap) => {
                     dbProductos = [];
                     snap.forEach(d => dbProductos.push({id: d.id, ...d.data()}));
-                    renderTiendaCliente(); // Esto renderiza en el overlay y en el Landing
+                    renderTiendaCliente(); // Renderiza catálogo público (Landing y Modal)
                     if (currentRole === 'socio') renderTiendaSocio();
                     actualizarCarritoUI();
-                }, e => console.error("Error cargando productos:", e));
+                }, e => console.error("Error cargando productos. Verifica las reglas de Firestore:", e));
             }
             
-            // Cargar configuración de WhatsApp/SINPE del socio para botones públicos
             if (!unsubConfig) {
                 unsubConfig = onSnapshot(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'socio'), (docSnap) => {
                     if(docSnap.exists()) socioConfig = docSnap.data();
@@ -605,7 +605,7 @@
 
             let qClientes = collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes');
             
-            // Regla de privacidad: El cliente solo descarga su propio documento.
+            // Regla de privacidad bancaria: El cliente solo descarga su propio documento.
             if (currentRole === 'cliente') {
                 qClientes = query(qClientes, where('userId', '==', currentUser.uid));
             }
@@ -615,14 +615,14 @@
                 snap.forEach(d => dbLocal.push(d.data()));
                 dbLocal.sort((a,b) => a.nombre.localeCompare(b.nombre));
                 routeAndRender();
-            }, e => console.error(e));
+            }, e => console.error("Error cargando clientes:", e));
 
             if (currentRole === 'socio') {
                 unsubVentas = onSnapshot(collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'ventas'), (snap) => {
                     dbVentas = [];
                     snap.forEach(d => dbVentas.push({id: d.id, ...d.data()}));
                     renderVentasSocio();
-                }, e => console.error(e));
+                }, e => console.error("Error cargando ventas:", e));
             }
         }
 
@@ -760,12 +760,13 @@
         onAuthStateChanged(auth, (user) => {
             document.getElementById('globalLoader').classList.add('hidden');
             
+            // Suscripción Global Incondicional: La tienda siempre debe cargar
+            subscribePublicData();
+
             if (user) {
                 currentUser = user;
                 if (user.isAnonymous) {
-                    // Es visitante público. Cargar solo tienda.
                     currentRole = null;
-                    subscribePublicData();
                 } else {
                     // Es usuario autenticado. Definir roles.
                     if (user.email === 'norercarlop04@gmail.com') {
@@ -788,7 +789,7 @@
                     subscribePrivateData();
                 }
             } else {
-                // Sin sesión (por ejemplo tras logout). Iniciamos como Anónimo para ver la tienda pública.
+                // Sin sesión (por ejemplo tras logout). Iniciamos como Anónimo.
                 currentRole = null; currentUser = null;
                 document.getElementById('loginForm').reset();
                 document.getElementById('globalNav').classList.add('hidden');
@@ -843,7 +844,7 @@
 
         function renderTiendaCliente() {
             const gridOverlay = document.getElementById('tiendaGrid');
-            const gridLanding = document.getElementById('landingTiendaGrid'); // La grilla embebida
+            const gridLanding = document.getElementById('landingTiendaGrid'); 
             
             Object.values(slideIntervals).forEach(i => clearInterval(i));
             slideIntervals = {};
@@ -888,7 +889,7 @@
             });
 
             if(gridOverlay) gridOverlay.innerHTML = fullHtml;
-            // Para el landing, cambiamos los IDs para que los carruseles no choquen en el DOM
+            // Evitar choques de ID en la cuadrícula incrustada en el landing
             if(gridLanding) gridLanding.innerHTML = fullHtml.replace(/overlay_carousel_/g, 'landing_carousel_');
 
             // Setup intervals for all carousels
@@ -896,7 +897,7 @@
                 dbProductos.forEach(prod => {
                     if(prod.fotos.length > 1) {
                         ['overlay', 'landing'].forEach(prefix => {
-                            const container = document.getElementById(`${prefix}_carousel_${prod.id}_overlay`.replace('_overlay_overlay','_overlay')); // Fix dirty regex
+                            const container = document.getElementById(`${prefix}_carousel_${prod.id}_overlay`.replace('_overlay_overlay','_overlay')); 
                             if(!container) return;
                             const items = container.querySelectorAll('.carousel-item');
                             const dots = container.querySelectorAll(`.dot-${prefix}_carousel_${prod.id}`);
@@ -1008,7 +1009,6 @@
             await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'ventas', numFactura), nuevaVenta);
 
             if(isClienteLogueado && clienteDoc) {
-                // Inmutabilidad Respetada: solo agregamos al array sin enviar el objeto completo
                 await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', clienteDoc.id.toString()), {
                     compras: arrayUnion(nuevaVenta)
                 });
@@ -1055,8 +1055,10 @@
                 document.getElementById('divPerfilWa').classList.remove('hidden');
                 document.getElementById('divPerfilSinpe').classList.remove('hidden');
             } else if (currentRole === 'cliente') {
-                const cliente = dbLocal[0];
-                document.getElementById('perfil_nombre').value = cliente.nombre || '';
+                if(dbLocal.length > 0) {
+                    const cliente = dbLocal[0];
+                    document.getElementById('perfil_nombre').value = cliente.nombre || '';
+                }
                 document.getElementById('divPerfilWa').classList.add('hidden');
                 document.getElementById('divPerfilSinpe').classList.add('hidden');
             }
@@ -1079,10 +1081,12 @@
                     };
                     await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'socio'), uActualizado, { merge: true });
                 } else if (currentRole === 'cliente') {
-                    const cliente = dbLocal[0];
-                    await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.id.toString()), {
-                        nombre: escapeHTML(document.getElementById('perfil_nombre').value)
-                    });
+                    if(dbLocal.length > 0) {
+                        const cliente = dbLocal[0];
+                        await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.id.toString()), {
+                            nombre: escapeHTML(document.getElementById('perfil_nombre').value)
+                        });
+                    }
                 }
 
                 showToast("Perfil actualizado", "🔒");
@@ -1150,7 +1154,7 @@
             document.getElementById('s-capital').innerText = `₡${fColones(capTotal)}`;
         }
 
-        // REGISTRO DE CLIENTE NUEVO POR EL SOCIO (Multi-App Setup)
+        // REGISTRO DE CLIENTE NUEVO POR EL SOCIO
         document.getElementById('loanForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnSaveClient');
@@ -1158,6 +1162,7 @@
 
             try {
                 const cedula = document.getElementById('n_cedula').value.trim();
+                const pwdProv = document.getElementById('n_password').value.trim();
                 const email = `${cedula}@v8prestamos.com`;
                 let newUid = "usuario_temporal";
 
@@ -1165,8 +1170,7 @@
                 const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
                 const secondaryAuth = getAuth(secondaryApp);
                 try {
-                    // Cédula se usa como contraseña predeterminada cuando el socio crea la cuenta
-                    const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, cedula);
+                    const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, pwdProv);
                     newUid = userCred.user.uid;
                     await signOut(secondaryAuth);
                 } catch(e) {
@@ -1473,10 +1477,12 @@
             showToast("Ficha actualizada"); document.getElementById('edit_titulo').innerText = item.nombre;
         };
 
+        // ACCIÓN: ELIMINAR CLIENTE PERMANENTEMENTE DESDE EL SOCIO
         window.deleteCurrentClient = () => {
             openConfirm("Eliminar absolutamente todo el registro e historial de este cliente. ¡Acción permanente!", async () => {
                 await deleteDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', currentEditId.toString()));
-                showToast("Cliente eliminado", "🗑️"); closeModal('editModal');
+                showToast("Cliente eliminado exitosamente", "🗑️"); 
+                closeModal('editModal');
             });
         };
 
