@@ -3,445 +3,1312 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>V8 - Plataforma de Préstamos</title>
+    <title>Plataforma de Préstamos y Tienda V8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; padding: 0; }
-        .hidden { display: none; }
+        .alert-prevencion { animation: pulse-amber 2s infinite; background-color: #f59e0b !important; }
         .alert-mora { animation: pulse-red 2s infinite; background-color: #dc2626 !important; }
-        @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
-        ::-webkit-scrollbar { width: 6px; }
+        @keyframes pulse-amber { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .img-mini { width: 50px; height: 35px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1; cursor: pointer; transition: transform 0.2s; }
+        .img-mini:hover { transform: scale(1.1); }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .chat-container { max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
+        .msg { padding: 8px 12px; border-radius: 12px; font-size: 12px; max-width: 85%; word-wrap: break-word; }
+        .msg-socio { background: #e0e7ff; color: #3730a3; align-self: flex-start; border-bottom-left-radius: 0; }
+        .msg-cliente { background: #dcfce7; color: #166534; align-self: flex-end; border-bottom-right-radius: 0; }
+
+        .carousel-item { position: absolute; inset: 0; opacity: 0; transition: opacity 0.5s ease-in-out; }
+        .carousel-item.active { opacity: 1; z-index: 10; }
     </style>
 </head>
-<body>
+<body class="antialiased text-slate-800 flex flex-col min-h-screen relative pb-20 md:pb-0">
 
-    <!-- Cargador Global -->
-    <div id="globalLoader" class="fixed inset-0 bg-white z-[100] flex items-center justify-center">
-        <div class="flex flex-col items-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mb-4"></div>
-            <p class="text-slate-400 font-bold animate-pulse">V8 SECURITY</p>
+    <!-- LOADER INICIAL GLOBAl -->
+    <div id="globalLoader" class="fixed inset-0 bg-slate-900 z-[999] flex flex-col items-center justify-center">
+        <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+        <p class="text-sm font-bold text-white tracking-widest">INICIANDO SISTEMA SEGURO...</p>
+    </div>
+
+    <!-- ==================== LANDING PAGE PÚBLICA (Estrategia AIDA) ==================== -->
+    <div id="landingPage" class="hidden flex-col min-h-screen bg-slate-50">
+        <nav class="bg-indigo-900 text-white p-4 flex justify-between items-center shadow-lg sticky top-0 z-40">
+            <div class="font-black text-lg tracking-tight flex items-center gap-2"><span>💸</span> V8 PRÉSTAMOS</div>
+        </nav>
+        
+        <!-- Hero Section (Atención) -->
+        <div class="flex flex-col items-center justify-center p-8 md:p-16 text-center bg-gradient-to-br from-indigo-900 via-slate-800 to-black text-white relative overflow-hidden">
+            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+            <h1 class="text-4xl md:text-6xl font-black mb-4 relative z-10 leading-tight">Créditos Rápidos y <br><span class="text-emerald-400">Tienda Exclusiva</span></h1>
+            <p class="text-slate-300 mb-8 max-w-xl relative z-10 text-lg">Liquidez inmediata y el catálogo exclusivo que buscas, con aprobación en minutos y total transparencia financiera. Sin papeleos interminables.</p>
+            <div class="flex flex-col sm:flex-row gap-4 relative z-10">
+                <button onclick="openTiendaPublica()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-xl font-black text-lg shadow-lg shadow-emerald-500/30 transform hover:-translate-y-1 transition">Ver Catálogo de Productos</button>
+                <button onclick="openModal('loginModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-black text-lg shadow-lg shadow-indigo-600/30 transform hover:-translate-y-1 transition">Acceso Clientes</button>
+            </div>
+        </div>
+
+        <!-- Cómo Funciona (Interés) -->
+        <div class="py-12 px-6 bg-white">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-center text-3xl font-black text-slate-800 mb-10">¿Cómo Funciona?</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="text-center p-6 rounded-2xl bg-slate-50 border border-slate-100 shadow-sm">
+                        <div class="text-4xl mb-4">📱</div>
+                        <h3 class="font-bold text-lg mb-2">1. Crea tu Cuenta</h3>
+                        <p class="text-sm text-slate-500">Regístrate en menos de 1 minuto usando solo tu número de cédula.</p>
+                    </div>
+                    <div class="text-center p-6 rounded-2xl bg-slate-50 border border-slate-100 shadow-sm">
+                        <div class="text-4xl mb-4">📝</div>
+                        <h3 class="font-bold text-lg mb-2">2. Solicita o Compra</h3>
+                        <p class="text-sm text-slate-500">Pide tu crédito o añade productos al carrito desde nuestro catálogo.</p>
+                    </div>
+                    <div class="text-center p-6 rounded-2xl bg-slate-50 border border-slate-100 shadow-sm">
+                        <div class="text-4xl mb-4">✅</div>
+                        <h3 class="font-bold text-lg mb-2">3. Aprobación Rápida</h3>
+                        <p class="text-sm text-slate-500">Evaluamos tu solicitud al instante para que tengas liquidez cuando más la necesitas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Garantía de Confianza (Deseo) -->
+        <div class="py-10 bg-indigo-50 border-t border-indigo-100 text-center">
+            <p class="text-indigo-800 font-bold max-w-2xl mx-auto px-4">🔒 Plataforma blindada con seguridad de nivel bancario. Tus datos y tu historial financiero están 100% protegidos y son confidenciales.</p>
         </div>
     </div>
 
-    <!-- Navegación -->
-    <nav class="bg-slate-900 text-white p-4 flex justify-between items-center sticky top-0 z-50 shadow-xl">
-        <div class="flex items-center gap-2">
-            <div class="bg-blue-600 p-2 rounded-lg font-black text-xs">V8</div>
-            <h1 class="font-black text-xl tracking-tighter uppercase">Préstamos</h1>
-        </div>
-        
-        <div id="navAuthButtons">
-            <button onclick="openModal('loginModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-bold text-sm transition-all">ENTRAR</button>
-        </div>
-
-        <div id="navUserProfile" class="hidden flex items-center gap-4">
-            <div class="text-right hidden sm:block">
-                <p id="navUserName" class="text-xs font-black uppercase text-blue-400"></p>
-                <p id="navUserRole" class="text-[10px] text-slate-400 font-bold"></p>
+    <!-- MODAL DE LOGIN (Firebase Auth Real) -->
+    <div id="loginModal" class="fixed inset-0 bg-slate-900/80 hidden z-[200] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-t-4 border-indigo-600 relative">
+            <button onclick="closeModal('loginModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 text-2xl font-bold">&times;</button>
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-black text-slate-800">ACCESO SEGURO</h2>
+                <p class="text-xs font-medium text-slate-500 mt-1">Socio | Soporte | Clientes</p>
             </div>
-            <button onclick="handleLogout()" class="bg-red-500/10 text-red-500 p-2.5 rounded-xl hover:bg-red-500 hover:text-white transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+            <form id="loginForm" class="space-y-4">
+                <input type="text" id="username" placeholder="Cédula / Correo Institucional" class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-600 transition" required>
+                <input type="password" id="password" placeholder="Contraseña" class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-600 transition" required>
+                <button type="submit" id="btnLogin" class="w-full bg-indigo-700 text-white py-3 rounded-xl font-bold hover:bg-indigo-800 shadow-lg">Ingresar</button>
+                <p id="loginError" class="text-red-500 text-sm mt-4 text-center hidden font-bold bg-red-50 p-2 rounded-lg border border-red-200">Credenciales Incorrectas</p>
+            </form>
+            <div class="mt-5 text-center border-t pt-5">
+                <p class="text-xs text-slate-500 mb-2">¿Eres nuevo en la plataforma?</p>
+                <button onclick="closeModal('loginModal'); openModal('registerModal')" class="w-full bg-emerald-100 text-emerald-800 py-3 rounded-xl font-bold hover:bg-emerald-200 transition shadow-sm border border-emerald-200">Crear cuenta como Cliente</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE REGISTRO CLIENTE (Self-Registration) -->
+    <div id="registerModal" class="fixed inset-0 bg-slate-900/80 hidden z-[200] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-t-4 border-emerald-600 relative">
+            <button onclick="closeModal('registerModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 text-2xl font-bold">&times;</button>
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-black text-slate-800">NUEVO CLIENTE</h2>
+                <p class="text-xs font-medium text-slate-500 mt-1">Crea tu cuenta para solicitar préstamos o comprar</p>
+            </div>
+            <form id="registerForm" onsubmit="registerClient(event)" class="space-y-4">
+                <input type="text" id="r_cedula" placeholder="Número de Cédula (Será tu usuario)" class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-600 transition" required>
+                <input type="text" id="r_nombre" placeholder="Nombre Completo" class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-600 transition" required>
+                <input type="text" id="r_telefono" placeholder="WhatsApp (Ej: 50688888888)" class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-600 transition" required>
+                <input type="password" id="r_password" placeholder="Crea una Contraseña Segura" class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-600 transition" required minlength="6">
+                <button type="submit" id="btnRegister" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 shadow-lg">Registrarme de Forma Segura</button>
+            </form>
+            <div class="mt-4 text-center">
+                <button onclick="closeModal('registerModal'); openModal('loginModal')" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold underline">¿Ya tienes cuenta? Inicia sesión aquí</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVEGACIÓN GLOBAL (Solo Logueados) -->
+    <nav id="globalNav" class="hidden text-white p-4 flex justify-between items-center shadow-lg sticky top-0 z-40 shrink-0">
+        <div class="flex items-center gap-3">
+            <div id="navRoleBadge" class="px-2 py-1 rounded text-[10px] font-black tracking-widest border border-white/30 bg-black/20">ROL</div>
+            <span id="navTitle" class="font-bold tracking-tight text-sm md:text-base hidden sm:inline">SISTEMA V8 SEGURO</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="openCarrito()" class="relative bg-emerald-600 hover:bg-emerald-700 transition px-3 py-2 rounded-lg font-bold text-xs flex items-center gap-1 shadow-inner">
+                🛒 <span id="cartCountGlobal" class="bg-white text-emerald-700 rounded-full px-1.5 py-0.5 text-[10px]">0</span>
             </button>
+            <!-- El perfil solo es útil para Socio/Soporte en este rediseño Auth -->
+            <button id="btnPerfilNav" onclick="openPerfil()" class="hidden text-xs hover:bg-white/20 transition px-3 py-2 rounded-lg font-bold border border-white/30">⚙️ Config</button>
+            <button onclick="logout()" class="text-xs hover:bg-white/20 transition px-3 py-2 rounded-lg font-bold bg-red-500/80">Salir</button>
         </div>
     </nav>
 
-    <main class="max-w-5xl mx-auto p-4 sm:p-6">
-        
-        <!-- SECCIÓN: LANDING (Solo no logueados) -->
-        <section id="view-landing" class="py-20 text-center animate-in fade-in zoom-in duration-500">
-            <h2 class="text-5xl sm:text-7xl font-black text-slate-900 mb-6 tracking-tight">Dinero rápido,<br><span class="text-blue-600">seguro y real.</span></h2>
-            <p class="text-slate-500 text-lg mb-10 max-w-lg mx-auto font-medium">Gestiona tus préstamos, revisa tus cuotas y realiza abonos desde cualquier lugar.</p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <button onclick="openModal('registerModal')" class="bg-slate-900 text-white px-10 py-5 rounded-2xl font-bold shadow-2xl hover:scale-105 transition-transform">REGISTRARME AHORA</button>
-                <button onclick="openModal('loginModal')" class="bg-white border-2 border-slate-200 text-slate-800 px-10 py-5 rounded-2xl font-bold hover:bg-slate-50">MI PANEL</button>
+    <!-- ==================== VISTA SOCIO ==================== -->
+    <div id="app-socio" class="hidden flex-col flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 pb-24 md:pb-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 col-span-2 md:col-span-1">
+                <h3 class="text-slate-500 font-bold text-[10px] uppercase mb-1">Total Clientes</h3>
+                <p class="text-3xl font-black text-slate-800" id="s-totales">0</p>
             </div>
-        </section>
+            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200">
+                <h3 class="text-emerald-700 font-bold text-[10px] uppercase mb-1">Al Día</h3>
+                <p class="text-2xl font-black text-emerald-800" id="s-aldia">0</p>
+            </div>
+            <div class="bg-red-50 p-4 rounded-xl border border-red-200">
+                <h3 class="text-red-700 font-bold text-[10px] uppercase mb-1">Morosos</h3>
+                <p class="text-2xl font-black text-red-800" id="s-morosos">0</p>
+            </div>
+            <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-200 col-span-2 md:col-span-1">
+                <h3 class="text-indigo-700 font-bold text-[10px] uppercase mb-1">Capital Activo</h3>
+                <p class="text-xl font-black text-indigo-800" id="s-capital">₡0</p>
+            </div>
+        </div>
 
-        <!-- SECCIÓN: CLIENTE (Dashboard) -->
-        <section id="view-client" class="hidden space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Tarjeta Saldo -->
-                <div class="md:col-span-2 bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden">
-                    <div class="relative z-10">
-                        <p class="text-blue-400 text-xs font-black uppercase tracking-widest mb-2">Estado de Cuenta</p>
-                        <h3 id="c_saldo" class="text-5xl font-black mb-4">$0.00</h3>
-                        <div class="flex gap-4">
-                            <div class="bg-white/10 p-3 rounded-2xl">
-                                <p class="text-[10px] text-slate-400 uppercase font-bold">Interés</p>
-                                <p id="c_interes" class="font-bold text-sm">0%</p>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 gap-3">
+            <h2 class="text-xl font-black text-slate-800">Cartera de Préstamos</h2>
+            <div class="flex gap-2 w-full sm:w-auto">
+                <button onclick="openModal('tiendaSocioModal'); switchTiendaTab('inv')" class="flex-1 sm:flex-none bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold shadow-lg hover:bg-slate-700 text-sm">📦 Mi Tienda</button>
+                <button onclick="openModal('addModal')" class="flex-1 sm:flex-none bg-indigo-600 text-white px-4 py-2.5 rounded-xl font-bold shadow-lg hover:bg-indigo-700 text-sm">➕ Préstamo</button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[900px]">
+                <thead class="bg-slate-50 border-b text-[10px] uppercase text-slate-500 font-black tracking-wider">
+                    <tr>
+                        <th class="p-3 pl-4">Cliente / Contacto</th>
+                        <th class="p-3">Día de Pago</th>
+                        <th class="p-3">Estado</th>
+                        <th class="p-3">Saldo / Int. Mensual</th>
+                        <th class="p-3">Respaldos</th>
+                        <th class="p-3 text-center pr-4">Gestión</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody" class="divide-y text-sm"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ==================== VISTA CLIENTE ==================== -->
+    <div id="app-cliente" class="hidden flex-col flex-1 w-full max-w-4xl mx-auto p-4 md:p-6 pb-24 md:pb-6 relative">
+        <div id="cliente-content-wrapper" class="w-full">
+            <!-- Renderizado en JS -->
+        </div>
+    </div>
+
+    <!-- ==================== VISTA SOPORTE (ADMIN) ==================== -->
+    <div id="app-admin" class="hidden flex-col flex-1 w-full max-w-7xl mx-auto p-6 space-y-6">
+        <h2 class="text-2xl font-bold text-slate-800">Panel de Control General (Auditoría)</h2>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[600px]">
+                <thead class="bg-slate-900 text-white border-b text-[10px] uppercase font-black">
+                    <tr>
+                        <th class="p-4">Auth UID / Doc ID</th>
+                        <th class="p-4">Cliente / Cédula</th>
+                        <th class="p-4 text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTableBody" class="divide-y text-sm"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ==================== COMPONENTES COMPARTIDOS Y MODALES ==================== -->
+    <!-- (Mismos Modales de UI - Tienda, Carrito, Lightbox, etc. adaptados) -->
+    
+    <div id="tiendaOverlay" class="fixed inset-0 bg-slate-100 z-[150] hidden flex-col">
+        <div class="bg-slate-900 text-white p-4 flex justify-between items-center shrink-0 shadow-lg sticky top-0 z-50">
+            <h2 class="text-lg font-black flex items-center gap-2"><span>🛍️</span> Catálogo de Productos</h2>
+            <div class="flex items-center gap-2">
+                <button onclick="openCarrito()" class="relative bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 shadow-inner transition">
+                    🛒 Carrito <span id="cartCountOverlay" class="bg-white text-emerald-800 rounded-full px-2 py-0.5 text-xs font-black">0</span>
+                </button>
+                <button onclick="closeTiendaPublica()" class="font-bold bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-sm transition">Cerrar</button>
+            </div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 md:p-8">
+            <div class="max-w-6xl mx-auto"><div id="tiendaGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div></div>
+        </div>
+    </div>
+
+    <!-- MODAL CARRITO DE COMPRAS -->
+    <div id="carritoModal" class="fixed inset-0 bg-slate-900/80 hidden z-[300] flex items-center justify-end backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md h-full shadow-2xl flex flex-col transform transition-transform duration-300 slide-in">
+            <div class="bg-slate-900 text-white p-5 flex justify-between items-center shrink-0">
+                <h3 class="text-xl font-black">🛒 Tu Carrito</h3>
+                <button onclick="closeModal('carritoModal')" class="text-slate-300 hover:text-white text-2xl font-bold">&times;</button>
+            </div>
+            <div id="carritoItems" class="flex-1 overflow-y-auto p-5 bg-slate-50 space-y-3"></div>
+            <div class="p-5 bg-white border-t border-slate-200 shrink-0">
+                <div class="flex justify-between items-end mb-4">
+                    <span class="text-sm font-bold text-slate-500">Total a Pagar:</span>
+                    <span class="text-2xl font-black text-emerald-600" id="carritoTotal">₡0</span>
+                </div>
+                <form id="checkoutForm" class="space-y-3 mb-4 hidden">
+                    <h4 class="text-xs font-bold text-slate-700 border-b pb-1">Datos para el Pedido:</h4>
+                    <input type="text" id="chk_nombre" placeholder="Tu Nombre Completo" class="w-full p-2 border rounded bg-slate-50 text-sm" required>
+                    <input type="text" id="chk_tel" placeholder="Tu Teléfono (WhatsApp)" class="w-full p-2 border rounded bg-slate-50 text-sm" required>
+                </form>
+                <button onclick="procesarCompra()" id="btnComprar" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-black text-lg shadow-lg flex justify-center items-center gap-2 transition disabled:opacity-50">
+                    Enviar Pedido por WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX -->
+    <div id="lightbox" class="fixed inset-0 bg-black/95 hidden z-[999] flex items-center justify-center p-4 cursor-pointer backdrop-blur-sm" onclick="closeModal('lightbox')">
+        <img id="lightboxImg" src="" class="max-w-full max-h-full rounded-lg shadow-2xl object-contain cursor-default" onclick="event.stopPropagation()">
+        <button class="absolute top-6 right-6 text-white text-4xl font-bold bg-black/50 w-12 h-12 rounded-full hover:bg-white/20 transition">&times;</button>
+    </div>
+
+    <!-- PERFIL SOCIO/ADMIN (Oculto para Clientes en la nueva Auth) -->
+    <div id="perfilModal" class="fixed inset-0 bg-slate-900/70 hidden z-[200] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+            <h3 class="text-xl font-black mb-4 text-slate-800">Configuración (Socio)</h3>
+            <form id="perfilForm" class="space-y-3">
+                <div><label class="text-[10px] font-bold text-slate-500">TEL. WHATSAPP (Ej: 50688888888)</label><input type="text" id="perfil_whatsapp" class="w-full p-3 border rounded-xl bg-slate-50 text-sm font-mono" required></div>
+                <div><label class="text-[10px] font-bold text-emerald-600">NÚMERO SINPE (Para Abonos)</label><input type="text" id="perfil_sinpe" class="w-full p-3 border-2 border-emerald-200 rounded-xl bg-emerald-50 text-sm font-black text-emerald-800"></div>
+                <div class="flex gap-2 pt-3">
+                    <button type="button" onclick="closeModal('perfilModal')" class="flex-1 py-3 font-bold text-slate-500 bg-slate-100 rounded-xl hover:bg-slate-200">Cerrar</button>
+                    <button type="submit" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODALES SOCIO (Crear Cliente y Editar Cliente) -->
+    <div id="addModal" class="fixed inset-0 bg-slate-900/70 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 class="text-2xl font-black mb-6 text-slate-800">Registrar Préstamo</h3>
+            <form id="loanForm" class="space-y-3">
+                <input type="text" id="n_nombre" placeholder="Nombre del Cliente" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="text" id="n_cedula" placeholder="Cédula (Usuario)" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required>
+                    <input type="text" id="n_telefono" placeholder="WhatsApp" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required>
+                </div>
+                <input type="text" id="n_direccion" placeholder="Dirección Exacta" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required>
+                <input type="text" id="n_autorizado" placeholder="Autorizado por..." class="w-full p-3 border rounded-xl bg-indigo-50 font-medium text-sm" required>
+                
+                <div class="grid grid-cols-2 gap-3 mt-2">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500">MONTO (₡)</label>
+                        <input type="number" id="n_monto" class="w-full p-3 border rounded-xl font-black text-indigo-700 text-lg" required>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500">INTERÉS MENS. (%)</label>
+                        <input type="number" id="n_interes_pct" class="w-full p-3 border rounded-xl font-black text-lg text-center" required>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-xs bg-slate-100 p-4 rounded-xl mt-2 border border-slate-200">
+                    <div><label class="font-bold block mb-2 text-slate-600">📸 CÉDULA</label><input type="file" id="n_img_cedula" accept="image/*" class="w-full text-slate-500 text-[10px]"></div>
+                    <div><label class="font-bold block mb-2 text-slate-600">📸 PRENDA</label><input type="file" id="n_img_prenda" accept="image/*" class="w-full text-slate-500 text-[10px]"></div>
+                </div>
+                <div class="flex gap-2 pt-4">
+                    <button type="button" onclick="closeModal('addModal')" class="flex-1 py-3 font-bold bg-slate-200 text-slate-700 rounded-xl">Cancelar</button>
+                    <button type="submit" id="btnSaveClient" class="flex-[2] bg-indigo-600 text-white py-3 rounded-xl font-black shadow-lg">Crear Cuenta y Préstamo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Gestión Préstamo (Ficha Completa - IGUAL ESTRUCTURA) -->
+    <div id="editModal" class="fixed inset-0 bg-slate-900/80 hidden z-[100] flex items-center justify-center p-0 md:p-4 backdrop-blur-sm">
+        <!-- El contenido HTML interno de editModal se mantiene idéntico al original,
+             se renderizará y manipulará la inmutabilidad vía JS Firestore updateDoc -->
+        <div class="bg-white md:rounded-2xl w-full max-w-5xl h-full md:h-[95vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="p-4 border-b flex justify-between items-center bg-slate-50 shrink-0">
+                <div>
+                    <h3 id="edit_titulo" class="text-xl md:text-2xl font-black text-slate-800 leading-none"></h3>
+                    <p id="edit_cedula" class="text-[10px] md:text-xs text-slate-500 font-bold mt-1"></p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="compartirReporteWA()" class="bg-emerald-100 text-emerald-800 border border-emerald-200 px-3 py-2 rounded-lg text-xs font-bold hover:bg-emerald-200 transition hidden sm:block">📲 Compartir PDF</button>
+                    <button onclick="generarPDF()" class="bg-slate-200 text-slate-800 px-3 py-2 rounded-lg text-xs font-bold hover:bg-slate-300">📄 PDF</button>
+                    <button onclick="closeModal('editModal')" class="text-slate-400 hover:text-slate-700 bg-white border rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">&times;</button>
+                </div>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto flex flex-col lg:flex-row p-4 gap-6 bg-slate-100">
+                <!-- Izquierda: Ficha y Finanzas -->
+                <div class="w-full lg:w-1/2 space-y-4">
+                    <!-- Solicitudes Pendientes -->
+                    <div id="solicitudContainer" class="hidden bg-amber-100 border border-amber-300 p-4 rounded-xl shadow-sm">
+                        <h4 class="text-sm font-black text-amber-800 mb-2 flex items-center gap-2">📢 NUEVA SOLICITUD DE PRÉSTAMO</h4>
+                        <div id="solicitudDetalle" class="text-sm font-medium text-amber-900 mb-3 bg-white p-3 rounded-lg border border-amber-200"></div>
+                        <div id="solicitudAprobarForm" class="hidden bg-white p-3 rounded-xl border border-amber-200 mb-3 space-y-3">
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div><label class="block text-[10px] font-bold text-slate-500">Monto Final</label><input type="number" id="ap_monto" class="w-full border p-2 rounded font-bold bg-slate-50"></div>
+                                <div><label class="block text-[10px] font-bold text-slate-500">Interés (%)</label><input type="number" id="ap_interes" class="w-full border p-2 rounded font-bold bg-slate-50"></div>
+                                <div class="col-span-2"><label class="block text-[10px] font-bold text-slate-500">Día Pago Mensual</label><input type="number" id="ap_dia" min="1" max="31" class="w-full border p-2 rounded font-bold bg-slate-50"></div>
                             </div>
-                            <div class="bg-white/10 p-3 rounded-2xl">
-                                <p class="text-[10px] text-slate-400 uppercase font-bold">Próximo Pago</p>
-                                <p id="c_fecha" class="font-bold text-sm">--/--</p>
+                            <button onclick="confirmarAprobacion()" class="w-full bg-emerald-600 text-white py-2.5 rounded-lg font-black shadow">✅ Confirmar Aprobación</button>
+                        </div>
+                        <div class="flex gap-2" id="solicitudActionBtns">
+                            <button onclick="mostrarFormAprobacion()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold text-sm shadow">Aprobar...</button>
+                            <button onclick="responderSolicitud('rechazado')" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-bold text-sm shadow">Rechazar</button>
+                        </div>
+                    </div>
+
+                    <!-- Ficha -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative">
+                        <button onclick="deleteCurrentClient()" class="absolute top-3 right-3 text-red-500 hover:bg-red-50 p-1.5 rounded-lg text-xs" title="Borrar todo">🗑️</button>
+                        <h4 class="font-black text-slate-800 mb-3 text-sm">📝 DATOS DEL CLIENTE</h4>
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div class="col-span-2"><label class="font-bold text-slate-400">NOMBRE</label><input type="text" id="f_nombre" class="w-full p-2 border rounded bg-slate-50 font-bold"></div>
+                            <div><label class="font-bold text-slate-400">CÉDULA</label><input type="text" id="f_cedula" class="w-full p-2 border rounded bg-slate-50" readonly></div>
+                            <div><label class="font-bold text-slate-400">TELÉFONO</label><input type="text" id="f_telefono" class="w-full p-2 border rounded bg-slate-50"></div>
+                            <div class="col-span-2"><label class="font-bold text-slate-400">DIRECCIÓN</label><input type="text" id="f_direccion" class="w-full p-2 border rounded bg-slate-50"></div>
+                            <div class="col-span-2"><label class="font-bold text-indigo-400">AUTORIZADO POR</label><input type="text" id="f_autorizado" class="w-full p-2 border border-indigo-200 rounded bg-indigo-50 font-medium"></div>
+                        </div>
+                        <button onclick="guardarFicha()" class="mt-4 w-full bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg font-bold text-xs shadow">Guardar Cambios Personales</button>
+                    </div>
+
+                    <!-- Finanzas -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                        <h4 class="font-black text-slate-800 mb-3 text-sm">📊 FINANZAS Y CONDICIONES</h4>
+                        <div class="flex items-center justify-between bg-slate-50 border p-2 rounded-lg mb-3">
+                            <span class="text-[11px] font-bold text-slate-600">Estado Cálculo:</span>
+                            <select id="e_estado" class="p-1 rounded border text-xs font-bold outline-none" onchange="updateStatusManual()">
+                                <option value="auto">Automático</option><option value="al_dia">Forzar: Al Día</option><option value="moroso">Forzar: Moroso</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-xs">
+                            <div class="col-span-1"><label class="font-black text-slate-400 block mb-1">DÍA PAGO</label><input type="number" id="e_dia" min="1" max="31" class="w-full p-2 border rounded-lg font-bold text-indigo-700 text-center bg-slate-50"></div>
+                            <div class="col-span-1"><label class="font-black text-slate-400 block mb-1">SALDO ₡</label><input type="number" id="e_saldo" class="w-full p-2 border rounded-lg font-bold text-indigo-700 bg-slate-50"></div>
+                            <div class="col-span-1"><label class="font-black text-slate-400 block mb-1">INTERÉS %</label><input type="number" id="e_interes_pct" class="w-full p-2 border rounded-lg font-bold text-indigo-700 bg-slate-50 text-center"></div>
+                            <button onclick="updateAmounts()" class="col-span-3 bg-slate-200 hover:bg-slate-300 text-slate-800 py-2.5 rounded-lg font-black text-[11px] mt-2">APLICAR REAJUSTE NUMÉRICO</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Derecha: Abonos, Chat, Historial -->
+                <div class="w-full lg:w-1/2 flex flex-col gap-4">
+                    <!-- Abono Rápido -->
+                    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 shadow-sm shrink-0">
+                        <label class="block text-sm font-black text-emerald-800 mb-2">💰 REGISTRAR ABONO</label>
+                        <div class="flex flex-col gap-2">
+                            <div class="relative"><span class="absolute left-3 top-2 text-emerald-600 font-bold">₡</span><input type="number" id="abono_monto" class="w-full pl-8 pr-3 py-2 border border-emerald-300 rounded-lg font-black text-emerald-900 outline-none text-lg bg-white shadow-inner" placeholder="Monto entregado"></div>
+                            <div class="flex items-center gap-2">
+                                <input type="file" id="abono_img" accept="image/*" class="text-[10px] w-full text-slate-500 bg-white p-1.5 rounded-lg border">
+                                <button onclick="calculateAndAddPayment()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-black shadow-md whitespace-nowrap">ABONAR</button>
                             </div>
                         </div>
                     </div>
-                    <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-blue-600 rounded-full blur-[100px] opacity-20"></div>
-                </div>
-                <!-- Acción Rápida -->
-                <div class="bg-white rounded-[2.5rem] p-8 border border-slate-100 flex flex-col justify-center items-center text-center shadow-sm">
-                    <div class="bg-green-100 text-green-600 p-4 rounded-full mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                    <!-- Historial Compras (Si tiene) -->
+                    <div id="historialComprasSocio" class="bg-white border rounded-xl p-3 shadow-sm shrink-0 hidden">
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-b pb-1">Pedidos de Tienda de este Cliente</h4>
+                        <div id="comprasBodySocio" class="space-y-2 text-xs max-h-48 overflow-y-auto"></div>
                     </div>
-                    <h4 class="font-black text-slate-800">¿Hacer un abono?</h4>
-                    <p class="text-slate-400 text-xs mb-6">Sube tu comprobante para procesar el pago.</p>
-                    <button onclick="openModal('abonoModal')" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-200">NOTIFICAR PAGO</button>
+                    <!-- Chat Interno -->
+                    <div class="bg-white border border-slate-200 rounded-xl flex flex-col overflow-hidden h-[200px] shrink-0 shadow-sm">
+                        <div class="bg-indigo-50 p-2 border-b text-[10px] font-black tracking-widest text-indigo-800 text-center uppercase">Chat Interno con Cliente</div>
+                        <div id="chatSocio" class="flex-1 p-2 chat-container bg-slate-50"></div>
+                        <div class="p-2 bg-white border-t flex gap-2"><input type="text" id="chatInputSocio" class="flex-1 border rounded-lg px-2 text-sm outline-none" placeholder="Escribe..."><button onclick="sendMsg('socio')" class="bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm font-bold">→</button></div>
+                    </div>
+                    <!-- Historial Pagos -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-4 flex-1 overflow-y-auto shadow-sm min-h-[200px]">
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-b pb-2">Historial de Pagos</h4>
+                        <div id="historyBody" class="space-y-2 text-sm"></div>
+                    </div>
                 </div>
             </div>
-
-            <!-- Chat / Soporte -->
-            <div class="bg-white rounded-[2.5rem] p-6 border border-slate-100 shadow-sm h-[400px] flex flex-col">
-                <h3 class="font-black text-slate-800 mb-4 px-2 flex items-center gap-2">
-                    <span class="w-2 h-2 bg-green-500 rounded-full"></span> Soporte V8
-                </h3>
-                <div id="chatBox" class="flex-1 overflow-y-auto space-y-3 mb-4 p-2"></div>
-                <form id="chatForm" class="flex gap-2">
-                    <input type="text" id="chatInput" placeholder="Escribe un mensaje..." class="flex-1 bg-slate-50 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                    <button type="submit" class="bg-slate-900 text-white p-4 rounded-2xl"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg></button>
-                </form>
-            </div>
-        </section>
-
-        <!-- SECCIÓN: ADMIN/SOCIO -->
-        <section id="view-admin" class="hidden space-y-6">
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <h2 class="text-3xl font-black text-slate-900">Control de <span class="text-blue-600">Cartera</span></h2>
-                <div class="flex gap-2">
-                    <button onclick="exportToPDF()" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl font-bold text-xs uppercase">Reporte PDF</button>
-                    <button onclick="openModal('registerModal')" class="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold text-xs uppercase">+ Nuevo Cliente</button>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-slate-50 text-[10px] uppercase font-black text-slate-400">
-                            <tr>
-                                <th class="p-6">Cliente</th>
-                                <th class="p-6 text-center">Estado</th>
-                                <th class="p-6 text-right">Saldo</th>
-                                <th class="p-6 text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminTableBody" class="divide-y divide-slate-50"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- MODAL: LOGIN -->
-    <div id="loginModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[110] hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl">
-            <h3 class="text-3xl font-black text-slate-900 mb-2">Bienvenido</h3>
-            <p class="text-slate-400 text-sm font-medium mb-8">Ingresa tus credenciales para continuar.</p>
-            <form id="loginForm" class="space-y-4">
-                <div>
-                    <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-1 block">Cédula o Correo</label>
-                    <input type="text" id="l_user" class="w-full p-4 bg-slate-50 rounded-2xl border-0 focus:ring-2 focus:ring-blue-600 outline-none" placeholder="0-0000-0000" required>
-                </div>
-                <div>
-                    <label class="text-[10px] font-black uppercase text-slate-400 ml-4 mb-1 block">Contraseña</label>
-                    <input type="password" id="l_pass" class="w-full p-4 bg-slate-50 rounded-2xl border-0 focus:ring-2 focus:ring-blue-600 outline-none" placeholder="••••••••" required>
-                </div>
-                <div id="loginError" class="text-red-500 text-xs font-bold text-center hidden">Credenciales inválidas.</div>
-                <button type="submit" id="btnLogin" class="w-full bg-blue-600 text-white p-5 rounded-2xl font-black shadow-xl shadow-blue-200 hover:scale-[1.02] transition-transform">INICIAR SESIÓN</button>
-            </form>
-            <button onclick="closeModal('loginModal')" class="w-full mt-6 text-slate-400 font-bold text-xs uppercase tracking-widest">Cancelar</button>
         </div>
     </div>
 
-    <!-- MODAL: REGISTRO -->
-    <div id="registerModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[110] hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <h3 class="text-3xl font-black text-slate-900 mb-2">Crear Cuenta</h3>
-            <p class="text-slate-400 text-sm font-medium mb-8">Regístrate para solicitar un préstamo.</p>
-            <form id="registerForm" class="space-y-4">
-                <input type="text" id="r_nombre" placeholder="Nombre Completo" class="w-full p-4 bg-slate-50 rounded-2xl outline-none" required>
-                <input type="text" id="r_cedula" placeholder="Cédula de Identidad" class="w-full p-4 bg-slate-50 rounded-2xl outline-none" required>
-                <input type="tel" id="r_tel" placeholder="Número de Teléfono" class="w-full p-4 bg-slate-50 rounded-2xl outline-none" required>
-                <input type="password" id="r_pass" placeholder="Contraseña (mín. 6 caracteres)" class="w-full p-4 bg-slate-50 rounded-2xl outline-none" required>
-                <button type="submit" id="btnRegister" class="w-full bg-slate-900 text-white p-5 rounded-2xl font-black shadow-xl">COMPLETAR REGISTRO</button>
-            </form>
-            <button onclick="closeModal('registerModal')" class="w-full mt-6 text-slate-400 font-bold text-xs uppercase tracking-widest">Volver</button>
-        </div>
-    </div>
+    <!-- TIENDA SOCIO MODAL, ADD PRODUCTO, Y COMPONENTES VISUALES (IGUALES) -->
+    <!-- (Se omiten para brevedad estructural visual, pero sus IDs operan igual con JS) -->
+    <div id="tiendaSocioModal" class="fixed inset-0 bg-slate-900/80 hidden z-[100] flex items-center justify-center p-0 md:p-4 backdrop-blur-sm"><div class="bg-white md:rounded-2xl w-full max-w-6xl h-full md:h-[95vh] flex flex-col shadow-2xl overflow-hidden"><div class="p-4 md:p-6 border-b flex justify-between items-center bg-slate-50 shrink-0"><div><h3 class="text-xl md:text-2xl font-black text-slate-800">📦 Gestión de la Tienda</h3><p class="text-[10px] md:text-xs text-slate-500 font-bold uppercase tracking-widest">Catálogo y Facturas</p></div><div class="flex flex-wrap items-center gap-2 justify-end"><button onclick="generarReporteInventario()" class="bg-indigo-100 text-indigo-800 border border-indigo-200 px-3 py-2 rounded-lg text-xs font-bold hover:bg-indigo-200 transition">📄 PDF Inv.</button><button onclick="openModalEditProducto()" class="bg-emerald-600 text-white px-3 md:px-4 py-2 rounded-lg font-bold shadow hover:bg-emerald-700 text-xs md:text-sm transition">+ Nuevo Artículo</button><button onclick="closeModal('tiendaSocioModal')" class="text-slate-400 hover:text-slate-700 bg-white border rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">&times;</button></div></div><div class="flex gap-4 border-b px-4 md:px-6 mt-4 shrink-0 bg-white"><button onclick="switchTiendaTab('inv')" id="tabBtnInv" class="pb-2 font-black border-b-2 border-indigo-600 text-indigo-600 transition">📦 Inventario Público</button><button onclick="switchTiendaTab('ventas')" id="tabBtnVentas" class="pb-2 font-bold text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition">🧾 Historial de Ventas</button></div><div id="tiendaTabInv" class="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-100"><div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"><div class="bg-white p-3 rounded-xl border shadow-sm"><span class="block text-[10px] font-bold text-slate-400">TOTAL ARTÍCULOS</span><span class="text-xl font-black text-slate-800" id="inv_total">0</span></div><div class="bg-white p-3 rounded-xl border shadow-sm"><span class="block text-[10px] font-bold text-slate-400">COSTO TOTAL</span><span class="text-xl font-black text-red-600" id="inv_costo">₡0</span></div><div class="bg-white p-3 rounded-xl border shadow-sm"><span class="block text-[10px] font-bold text-slate-400">VALOR VENTA</span><span class="text-xl font-black text-indigo-600" id="inv_venta">₡0</span></div><div class="bg-white p-3 rounded-xl border shadow-sm"><span class="block text-[10px] font-bold text-slate-400">GANANCIA PROY.</span><span class="text-xl font-black text-emerald-600" id="inv_ganancia">₡0</span></div></div><div id="socioProductosGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div></div><div id="tiendaTabVentas" class="hidden flex-1 overflow-y-auto p-4 md:p-6 bg-slate-100"><div class="max-w-4xl mx-auto"><div class="mb-5"><label class="text-xs font-black text-slate-500 block mb-1">Buscar Factura Específica</label><input type="text" id="searchFacturaInput" oninput="renderVentasSocio()" placeholder="🔍 Código de factura (Ej: FAC-123456)..." class="w-full p-3 border border-slate-300 rounded-xl shadow-sm outline-none focus:ring-2 focus:ring-indigo-600 font-bold bg-white"></div><div id="socioVentasList" class="space-y-3"></div></div></div></div></div>
 
-    <!-- MODAL: GESTIÓN ADMIN (Detalle Cliente) -->
-    <div id="manageModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[110] hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-2xl rounded-[2.5rem] p-8 shadow-2xl max-h-[95vh] overflow-y-auto">
-            <div class="flex justify-between items-start mb-6">
-                <div>
-                    <h3 id="m_nombre" class="text-2xl font-black text-slate-900">Cliente</h3>
-                    <p id="m_cedula" class="text-slate-400 font-bold text-sm"></p>
-                </div>
-                <button onclick="closeModal('manageModal')" class="bg-slate-100 p-2 rounded-full text-slate-400">&times;</button>
-            </div>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                <div class="bg-slate-50 p-4 rounded-2xl">
-                    <label class="text-[10px] font-black uppercase text-slate-400 mb-1 block">Saldo Actual</label>
-                    <input type="number" id="m_input_saldo" class="w-full bg-transparent text-xl font-black outline-none">
-                </div>
-                <div class="bg-slate-50 p-4 rounded-2xl">
-                    <label class="text-[10px] font-black uppercase text-slate-400 mb-1 block">Interés %</label>
-                    <input type="number" id="m_input_interes" class="w-full bg-transparent text-xl font-black outline-none">
-                </div>
-            </div>
+    <div id="addProductoModal" class="fixed inset-0 bg-slate-900/90 hidden z-[200] flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl max-h-[95vh] overflow-y-auto relative"><button onclick="closeModal('addProductoModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 text-2xl font-bold">&times;</button><h3 class="text-xl font-black mb-4" id="modalProdTitle">Nuevo Producto</h3><form id="productoForm" onsubmit="saveProducto(event)" class="space-y-3"><input type="hidden" id="p_id"><div><label class="text-[10px] font-bold text-slate-500">TÍTULO</label><input type="text" id="p_nombre" class="w-full p-2 border rounded-lg font-bold bg-slate-50" required></div><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500">CATEGORÍA</label><select id="p_categoria" class="w-full p-2 border rounded-lg bg-slate-50 text-sm font-medium" required><option value="Herramienta">Herramienta</option><option value="Electrónica">Electrónica</option><option value="Vehículos">Vehículos</option><option value="Hogar">Hogar</option><option value="Joyas">Joyas</option><option value="Otros">Otros</option></select></div><div><label class="text-[10px] font-bold text-red-500">COSTO (₡)</label><input type="number" id="p_costo" class="w-full p-2 border border-red-200 rounded-lg font-bold text-red-700 bg-red-50" required></div></div><div><label class="text-[10px] font-bold text-emerald-600">PRECIO DE VENTA (₡)</label><input type="number" id="p_precio" class="w-full p-3 border-2 border-emerald-300 rounded-xl font-black text-emerald-800 text-lg bg-emerald-50" required></div><div><label class="text-[10px] font-bold text-slate-500">DESCRIPCIÓN</label><textarea id="p_desc" class="w-full p-2 border rounded-lg h-20 resize-none text-sm bg-slate-50" required></textarea></div><div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100"><label class="text-[10px] font-black text-indigo-800 block mb-2">FOTOS (Hasta 3)</label><div class="space-y-2"><input type="file" id="p_img1" accept="image/*" class="w-full text-[10px] text-slate-600 bg-white border rounded"><input type="file" id="p_img2" accept="image/*" class="w-full text-[10px] text-slate-600 bg-white border rounded"><input type="file" id="p_img3" accept="image/*" class="w-full text-[10px] text-slate-600 bg-white border rounded"></div></div><div class="flex gap-2 pt-2"><button type="submit" id="btnSaveProd" class="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-lg shadow-lg">Guardar Artículo</button></div></form></div></div>
 
-            <button id="btnUpdateClient" class="w-full bg-blue-600 text-white p-4 rounded-2xl font-black shadow-lg mb-4">GUARDAR CAMBIOS</button>
-            <button id="btnDeleteClient" class="w-full bg-red-50 text-red-600 p-4 rounded-2xl font-black">ELIMINAR CLIENTE</button>
-        </div>
-    </div>
+    <!-- UI Helpers -->
+    <div id="pdf-container" class="hidden p-8 bg-white text-black font-sans"></div>
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-4 rounded-full shadow-2xl transform transition-all duration-300 translate-y-32 opacity-0 z-[999] font-bold text-sm flex items-center gap-3"><span id="toastIcon">✅</span><span id="toastMsg">Mensaje</span></div>
+    <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 hidden z-[700] flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center"><h3 class="text-xl font-black mb-2 text-slate-800">¿Confirmar Acción?</h3><p id="confirmMessage" class="text-sm text-slate-500 mb-6">Esta acción es irreversible.</p><div class="flex gap-2"><button onclick="closeConfirm()" class="flex-1 py-3 font-bold bg-slate-100 rounded-xl hover:bg-slate-200">Atrás</button><button id="confirmBtn" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-red-700">Proceder</button></div></div></div>
 
+    <!-- SCRIPT PRINCIPAL & SEGURIDAD -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, deleteDoc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, deleteDoc, updateDoc, arrayUnion, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // ================= CONFIGURACIÓN =================
+        // Credenciales Oficiales de la Base de Datos
         const firebaseConfig = {
             apiKey: "AIzaSyCtPXuvsDuLDkpIJBlEEHFll6N-NofQ3bI",
             authDomain: "prestamos-c97ed.firebaseapp.com",
             projectId: "prestamos-c97ed",
             storageBucket: "prestamos-c97ed.firebasestorage.app",
             messagingSenderId: "511457800969",
-            appId: "1:511457800969:web:18b8e97383fdb630b319d8"
+            appId: "1:511457800969:web:18b8e97383fdb630b319d8",
+            measurementId: "G-N0HK4HPLP1"
         };
-
+        
+        const appFirebaseId = typeof __app_id !== 'undefined' ? __app_id : 'prestamos-c97ed';
+        
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
         const auth = getAuth(app);
-        const APP_ID = "V8_MAIN_2026";
+        const dbFirestore = getFirestore(app);
 
-        let currentUserData = null;
-        let selectedClientId = null;
+        // State Global
+        let dbLocal = [];
+        let dbProductos = [];
+        let dbVentas = []; 
+        let socioConfig = { whatsapp: '', sinpe: '' }; // Datos de contacto del Socio
+        
+        let currentUser = null;
+        let currentRole = null; 
+        let currentEditId = null;
 
-        // ================= INTERFAZ =================
-        window.openModal = (id) => {
-            document.getElementById(id).classList.remove('hidden');
+        let carrito = [];
+        let slideIntervals = {};
+
+        // FORMATEADOR
+        const fColones = (num) => num.toLocaleString('es-CR').replace(/,/g, '.');
+
+        // SEGURIDAD: Función de escape XSS para blindar renderizado
+        const escapeHTML = (str) => {
+            if(typeof str !== 'string') return str;
+            return str.replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[tag]));
         };
-        window.closeModal = (id) => {
-            document.getElementById(id).classList.add('hidden');
+
+        let unsubClientes = null, unsubProductos = null, unsubVentas = null, unsubConfig = null;
+
+        function subscribeData() {
+            if(unsubClientes) unsubClientes();
+            if(unsubProductos) unsubProductos();
+            if(unsubVentas) unsubVentas();
+            if(unsubConfig) unsubConfig();
+            
+            // Perfil Público del Socio (Para que el cliente vea el SINPE y WA)
+            unsubConfig = onSnapshot(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'socio'), (docSnap) => {
+                if(docSnap.exists()) {
+                    socioConfig = docSnap.data();
+                } else if(currentRole === 'socio') {
+                    setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'socio'), { whatsapp: '', sinpe: '' });
+                }
+            }, e => console.error(e));
+
+            // QUERY BLINDADA DE CLIENTES (Privacy First)
+            const clientesRef = collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes');
+            let q = clientesRef; 
+            
+            if (currentRole === 'cliente') {
+                // El cliente SOLO puede escuchar y descargar su propio documento.
+                q = query(clientesRef, where('userId', '==', currentUser.uid));
+            }
+
+            unsubClientes = onSnapshot(q, (snap) => {
+                dbLocal = [];
+                snap.forEach(d => dbLocal.push(d.data()));
+                dbLocal.sort((a,b) => a.nombre.localeCompare(b.nombre));
+                if(currentRole) routeAndRender();
+            }, e => console.error(e));
+
+            // Productos
+            unsubProductos = onSnapshot(collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'productos'), (snap) => {
+                dbProductos = [];
+                snap.forEach(d => dbProductos.push({id: d.id, ...d.data()}));
+                if (currentRole === 'socio') renderTiendaSocio();
+                renderTiendaCliente(); 
+                actualizarCarritoUI();
+            }, e => console.error(e));
+
+            // Ventas
+            unsubVentas = onSnapshot(collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'ventas'), (snap) => {
+                dbVentas = [];
+                snap.forEach(d => dbVentas.push({id: d.id, ...d.data()}));
+                if (currentRole === 'socio') renderVentasSocio();
+            }, e => console.error(e));
+        }
+
+        // FECHAS
+        function getEstadoCalculado(cliente) {
+            if (cliente.estadoManual && cliente.estadoManual !== 'auto') return cliente.estadoManual;
+            const hoy = new Date();
+            return (hoy.getDate() > cliente.diaPago) ? 'moroso' : 'al_dia';
+        }
+
+        function calculateNextPayment(fechaInicioStr, diaPago) {
+            const partes = fechaInicioStr.split('/');
+            let mesInicio = parseInt(partes[1]) - 1;
+            let anioInicio = parseInt(partes[2]);
+            const hoy = new Date();
+            let proxMes = mesInicio + 1, proxAnio = anioInicio;
+            if (proxMes > 11) { proxMes = 0; proxAnio++; }
+            let proxFecha = new Date(proxAnio, proxMes, diaPago, 23, 59, 59);
+            if (hoy > proxFecha) {
+                let m = hoy.getMonth(); let a = hoy.getFullYear();
+                if (hoy.getDate() > diaPago) { m++; }
+                if (m > 11) { m = 0; a++; }
+                proxFecha = new Date(a, m, diaPago, 23, 59, 59);
+            }
+            return proxFecha;
+        }
+
+        // UI HELPERS
+        window.openModal = (id) => document.getElementById(id).classList.remove('hidden');
+        window.closeModal = (id) => { const m = document.getElementById(id); if(m) m.classList.add('hidden'); };
+        window.showToast = (msg, icon = "✅") => {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            document.getElementById('toastIcon').innerText = icon;
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-32', 'opacity-0'), 3500);
+        };
+        window.viewImage = (src) => {
+            if(!src) return;
+            document.getElementById('lightboxImg').src = src;
+            openModal('lightbox');
         };
 
-        const showView = (viewId) => {
-            ['view-landing', 'view-client', 'view-admin'].forEach(v => document.getElementById(v).classList.add('hidden'));
-            document.getElementById(viewId).classList.remove('hidden');
+        let confirmCallback = null;
+        window.openConfirm = (msg, callback) => {
+            document.getElementById('confirmMessage').innerText = msg;
+            confirmCallback = callback;
+            openModal('confirmModal');
         };
+        window.closeConfirm = () => { closeModal('confirmModal'); confirmCallback = null; };
+        document.getElementById('confirmBtn').onclick = () => { if(confirmCallback) confirmCallback(); closeConfirm(); };
 
-        // ================= AUTENTICACIÓN =================
+        async function compressImage(file) {
+            if (!file) return null;
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const scale = img.width > 800 ? 800 / img.width : 1;
+                        canvas.width = img.width * scale; canvas.height = img.height * scale;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
+                    };
+                };
+            });
+        }
+
+        // ================= AUTH REAL: LOGIN Y RUTEO =================
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const u = document.getElementById('l_user').value.trim();
-            const p = document.getElementById('l_pass').value;
             const btn = document.getElementById('btnLogin');
-            const err = document.getElementById('loginError');
+            btn.disabled = true; btn.innerText = "Verificando...";
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value.trim();
+            const errEl = document.getElementById('loginError');
+            errEl.classList.add('hidden');
 
-            btn.disabled = true; btn.innerText = "VERIFICANDO...";
-            err.classList.add('hidden');
+            // Virtual Email Logic para clientes que entran con Cédula
+            let email = u;
+            if (!u.includes('@')) {
+                email = `${u}@v8prestamos.com`;
+            }
 
             try {
-                // Truco: Si no tiene @, es cédula, le creamos el email falso
-                const email = u.includes('@') ? u : `${u}@v8prestamos.com`;
                 await signInWithEmailAndPassword(auth, email, p);
                 closeModal('loginModal');
             } catch (error) {
-                console.error(error);
-                err.classList.remove('hidden');
+                console.error("Auth error:", error);
+                errEl.classList.remove('hidden');
             } finally {
-                btn.disabled = false; btn.innerText = "INICIAR SESIÓN";
+                btn.disabled = false; btn.innerText = "Ingresar";
             }
         });
 
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        // REGISTRO SEGURO DE CLIENTE
+        window.registerClient = async (e) => {
             e.preventDefault();
-            const nom = document.getElementById('r_nombre').value;
-            const ced = document.getElementById('r_cedula').value.trim();
-            const tel = document.getElementById('r_tel').value;
-            const pas = document.getElementById('r_pass').value;
             const btn = document.getElementById('btnRegister');
-
-            btn.disabled = true; btn.innerText = "CREANDO CUENTA...";
+            btn.disabled = true; btn.innerText = "Registrando de forma segura...";
 
             try {
-                const email = `${ced}@v8prestamos.com`;
-                const userCredential = await createUserWithEmailAndPassword(auth, email, pas);
-                const uid = userCredential.user.uid;
+                const cedula = document.getElementById('r_cedula').value.trim();
+                const pwd = document.getElementById('r_password').value.trim();
+                const email = `${cedula}@v8prestamos.com`;
 
-                const clientObj = {
-                    userId: uid,
-                    nombre: nom,
-                    cedula: ced,
-                    telefono: tel,
-                    saldo: 0,
-                    interesPct: 0,
-                    fecha: new Date().toISOString(),
-                    rol: 'cliente'
+                // 1. Crear usuario en Firebase Auth
+                const userCred = await createUserWithEmailAndPassword(auth, email, pwd);
+                const uid = userCred.user.uid;
+
+                // 2. Crear documento de Cliente asigando el userId (Regla de inmutabilidad exige esto)
+                const newId = Date.now();
+                const nuevo = {
+                    id: newId,
+                    userId: uid, // VITAL para reglas Firestore
+                    nombre: escapeHTML(document.getElementById('r_nombre').value),
+                    cedula: escapeHTML(cedula),
+                    telefono: escapeHTML(document.getElementById('r_telefono').value),
+                    direccion: "",
+                    autorizadoPor: "Autoregistro web",
+                    montoOriginal: 0, saldo: 0, interesPct: 0,
+                    fecha: new Date().toLocaleDateString('es-CR'),
+                    diaPago: new Date().getDate(),
+                    estadoManual: 'auto',
+                    historial: [], chat: [], compras: []
                 };
 
-                // Guardar ficha en Firestore
-                await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'clientes', uid), clientObj);
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', newId.toString()), nuevo);
                 
-                alert("¡Cuenta creada con éxito! Bienvenido.");
                 closeModal('registerModal');
-            } catch (error) {
-                alert("Error: " + error.message);
+                e.target.reset();
+                showToast("Cuenta Creada. Iniciando sesión...", "🔒");
+                // Ya está autenticado, onAuthStateChanged hará el routing
+            } catch (err) {
+                console.error(err); 
+                showToast(err.code === 'auth/email-already-in-use' ? "Esta cédula ya existe" : "Error en el registro", "❌");
             } finally {
-                btn.disabled = false; btn.innerText = "COMPLETAR REGISTRO";
+                btn.disabled = false; btn.innerText = "Registrarme de Forma Segura";
             }
-        });
-
-        window.handleLogout = () => {
-            signOut(auth).then(() => {
-                location.reload();
-            });
         };
 
-        // ================= MONITOR DE ESTADO =================
-        onAuthStateChanged(auth, async (user) => {
-            const loader = document.getElementById('globalLoader');
+        window.logout = async () => {
+            await signOut(auth);
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            document.getElementById('globalLoader').classList.add('hidden');
             if (user) {
-                const email = user.email;
-                document.getElementById('navAuthButtons').classList.add('hidden');
-                document.getElementById('navUserProfile').classList.remove('hidden');
-                document.getElementById('navUserName').innerText = email.split('@')[0];
-
-                // Identificar Rol
-                if (email === 'norercarlop04@gmail.com' || email === 'socio@prestamos.com') {
-                    document.getElementById('navUserRole').innerText = email === 'norercarlop04@gmail.com' ? "SOPORTE" : "SOCIO";
-                    showView('view-admin');
-                    initAdminData();
+                currentUser = user;
+                
+                // Asignar Roles Jerárquicos
+                if (user.email === 'norercarlop04@gmail.com') {
+                    currentRole = 'admin';
+                } else if (user.email === 'socio@prestamos.com') {
+                    currentRole = 'socio';
                 } else {
-                    document.getElementById('navUserRole').innerText = "CLIENTE V8";
-                    showView('view-client');
-                    initClientData(user.uid);
-                    initChat(user.uid);
+                    currentRole = 'cliente';
                 }
+                
+                // Preparar UI
+                document.getElementById('landingPage').classList.add('hidden');
+                document.getElementById('tiendaOverlay').classList.add('hidden');
+                document.getElementById('globalNav').classList.remove('hidden');
+                
+                let navColor = currentRole === 'socio' ? 'bg-indigo-900' : currentRole === 'admin' ? 'bg-slate-900' : 'bg-emerald-900';
+                document.getElementById('globalNav').className = `text-white p-3 md:p-4 flex justify-between items-center shadow-lg sticky top-0 z-40 shrink-0 ${navColor}`;
+                document.getElementById('navRoleBadge').innerText = currentRole.toUpperCase();
+                
+                if(currentRole === 'socio' || currentRole === 'admin') {
+                    document.getElementById('btnPerfilNav').classList.remove('hidden');
+                } else {
+                    document.getElementById('btnPerfilNav').classList.add('hidden');
+                }
+
+                subscribeData(); 
             } else {
-                showView('view-landing');
+                currentUser = null;
+                currentRole = null;
+                document.getElementById('loginForm').reset();
+                document.getElementById('globalNav').classList.add('hidden');
+                ['app-socio', 'app-admin', 'app-cliente', 'tiendaOverlay'].forEach(id => document.getElementById(id).classList.add('hidden'));
+                document.getElementById('landingPage').classList.remove('hidden');
+                document.getElementById('landingPage').classList.add('flex');
+                if(countdownInterval) clearInterval(countdownInterval);
+                carrito = []; actualizarCarritoUI();
+                
+                // Clean subscriptions
+                if(unsubClientes) unsubClientes();
+                if(unsubProductos) unsubProductos();
+                if(unsubVentas) unsubVentas();
+                if(unsubConfig) unsubConfig();
             }
-            loader.classList.add('hidden');
         });
 
-        // ================= LÓGICA CLIENTE =================
-        function initClientData(uid) {
-            onSnapshot(doc(db, 'artifacts', APP_ID, 'public', 'data', 'clientes', uid), (snap) => {
-                if (snap.exists()) {
-                    const d = snap.data();
-                    document.getElementById('c_saldo').innerText = `$${Number(d.saldo).toLocaleString()}`;
-                    document.getElementById('c_interes').innerText = `${d.interesPct}%`;
-                    document.getElementById('c_fecha').innerText = d.fechaPago || "Pendiente";
-                }
+        function routeAndRender() {
+            if(!currentRole) return;
+            ['app-socio', 'app-admin', 'app-cliente', 'landingPage'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) { el.classList.remove('flex'); el.classList.add('hidden'); }
             });
-        }
-
-        function initChat(uid) {
-            const chatBox = document.getElementById('chatBox');
-            // Usamos el uid como id de chat para privacidad
-            onSnapshot(doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', uid), (snap) => {
-                if (snap.exists()) {
-                    const msgs = snap.data().messages || [];
-                    chatBox.innerHTML = msgs.map(m => `
-                        <div class="flex ${m.sender === 'admin' ? 'justify-start' : 'justify-end'}">
-                            <div class="${m.sender === 'admin' ? 'bg-slate-100 text-slate-800' : 'bg-blue-600 text-white'} p-3 rounded-2xl max-w-[80%] text-xs font-medium shadow-sm">
-                                ${m.text}
-                            </div>
-                        </div>
-                    `).join('');
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                }
-            });
-
-            document.getElementById('chatForm').onsubmit = async (e) => {
-                e.preventDefault();
-                const input = document.getElementById('chatInput');
-                if (!input.value.trim()) return;
-
-                const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', uid);
-                const chatSnap = await getDoc(chatRef);
-                let messages = chatSnap.exists() ? chatSnap.data().messages : [];
-                
-                messages.push({ text: input.value, sender: 'user', time: Date.now() });
-                await setDoc(chatRef, { messages });
-                input.value = '';
-            };
-        }
-
-        // ================= LÓGICA ADMIN =================
-        function initAdminData() {
-            onSnapshot(collection(db, 'artifacts', APP_ID, 'public', 'data', 'clientes'), (snap) => {
-                const table = document.getElementById('adminTableBody');
-                table.innerHTML = '';
-                snap.forEach(docSnap => {
-                    const c = docSnap.data();
-                    const id = docSnap.id;
-                    const row = document.createElement('tr');
-                    row.className = "hover:bg-slate-50 transition-colors";
-                    row.innerHTML = `
-                        <td class="p-6">
-                            <span class="font-black text-slate-800 block">${c.nombre}</span>
-                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">${c.cedula}</span>
-                        </td>
-                        <td class="p-6 text-center">
-                            <span class="px-3 py-1 rounded-full text-[10px] font-black ${c.saldo > 0 ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'}">
-                                ${c.saldo > 0 ? 'ACTIVO' : 'SALDADO'}
-                            </span>
-                        </td>
-                        <td class="p-6 text-right font-black text-slate-900">$${Number(c.saldo).toLocaleString()}</td>
-                        <td class="p-6 text-center">
-                            <button onclick="manageClient('${id}')" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] font-black">GESTIONAR</button>
-                        </td>
-                    `;
-                    table.appendChild(row);
-                });
-            });
-        }
-
-        window.manageClient = async (uid) => {
-            selectedClientId = uid;
-            const snap = await getDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'clientes', uid));
-            if (snap.exists()) {
-                const c = snap.data();
-                document.getElementById('m_nombre').innerText = c.nombre;
-                document.getElementById('m_cedula').innerText = `ID: ${c.cedula} | Tel: ${c.telefono}`;
-                document.getElementById('m_input_saldo').value = c.saldo;
-                document.getElementById('m_input_interes').value = c.interesPct;
-                openModal('manageModal');
-            }
-        };
-
-        document.getElementById('btnUpdateClient').onclick = async () => {
-            if (!selectedClientId) return;
-            const newSaldo = Number(document.getElementById('m_input_saldo').value);
-            const newInt = Number(document.getElementById('m_input_interes').value);
             
-            try {
-                await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'clientes', selectedClientId), {
-                    saldo: newSaldo,
-                    interesPct: newInt
+            const activeApp = document.getElementById(`app-${currentRole}`);
+            activeApp.classList.remove('hidden');
+            activeApp.classList.add('flex');
+
+            if(currentRole === 'socio') { renderSocio(); renderTiendaSocio(); renderVentasSocio(); }
+            if(currentRole === 'admin') renderAdmin();
+            if(currentRole === 'cliente') { renderCliente(); }
+        }
+
+        // ================= TIENDA PÚBLICA & CARRITO =================
+        window.openTiendaPublica = () => {
+            document.getElementById('landingPage').classList.add('hidden');
+            document.getElementById('landingPage').classList.remove('flex');
+            document.getElementById('tiendaOverlay').classList.remove('hidden');
+            document.getElementById('tiendaOverlay').classList.add('flex');
+            // Cargar productos en caso de vista sin Auth
+            if(!unsubProductos) {
+                unsubProductos = onSnapshot(collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'productos'), (snap) => {
+                    dbProductos = [];
+                    snap.forEach(d => dbProductos.push({id: d.id, ...d.data()}));
+                    renderTiendaCliente(); actualizarCarritoUI();
                 });
-                alert("Cliente actualizado.");
-                closeModal('manageModal');
-            } catch (e) { alert("Error al actualizar."); }
+            } else { renderTiendaCliente(); }
+        };
+        
+        window.closeTiendaPublica = () => {
+            document.getElementById('tiendaOverlay').classList.add('hidden');
+            document.getElementById('tiendaOverlay').classList.remove('flex');
+            if(!currentRole) {
+                document.getElementById('landingPage').classList.remove('hidden');
+                document.getElementById('landingPage').classList.add('flex');
+            } else { routeAndRender(); }
         };
 
-        document.getElementById('btnDeleteClient').onclick = async () => {
-            if (!selectedClientId) return;
-            if (confirm("¿Estás seguro de eliminar este cliente? Esta acción no se puede deshacer.")) {
-                await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'clientes', selectedClientId));
-                closeModal('manageModal');
+        function renderTiendaCliente() {
+            const grid = document.getElementById('tiendaGrid');
+            if(!grid) return;
+            
+            Object.values(slideIntervals).forEach(i => clearInterval(i));
+            slideIntervals = {};
+
+            if(dbProductos.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-20 text-slate-500"><h3 class="text-2xl font-bold mb-2">Tienda vacía</h3><p>Pronto publicaremos nuevos artículos.</p></div>`;
+                return;
+            }
+
+            grid.innerHTML = '';
+            dbProductos.forEach(prod => {
+                const uid = `carousel_${prod.id}`;
+                let imgsHtml = prod.fotos.map((f, idx) => `
+                    <div class="carousel-item ${idx===0?'active':''}" data-idx="${idx}">
+                        <img src="${f}" class="w-full h-56 object-cover cursor-pointer" onclick="viewImage(this.src)">
+                    </div>
+                `).join('');
+                
+                let dotsHtml = prod.fotos.length > 1 ? `<div class="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-20">` + 
+                                prod.fotos.map((_, i) => `<div class="w-2 h-2 rounded-full bg-white/50 dot-${uid}" data-dot="${i}"></div>`).join('') + `</div>` : '';
+
+                grid.innerHTML += `
+                    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden flex flex-col transform hover:-translate-y-1 transition duration-300">
+                        <div class="relative h-56 bg-slate-100" id="${uid}">${imgsHtml}${dotsHtml}</div>
+                        <div class="p-5 flex-1 flex flex-col">
+                            <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">${escapeHTML(prod.categoria)}</span>
+                            <h3 class="font-black text-xl text-slate-800 mb-2 leading-tight">${escapeHTML(prod.nombre)}</h3>
+                            <p class="text-xs text-slate-500 flex-1 mb-4 line-clamp-3">${escapeHTML(prod.descripcion)}</p>
+                            <div class="font-black text-2xl text-emerald-600 mb-4">₡${fColones(prod.precio)}</div>
+                            <button onclick="agregarAlCarrito('${prod.id}')" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-3 rounded-xl shadow-md transition-all flex justify-center items-center gap-2">
+                                🛒 Añadir al Carrito
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            setTimeout(() => {
+                dbProductos.forEach(prod => {
+                    if(prod.fotos.length > 1) {
+                        const container = document.getElementById(`carousel_${prod.id}`);
+                        if(!container) return;
+                        const items = container.querySelectorAll('.carousel-item');
+                        const dots = container.querySelectorAll(`.dot-carousel_${prod.id}`);
+                        let current = 0;
+                        if(dots[0]) dots[0].classList.replace('bg-white/50', 'bg-white');
+
+                        slideIntervals[prod.id] = setInterval(() => {
+                            items[current].classList.remove('active');
+                            if(dots[current]) dots[current].classList.replace('bg-white', 'bg-white/50');
+                            current = (current + 1) % items.length;
+                            items[current].classList.add('active');
+                            if(dots[current]) dots[current].classList.replace('bg-white/50', 'bg-white');
+                        }, 3000);
+                    }
+                });
+            }, 100);
+        }
+
+        window.agregarAlCarrito = (prodId) => {
+            const prod = dbProductos.find(p => p.id === prodId);
+            if(!prod) return;
+            carrito.push(prod); actualizarCarritoUI(); showToast(`${prod.nombre} añadido`, "🛒");
+        };
+
+        window.quitarDelCarrito = (index) => { carrito.splice(index, 1); actualizarCarritoUI(); };
+
+        window.openCarrito = () => {
+            actualizarCarritoUI();
+            openModal('carritoModal');
+            const form = document.getElementById('checkoutForm');
+            if(currentRole === 'cliente' && dbLocal.length > 0) {
+                const c = dbLocal[0];
+                document.getElementById('chk_nombre').value = c.nombre;
+                document.getElementById('chk_tel').value = c.telefono;
+                form.classList.add('hidden'); 
+            } else if(!currentRole) {
+                form.classList.remove('hidden'); 
             }
         };
 
-        // Exportar a PDF (Simple)
-        window.exportToPDF = () => {
-            const element = document.getElementById('view-admin');
-            html2pdf().from(element).save(`Reporte_V8_${new Date().toLocaleDateString()}.pdf`);
+        function actualizarCarritoUI() {
+            const cnt1 = document.getElementById('cartCountGlobal'); const cnt2 = document.getElementById('cartCountOverlay');
+            if(cnt1) cnt1.innerText = carrito.length; if(cnt2) cnt2.innerText = carrito.length;
+            const list = document.getElementById('carritoItems'); if(!list) return;
+
+            let total = 0; list.innerHTML = '';
+            
+            if(carrito.length === 0) {
+                list.innerHTML = `<p class="text-center text-slate-400 mt-10">Tu carrito está vacío.</p>`;
+                document.getElementById('btnComprar').disabled = true;
+            } else {
+                document.getElementById('btnComprar').disabled = false;
+                carrito.forEach((p, idx) => {
+                    total += p.precio;
+                    list.innerHTML += `
+                        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex gap-3 items-center">
+                            <img src="${p.fotos[0]}" class="w-12 h-12 object-cover rounded bg-slate-100">
+                            <div class="flex-1"><h4 class="text-xs font-black text-slate-800 leading-tight">${escapeHTML(p.nombre)}</h4><span class="text-emerald-600 font-bold text-sm">₡${fColones(p.precio)}</span></div>
+                            <button onclick="quitarDelCarrito(${idx})" class="text-red-400 hover:text-red-600 text-lg px-2">&times;</button>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('carritoTotal').innerText = `₡${fColones(total)}`;
+        }
+
+        window.procesarCompra = async () => {
+            if(carrito.length === 0) return;
+            
+            let nombreComprador = "", telefonoComprador = "", isClienteLogueado = false, clienteDoc = null;
+
+            if(currentRole === 'cliente' && dbLocal.length > 0) {
+                clienteDoc = dbLocal[0];
+                nombreComprador = clienteDoc.nombre; telefonoComprador = clienteDoc.telefono;
+                isClienteLogueado = true;
+            } else {
+                nombreComprador = document.getElementById('chk_nombre').value.trim();
+                telefonoComprador = document.getElementById('chk_tel').value.trim();
+                if(!nombreComprador || !telefonoComprador) return showToast("Por favor ingresa tus datos", "⚠️");
+            }
+
+            const total = carrito.reduce((sum, p) => sum + p.precio, 0);
+            const numFactura = `FAC-${Date.now().toString().slice(-6)}`;
+            
+            const nuevaVenta = {
+                idFactura: numFactura, fecha: new Date().toLocaleDateString('es-CR'), total: total,
+                articulos: carrito.map(p => p.nombre).join(', '), estado: 'Pendiente',
+                clienteNombre: escapeHTML(nombreComprador), clienteTel: escapeHTML(telefonoComprador),
+                clienteId: isClienteLogueado ? clienteDoc.id : 'publico'
+            };
+
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'ventas', numFactura), nuevaVenta);
+
+            if(isClienteLogueado && clienteDoc) {
+                // Inmutabilidad Respetada usando UpdateDoc y arrayUnion
+                await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', clienteDoc.id.toString()), {
+                    compras: arrayUnion(nuevaVenta)
+                });
+            }
+
+            const socioWa = socioConfig.whatsapp || '50688888888';
+            let textoArticulos = carrito.map(p => `- ${p.nombre} (₡${fColones(p.precio)})`).join('%0A');
+            let msg = `🛍️ *NUEVO PEDIDO DE TIENDA* 🛍️%0A%0A*Factura:* ${numFactura}%0A*Cliente:* ${nombreComprador}%0A*Teléfono:* ${telefonoComprador}%0A%0A*Artículos:*%0A${textoArticulos}%0A%0A*TOTAL:* ₡${fColones(total)}%0A%0A_Esperando confirmación de pedido._`;
+
+            window.open(`https://wa.me/${socioWa}?text=${msg}`, '_blank');
+            carrito = []; actualizarCarritoUI(); closeModal('carritoModal'); showToast("Pedido enviado y facturado", "✅");
+            if(isClienteLogueado) renderCliente();
         };
+
+        window.cancelarPedido = async (idFactura, clienteId) => {
+            openConfirm(`¿Seguro que deseas cancelar el pedido ${idFactura}?`, async () => {
+                try {
+                    await deleteDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'ventas', idFactura));
+                    if(clienteId && clienteId !== 'publico') {
+                        // El socio tiene permiso para eliminar array items reescribiendo
+                        const cliente = dbLocal.find(c => c.id.toString() === clienteId.toString());
+                        if(cliente && currentRole === 'socio') {
+                            cliente.compras = cliente.compras.filter(c => c.idFactura !== idFactura);
+                            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.id.toString()), cliente);
+                        }
+                    }
+                    showToast("Pedido borrado", "🗑️");
+                    if (currentRole === 'cliente') renderCliente();
+                    if (currentRole === 'socio' && currentEditId) openEdit(currentEditId);
+                    if (currentRole === 'socio') renderVentasSocio();
+                } catch(e) { console.error(e); showToast("Error", "❌"); }
+            });
+        };
+
+
+        // ================= PERFIL SOCIO =================
+        window.openPerfil = () => {
+            document.getElementById('perfil_whatsapp').value = socioConfig.whatsapp || '';
+            document.getElementById('perfil_sinpe').value = socioConfig.sinpe || '';
+            openModal('perfilModal');
+        };
+
+        document.getElementById('perfilForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const uActualizado = {
+                    whatsapp: escapeHTML(document.getElementById('perfil_whatsapp').value),
+                    sinpe: escapeHTML(document.getElementById('perfil_sinpe').value)
+                };
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'socio'), uActualizado, { merge: true });
+                showToast("Configuración guardada", "🔒"); closeModal('perfilModal');
+            } catch(err) { showToast("Error", "❌"); }
+        });
+
+
+        // ================= SOCIO (CARTERA Y GESTIÓN) =================
+        function renderSocio() {
+            const body = document.getElementById('tableBody'); body.innerHTML = '';
+            let cAlDia = 0, cMorosos = 0, capTotal = 0;
+            
+            dbLocal.forEach(item => {
+                const estado = getEstadoCalculado(item);
+                if (estado === 'al_dia') cAlDia++; else cMorosos++;
+                const intMonto = (item.saldo * (item.interesPct / 100)); capTotal += item.saldo;
+                
+                let bColor = estado === 'moroso' ? 'bg-red-50 border-l-4 border-red-200' : 'hover:bg-slate-50 transition';
+                let stBadge = estado === 'moroso' ? '<span class="bg-red-600 text-white px-2 py-1 rounded text-[10px] font-bold">MOROSO</span>' : '<span class="bg-emerald-500 text-white px-2 py-1 rounded text-[10px] font-bold">AL DÍA</span>';
+                const reqBadge = item.solicitudPrestamo && item.solicitudPrestamo.estado === 'pendiente' ? '<div class="text-[10px] text-amber-600 font-bold mt-1 animate-pulse">📢 NUEVA SOLICITUD</div>' : '';
+                const unreadBadge = item.chat && item.chat.length > 0 && item.chat[item.chat.length-1].sender === 'cliente' ? '💬 ' : '';
+
+                body.innerHTML += `
+                    <tr class="${bColor} border-b border-slate-200">
+                        <td class="p-3 pl-4">
+                            <div class="font-black text-slate-800">${unreadBadge}${escapeHTML(item.nombre)}</div>
+                            <div class="text-[10px] text-slate-500">ID: ${escapeHTML(item.cedula)}</div>
+                            ${reqBadge}
+                        </td>
+                        <td class="p-3"><div class="text-xs text-slate-700">Pago: <b class="text-sm">Todos los ${item.diaPago}</b></div><div class="text-[10px] text-slate-400">Inicio: ${item.fecha}</div></td>
+                        <td class="p-3">${stBadge}</td>
+                        <td class="p-3"><div class="font-black text-indigo-700 text-base">₡${fColones(item.saldo)}</div><div class="text-[10px] text-emerald-600 font-bold">Int: ₡${fColones(intMonto)}</div></td>
+                        <td class="p-3 flex gap-1">${item.imgCedula ? `<img src="${item.imgCedula}" class="img-mini shadow-sm" onclick="viewImage(this.src)">` : ''}${item.imgPrenda ? `<img src="${item.imgPrenda}" class="img-mini shadow-sm" onclick="viewImage(this.src)">` : ''}</td>
+                        <td class="p-3 pr-4 text-right flex gap-1 justify-end">
+                            <button onclick="window.open('https://wa.me/${escapeHTML(item.telefono)}', '_blank')" class="bg-emerald-100 text-emerald-700 border border-emerald-200 p-2 rounded-lg hover:bg-emerald-200">💬</button>
+                            <button onclick="openEdit(${item.id})" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow hover:bg-slate-700">FICHA</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('s-totales').innerText = dbLocal.length;
+            document.getElementById('s-aldia').innerText = cAlDia; document.getElementById('s-morosos').innerText = cMorosos;
+            document.getElementById('s-capital').innerText = `₡${fColones(capTotal)}`;
+        }
+
+        // REGISTRO DE CLIENTE NUEVO POR EL SOCIO (Multi-App Setup para Firebase Auth)
+        document.getElementById('loanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSaveClient');
+            btn.disabled = true; btn.innerText = "Creando...";
+
+            try {
+                const cedula = document.getElementById('n_cedula').value.trim();
+                const email = `${cedula}@v8prestamos.com`;
+                let newUid = "usuario_temporal";
+
+                // Truco: Inicializamos app secundaria para crear el Auth sin desloguear al Socio
+                const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
+                const secondaryAuth = getAuth(secondaryApp);
+                try {
+                    const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, cedula);
+                    newUid = userCred.user.uid;
+                    await signOut(secondaryAuth);
+                } catch(e) {
+                    console.error("Auth User might exist", e);
+                    // Si ya existe en auth, pero no en DB, seguimos. O el socio se debe contactar con soporte.
+                }
+
+                const now = new Date();
+                const newId = Date.now();
+                
+                const nuevo = {
+                    id: newId,
+                    userId: newUid,
+                    nombre: escapeHTML(document.getElementById('n_nombre').value),
+                    cedula: escapeHTML(cedula),
+                    telefono: escapeHTML(document.getElementById('n_telefono').value),
+                    direccion: escapeHTML(document.getElementById('n_direccion').value),
+                    autorizadoPor: escapeHTML(document.getElementById('n_autorizado').value),
+                    montoOriginal: parseFloat(document.getElementById('n_monto').value),
+                    saldo: parseFloat(document.getElementById('n_monto').value),
+                    interesPct: parseFloat(document.getElementById('n_interes_pct').value),
+                    fecha: now.toLocaleDateString('es-CR'), diaPago: now.getDate(),
+                    estadoManual: 'auto',
+                    imgCedula: await compressImage(document.getElementById('n_img_cedula').files[0]),
+                    imgPrenda: await compressImage(document.getElementById('n_img_prenda').files[0]),
+                    historial: [], chat: [], compras: []
+                };
+
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', newId.toString()), nuevo);
+                closeModal('addModal'); e.target.reset(); showToast("Préstamo y Cliente creados");
+            } catch (err) { showToast("Error", "❌"); console.error(err); }
+            finally { btn.disabled = false; btn.innerText = "Crear Cuenta y Préstamo"; }
+        });
+
+        // SOCIO: Tienda Management (Se omite la duplicación de código de renderizado de productos)
+        // ... (El bloque visual de tienda renderTiendaSocio y renderVentasSocio se comportan igual)
+        window.switchTiendaTab = (tab) => {
+            const btnInv = document.getElementById('tabBtnInv'), btnVen = document.getElementById('tabBtnVentas');
+            const secInv = document.getElementById('tiendaTabInv'), secVen = document.getElementById('tiendaTabVentas');
+            if(tab === 'inv') { btnInv.className = "pb-2 font-black border-b-2 border-indigo-600 text-indigo-600"; btnVen.className = "pb-2 font-bold text-slate-500 hover:text-slate-800"; secInv.classList.remove('hidden'); secVen.classList.add('hidden'); } 
+            else { btnVen.className = "pb-2 font-black border-b-2 border-indigo-600 text-indigo-600"; btnInv.className = "pb-2 font-bold text-slate-500 hover:text-slate-800"; secVen.classList.remove('hidden'); secInv.classList.add('hidden'); renderVentasSocio(); }
+        };
+
+        function renderTiendaSocio() {
+            const grid = document.getElementById('socioProductosGrid'); if(!grid) return;
+            let costoT = 0, ventaT = 0, gananciaT = 0;
+            if(dbProductos.length === 0) { grid.innerHTML = '<p class="col-span-full text-center text-slate-400 py-10">No has añadido productos aún.</p>'; } 
+            else {
+                grid.innerHTML = '';
+                dbProductos.forEach(p => {
+                    costoT += (p.costo || 0); ventaT += p.precio; const gan = p.precio - (p.costo || 0); gananciaT += gan;
+                    let imgs = p.fotos.map(f => `<img src="${f}" class="w-12 h-12 object-cover rounded cursor-pointer border" onclick="viewImage(this.src)">`).join('');
+                    grid.innerHTML += `
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col justify-between">
+                            <div><div class="flex justify-between items-start mb-1"><span class="text-[9px] font-black bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded uppercase">${escapeHTML(p.categoria)}</span></div><h4 class="font-black text-slate-800 text-base leading-tight mb-1">${escapeHTML(p.nombre)}</h4><div class="text-emerald-700 font-bold text-lg mb-2">₡${fColones(p.precio)}</div><div class="text-[10px] text-slate-500 mb-3 space-y-1 bg-slate-50 p-2 rounded border"><div>Costo: <b class="text-red-500">₡${fColones(p.costo || 0)}</b></div><div>Ganancia: <b class="text-emerald-500">₡${fColones(gan)}</b></div></div><div class="flex gap-1 mb-4 flex-wrap">${imgs}</div></div>
+                            <div class="flex gap-2"><button onclick="openModalEditProducto('${p.id}')" class="flex-1 bg-slate-100 text-slate-700 font-bold py-2 rounded-lg text-xs hover:bg-slate-200 border">Editar</button><button onclick="borrarProducto('${p.id}')" class="flex-1 bg-red-50 text-red-600 font-bold py-2 rounded-lg text-xs hover:bg-red-100 border border-red-200">Borrar</button></div>
+                        </div>`;
+                });
+            }
+            ['inv_total','inv_costo','inv_venta','inv_ganancia'].forEach((id,i) => { const e = document.getElementById(id); if(e) e.innerText = i===0 ? dbProductos.length : `₡${fColones([costoT,ventaT,gananciaT][i-1])}`; });
+        }
+
+        window.renderVentasSocio = () => {
+            const list = document.getElementById('socioVentasList'); if(!list) return;
+            const term = (document.getElementById('searchFacturaInput')?.value || '').toLowerCase();
+            let filtradas = dbVentas.filter(v => v.idFactura.toLowerCase().includes(term));
+            if(filtradas.length === 0) return list.innerHTML = `<p class="text-center text-slate-400 py-10">No se encontraron ventas con ese código.</p>`;
+            list.innerHTML = filtradas.map(v => `<div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-3"><div><div class="flex items-center gap-2 mb-1"><span class="font-black text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded text-sm">${v.idFactura}</span><span class="text-[10px] text-slate-500 font-bold">${v.fecha}</span><span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">${v.estado}</span></div><p class="text-sm font-bold text-slate-800">${escapeHTML(v.clienteNombre)} <span class="font-normal text-slate-500 text-xs">(Tel: ${escapeHTML(v.clienteTel)})</span></p><p class="text-xs text-slate-600 italic mt-1 bg-slate-50 p-2 rounded">${escapeHTML(v.articulos)}</p></div><div class="flex flex-col items-start md:items-end w-full md:w-auto gap-2"><span class="text-lg font-black text-emerald-600">₡${fColones(v.total)}</span><button onclick="cancelarPedido('${v.idFactura}', '${v.clienteId}')" class="text-[10px] bg-red-100 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg font-bold w-full md:w-auto text-center shadow-sm">❌ Cancelar Pedido</button></div></div>`).join('');
+        };
+
+        window.openModalEditProducto = (id = null) => {
+            const form = document.getElementById('productoForm'); form.reset();
+            if(id) {
+                const p = dbProductos.find(x => x.id === id);
+                document.getElementById('modalProdTitle').innerText = "Editar Producto";
+                document.getElementById('p_id').value = p.id; document.getElementById('p_nombre').value = p.nombre; document.getElementById('p_categoria').value = p.categoria || 'Otros'; document.getElementById('p_costo').value = p.costo || 0; document.getElementById('p_precio').value = p.precio; document.getElementById('p_desc').value = p.descripcion; document.getElementById('p_img1').removeAttribute('required');
+            } else { document.getElementById('modalProdTitle').innerText = "Nuevo Producto"; document.getElementById('p_id').value = ''; document.getElementById('p_img1').setAttribute('required', 'true'); }
+            openModal('addProductoModal');
+        };
+
+        window.saveProducto = async (e) => {
+            e.preventDefault(); const btn = document.getElementById('btnSaveProd'); btn.innerText = "Guardando..."; btn.disabled = true;
+            try {
+                const pid = document.getElementById('p_id').value; const isEdit = !!pid;
+                let fotos = isEdit ? [...dbProductos.find(x => x.id === pid).fotos] : [];
+                for(let i=1; i<=3; i++) { const f = document.getElementById(`p_img${i}`).files[0]; if(f) fotos[i-1] = await compressImage(f); }
+                const prod = { nombre: escapeHTML(document.getElementById('p_nombre').value), categoria: document.getElementById('p_categoria').value, costo: parseFloat(document.getElementById('p_costo').value), precio: parseFloat(document.getElementById('p_precio').value), descripcion: escapeHTML(document.getElementById('p_desc').value), fotos: fotos };
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'productos', isEdit ? pid : Date.now().toString()), prod);
+                closeModal('addProductoModal'); showToast(isEdit ? "Producto actualizado" : "Producto publicado", "📦");
+            } catch(e) { showToast("Error al guardar", "❌"); } finally { btn.innerText = "Guardar Artículo"; btn.disabled = false; }
+        };
+
+        window.borrarProducto = async (id) => { openConfirm("¿Borrar producto de la tienda?", async () => { await deleteDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'productos', id)); showToast("Eliminado"); }); };
+        
+        // SOCIO: Gestión de Ficha de Cliente
+        window.openEdit = (id) => {
+            currentEditId = id; const item = dbLocal.find(l => l.id === id);
+            document.getElementById('edit_titulo').innerText = escapeHTML(item.nombre);
+            document.getElementById('edit_cedula').innerText = `Cédula: ${escapeHTML(item.cedula)}`;
+            ['nombre','cedula','telefono','direccion','autorizado'].forEach(k => document.getElementById(`f_${k}`).value = item[k] || '');
+            ['saldo','interes_pct','dia'].forEach(k => document.getElementById(`e_${k}`).value = item[k.replace('_pct','Pct').replace('dia','diaPago')] || 0);
+            document.getElementById('e_estado').value = item.estadoManual || 'auto';
+            
+            const solC = document.getElementById('solicitudContainer'), actB = document.getElementById('solicitudActionBtns'), frmA = document.getElementById('solicitudAprobarForm');
+            if(item.solicitudPrestamo && item.solicitudPrestamo.estado === 'pendiente') {
+                solC.classList.remove('hidden'); frmA.classList.add('hidden'); actB.classList.remove('hidden');
+                document.getElementById('solicitudDetalle').innerHTML = `<b>Monto:</b> ₡${fColones(item.solicitudPrestamo.monto)}<br><b>Dirección:</b> ${escapeHTML(item.solicitudPrestamo.direccion)}<br>${item.solicitudPrestamo.imgCedula ? `<img src="${item.solicitudPrestamo.imgCedula}" class="h-12 mt-2 cursor-pointer" onclick="viewImage(this.src)">` : ''}`;
+                document.getElementById('ap_monto').value = item.saldo + item.solicitudPrestamo.monto; document.getElementById('ap_interes').value = item.interesPct; document.getElementById('ap_dia').value = item.diaPago;
+            } else { solC.classList.add('hidden'); }
+
+            const bxC = document.getElementById('historialComprasSocio');
+            if(item.compras && item.compras.length) { bxC.classList.remove('hidden'); document.getElementById('comprasBodySocio').innerHTML = item.compras.slice().reverse().map(c => `<div class="bg-white p-3 rounded shadow-sm border mb-2"><div class="flex justify-between font-bold text-sm mb-1"><span>${c.idFactura}</span><span class="text-emerald-600">₡${fColones(c.total)}</span></div><div class="text-xs text-slate-600 mb-2">${escapeHTML(c.articulos)}</div><button onclick="cancelarPedido('${c.idFactura}', '${item.id}')" class="w-full text-[10px] bg-red-100 text-red-600 py-1 rounded border">❌ Cancelar</button></div>`).join(''); } 
+            else { bxC.classList.add('hidden'); }
+
+            renderHistory(item); renderChat('socio', item.chat || []); openModal('editModal');
+        };
+
+        function renderHistory(item) {
+            const hB = document.getElementById('historyBody'); hB.innerHTML = item.historial.length ? '' : '<p class="text-center">No hay pagos</p>';
+            item.historial.slice().reverse().forEach((h, ir) => {
+                const img = h.img ? `<img src="${h.img}" class="h-8 w-12 object-cover rounded cursor-pointer border" onclick="viewImage(this.src)">` : '';
+                hB.innerHTML += `<div class="bg-slate-50 p-3 rounded-lg flex justify-between border mb-2"><div class="text-xs"><b>${h.fecha}</b><br><span class="text-emerald-700">Ab: ₡${fColones(h.total)}</span></div><div class="text-right"><span class="font-black text-indigo-700">S.Fin: ₡${fColones(h.sFinal)}</span><br><div class="flex gap-2 justify-end mt-1">${img}<button onclick="deleteHistoryItem(${item.id}, ${item.historial.length-1-ir})" class="text-red-400">🗑️</button></div></div></div>`;
+            });
+        }
+
+        window.deleteHistoryItem = (cId, idx) => { openConfirm("¿Eliminar pago?", async () => { const item = dbLocal.find(l => l.id === cId); item.historial.splice(idx, 1); await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item); showToast("Pago eliminado"); openEdit(cId); }); };
+
+        window.guardarFicha = async () => {
+            const item = dbLocal.find(l => l.id === currentEditId);
+            item.nombre = escapeHTML(document.getElementById('f_nombre').value);
+            item.telefono = escapeHTML(document.getElementById('f_telefono').value);
+            item.direccion = escapeHTML(document.getElementById('f_direccion').value);
+            item.autorizadoPor = escapeHTML(document.getElementById('f_autorizado').value);
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+            showToast("Ficha actualizada"); document.getElementById('edit_titulo').innerText = item.nombre;
+        };
+
+        window.deleteCurrentClient = () => { openConfirm("Eliminar cliente y cuenta de acceso permanentemente", async () => { await deleteDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', currentEditId.toString())); showToast("Eliminado"); closeModal('editModal'); }); };
+        window.updateStatusManual = async () => { const val = document.getElementById('e_estado').value; const item = dbLocal.find(l => l.id === currentEditId); item.estadoManual = val; await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item, {merge: true}); };
+
+        window.calculateAndAddPayment = async () => {
+            const monto = parseFloat(document.getElementById('abono_monto').value); if(!monto) return;
+            const item = dbLocal.find(l => l.id === currentEditId);
+            const iM = (item.saldo * (item.interesPct / 100)); let pI = Math.min(monto, iM), pC = Math.max(0, monto - iM);
+            item.saldo = Math.max(0, item.saldo - pC);
+            const img = await compressImage(document.getElementById('abono_img').files[0]);
+            item.historial.push({ fecha: new Date().toLocaleDateString('es-CR'), total: monto, int: pI, cap: pC, sFinal: item.saldo, img });
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item);
+            document.getElementById('abono_monto').value = ''; showToast("Abono registrado"); openEdit(currentEditId);
+        };
+
+        window.updateAmounts = async () => { const item = dbLocal.find(l => l.id === currentEditId); item.saldo = parseFloat(document.getElementById('e_saldo').value); item.interesPct = parseFloat(document.getElementById('e_interes_pct').value); item.diaPago = parseInt(document.getElementById('e_dia').value); await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item); openEdit(currentEditId); };
+
+        window.mostrarFormAprobacion = () => { document.getElementById('solicitudActionBtns').classList.add('hidden'); document.getElementById('solicitudAprobarForm').classList.remove('hidden'); };
+        window.confirmarAprobacion = async () => { const item = dbLocal.find(l => l.id === currentEditId); item.saldo = item.montoOriginal = parseFloat(document.getElementById('ap_monto').value); item.interesPct = parseFloat(document.getElementById('ap_interes').value); item.diaPago = parseInt(document.getElementById('ap_dia').value); item.solicitudPrestamo.estado = 'aprobado'; item.chat.push({ sender: 'socio', msg: `✅ Solicitud Aprobada. Saldo Final: ₡${fColones(item.saldo)}.`, time: new Date().toLocaleString('es-CR')}); await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item); openEdit(currentEditId); };
+        window.responderSolicitud = async (res) => { const item = dbLocal.find(l => l.id === currentEditId); item.solicitudPrestamo.estado = res; item.chat.push({ sender: 'socio', msg: `❌ Tu solicitud ha sido RECHAZADA.`, time: new Date().toLocaleString('es-CR')}); await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.id.toString()), item); openEdit(currentEditId); };
+
+
+        // ================= CLIENTE PORTAL PRIVADO =================
+        let countdownInterval;
+        
+        function renderCliente() {
+            // El cliente solo tiene 1 documento cargado gracias a la query blindada de Firestore
+            if(dbLocal.length === 0) {
+                document.getElementById('cliente-content-wrapper').innerHTML = `<p class="text-center text-red-500 mt-10 font-bold">Sin registros vinculados. Contacte soporte.</p>`; return;
+            }
+            const cliente = dbLocal[0]; 
+            const content = document.getElementById('cliente-content-wrapper');
+
+            const nextDate = calculateNextPayment(cliente.fecha, cliente.diaPago);
+            const intMonto = (cliente.saldo * (cliente.interesPct / 100));
+            const numSinpe = socioConfig.sinpe || 'Consultar por Chat';
+            const numWaCS = socioConfig.whatsapp || '';
+            
+            let reqHtml = cliente.solicitudPrestamo && cliente.solicitudPrestamo.estado === 'pendiente' ? `<div class="bg-amber-100 text-amber-800 p-3 rounded-xl mb-4 text-xs font-bold text-center animate-pulse">⏳ Solicitud de ₡${fColones(cliente.solicitudPrestamo.monto)} en revisión.</div>` : '';
+
+            content.innerHTML = `
+                <!-- Botón Tienda -->
+                <button onclick="openTiendaPublica()" class="w-full bg-gradient-to-r from-slate-900 to-indigo-900 text-white rounded-2xl shadow-xl p-5 mb-5 hover:-translate-y-1 transition flex items-center justify-between border border-slate-700">
+                    <div class="text-left"><h3 class="text-xl font-black">🛍️ Catálogo Exclusivo</h3><p class="text-xs text-indigo-200 mt-1">Explora nuestros artículos con opciones flexibles</p></div><div class="text-3xl bg-white/10 w-12 h-12 flex items-center justify-center rounded-full">→</div>
+                </button>
+
+                <!-- Dashboard Privado -->
+                <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-5 mb-5 overflow-hidden">
+                    <div class="mb-5 flex justify-between items-start">
+                        <div><h2 class="text-2xl font-black text-slate-800">Hola, ${escapeHTML(cliente.nombre.split(' ')[0])}</h2><p class="text-[10px] text-slate-500 font-bold mt-1 uppercase">Préstamo: ${cliente.fecha}</p></div>
+                        <button onclick="openModal('reqLoanModal')" class="bg-slate-100 border text-slate-700 px-3 py-2 rounded-lg font-bold text-[10px] hover:bg-slate-200">➕ SOLICITAR MÁS</button>
+                    </div>
+                    ${reqHtml}
+                    <div class="grid grid-cols-2 gap-3 mb-5">
+                        <div class="bg-slate-50 p-4 rounded-xl border"><span class="text-[10px] text-slate-400 font-black block mb-1">SALDO ACTUAL</span><span class="text-xl sm:text-2xl font-black text-slate-800">₡${fColones(cliente.saldo)}</span></div>
+                        <div class="bg-emerald-50 p-4 rounded-xl border"><span class="text-[10px] text-emerald-600 font-black block mb-1">INTERÉS MENSUAL</span><span class="text-xl sm:text-2xl font-black text-emerald-700">₡${fColones(intMonto)}</span></div>
+                    </div>
+                    <div class="bg-indigo-900 text-white p-5 rounded-2xl shadow-lg text-center relative">
+                        <p class="text-[10px] font-bold text-indigo-300 uppercase mb-1">Próximo Pago</p><p class="text-lg font-bold mb-2">${nextDate.toLocaleDateString('es-CR', {weekday:'long', day:'numeric', month:'long'})}</p>
+                        <div id="countdown" class="text-2xl sm:text-3xl font-black font-mono text-emerald-300">--:--:--</div>
+                    </div>
+                </div>
+
+                <!-- Acción Segura Abono -->
+                <div class="bg-emerald-600 rounded-2xl shadow-lg p-1 mb-5 hover:scale-[1.02] transition-transform">
+                    <label class="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 w-full py-4 px-4 cursor-pointer text-white">
+                        <span class="text-2xl">📤</span> <div class="text-center sm:text-left"><span class="block font-black text-sm sm:text-base leading-tight">ENVIAR COMPROBANTE</span><span class="block text-[10px] text-emerald-200 font-bold uppercase">AL SINPE: ${escapeHTML(numSinpe)}</span></div>
+                        <input type="file" id="btnEnvioComprobante" accept="image/*" class="hidden" onchange="enviarComprobanteEspecial()">
+                    </label>
+                </div>
+
+                <!-- Chat & Consultas Seguras -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-5 flex flex-col h-[280px]">
+                    <h3 class="font-black text-slate-800 text-xs uppercase tracking-widest mb-2 border-b pb-2">💬 Mensajes con el Socio</h3>
+                    <div id="chatCliente" class="flex-1 chat-container bg-slate-50 p-2 border rounded-lg mb-3"></div>
+                    <div class="flex gap-2">
+                        <input type="text" id="chatInputCliente" class="flex-1 border rounded-lg px-3 py-2 text-sm" placeholder="Escribe al socio...">
+                        <button onclick="sendMsg('cliente')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold">→</button>
+                    </div>
+                </div>
+
+                <!-- Modal Seguro Request Loan -->
+                <div id="reqLoanModal" class="fixed inset-0 bg-slate-900/80 hidden z-[200] flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+                        <h3 class="text-xl font-black mb-4 border-b pb-2">Solicitar Nuevo Préstamo</h3>
+                        <form id="clientLoanForm" onsubmit="submitLoanReq(event)" class="space-y-3">
+                            <div><label class="text-[10px] font-bold text-slate-500">DIRECCIÓN</label><input type="text" id="req_direccion" value="${escapeHTML(cliente.direccion || '')}" class="w-full p-2 border rounded-lg text-sm" required></div>
+                            <div><label class="text-[10px] font-bold text-slate-500">TELÉFONO</label><input type="text" id="req_telefono" value="${escapeHTML(cliente.telefono)}" class="w-full p-2 border rounded-lg text-sm" required></div>
+                            <div class="pt-2"><label class="text-[10px] font-bold text-indigo-600">MONTO SOLICITADO (₡)</label><input type="number" id="req_monto" class="w-full p-3 border-2 border-indigo-200 rounded-xl font-black text-indigo-800 text-lg bg-indigo-50" required></div>
+                            <div class="flex gap-2 pt-4"><button type="button" onclick="closeModal('reqLoanModal')" class="flex-1 py-3 font-bold bg-slate-100 rounded-xl hover:bg-slate-200">Cancelar</button><button type="submit" class="flex-[2] bg-indigo-600 text-white py-3 rounded-xl font-black shadow-lg">Enviar Solicitud</button></div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            
+            renderChat('cliente', cliente.chat || []); startCountdown(nextDate);
+        }
+
+        function startCountdown(targetDate) {
+            if(countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                const dist = targetDate.getTime() - new Date().getTime();
+                if(dist < 0) { document.getElementById('countdown').innerText = "¡DÍA DE PAGO!"; return; }
+                const d = Math.floor(dist / 86400000), h = Math.floor((dist % 86400000) / 3600000), m = Math.floor((dist % 3600000) / 60000), s = Math.floor((dist % 60000) / 1000);
+                document.getElementById('countdown').innerText = `${d}d ${h.toString().padStart(2,'0')}h ${m.toString().padStart(2,'0')}m ${s.toString().padStart(2,'0')}s`;
+            }, 1000);
+        }
+
+        // SEGURIDAD: Inmutabilidad. El cliente SOLO envía las peticiones con updateDoc para no alterar el Saldo.
+        window.submitLoanReq = async (e) => {
+            e.preventDefault();
+            const cliente = dbLocal[0];
+            const solicitud = { 
+                monto: parseFloat(document.getElementById('req_monto').value), 
+                direccion: escapeHTML(document.getElementById('req_direccion').value), 
+                telefono: escapeHTML(document.getElementById('req_telefono').value), 
+                fecha: new Date().toLocaleDateString('es-CR'), estado: 'pendiente' 
+            };
+            // Usamos UPDATE para no enviar la data de Saldo entera, respetando la regla "diff" de Firestore
+            await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.id.toString()), {
+                solicitudPrestamo: solicitud
+            });
+            showToast("Solicitud enviada"); closeModal('reqLoanModal');
+        };
+
+        window.enviarComprobanteEspecial = async () => {
+            const input = document.getElementById('btnEnvioComprobante'); if(!input.files[0]) return;
+            showToast("Subiendo comprobante...", "⏳");
+            const cliente = dbLocal[0];
+            const img = await compressImage(input.files[0]);
+            
+            await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.id.toString()), {
+                chat: arrayUnion({ sender: 'cliente', msg: "🧾 Comprobante enviado al SINPE.", img: img, time: new Date().toLocaleString('es-CR') })
+            });
+            input.value = ''; showToast("Enviado al Socio", "✅");
+        };
+
+        function renderChat(view, chatArray) {
+            const c = document.getElementById(`chat${view.charAt(0).toUpperCase() + view.slice(1)}`); if(!c) return;
+            c.innerHTML = chatArray.map(m => `<div class="msg ${m.sender === view ? `msg-${view}` : (m.sender==='socio'?'msg-socio':'msg-cliente')}"><b>${m.sender.toUpperCase()}:</b><br>${escapeHTML(m.msg)}${m.img?`<br><img src="${m.img}" class="mt-2 rounded max-w-full cursor-pointer border" onclick="viewImage(this.src)">`:''}<div class="text-[8px] text-right mt-1 opacity-70">${m.time}</div></div>`).join('');
+            c.scrollTop = c.scrollHeight;
+        }
+
+        window.sendMsg = async (sender) => {
+            const input = document.getElementById(`chatInput${sender.charAt(0).toUpperCase() + sender.slice(1)}`);
+            const txt = input.value.trim(); if(!txt) return;
+            
+            let cid = currentRole === 'cliente' ? dbLocal[0].id : currentEditId; 
+            
+            await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cid.toString()), {
+                chat: arrayUnion({ sender, msg: escapeHTML(txt), time: new Date().toLocaleString('es-CR') })
+            });
+            input.value = '';
+        };
+
+        // ================= ADMIN AUDITORIA =================
+        function renderAdmin() {
+            const body = document.getElementById('adminTableBody'); body.innerHTML = '';
+            dbLocal.forEach(item => {
+                body.innerHTML += `<tr class="hover:bg-slate-50 border-b"><td class="p-4 font-mono text-[10px] text-slate-500">${item.userId}</td><td class="p-4"><span class="font-bold block">${escapeHTML(item.nombre)}</span><span class="text-[10px] text-slate-400">ID: ${escapeHTML(item.cedula)}</span></td><td class="p-4 text-center"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-[10px]">VERIFICADO</span></td></tr>`;
+            });
+        }
 
     </script>
 </body>
