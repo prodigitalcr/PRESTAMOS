@@ -180,20 +180,22 @@
                     </div>
                 </div>
 
-                <!-- Áreas de Código HTML -->
+                <!-- Áreas de Código HTML CON OPCIÓN DE SUBIR ARCHIVO -->
                 <div class="space-y-4">
-                    <div class="space-y-1">
+                    <div class="space-y-2 bg-slate-900/50 p-4 rounded-xl border border-slate-700">
                         <label class="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-2">
-                             HTML PARA ESTADO MORA <i data-lucide="alert-circle" class="w-3 h-3 text-red-400"></i>
+                             PANTALLA DE MORA (SUBIR .HTML) <i data-lucide="alert-circle" class="w-4 h-4 text-red-400"></i>
                         </label>
-                        <textarea id="m_html_mora" rows="4" placeholder="Pega aquí el código HTML para mostrar cuando el socio esté en MORA..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none font-mono text-[10px] focus:border-red-500"></textarea>
+                        <input type="file" accept=".html" onchange="handleFileUpload(event, 'm_html_mora')" class="block w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-red-500/20 file:text-red-400 hover:file:bg-red-500/30 cursor-pointer mb-2">
+                        <textarea id="m_html_mora" rows="3" placeholder="El código cargado aparecerá aquí, o puedes pegarlo directamente..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none font-mono text-[10px] focus:border-red-500"></textarea>
                     </div>
 
-                    <div class="space-y-1">
+                    <div class="space-y-2 bg-slate-900/50 p-4 rounded-xl border border-slate-700">
                         <label class="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-2">
-                             HTML PARA MANTENIMIENTO <i data-lucide="wrench" class="w-3 h-3 text-amber-400"></i>
+                             PANTALLA DE MANTENIMIENTO (SUBIR .HTML) <i data-lucide="wrench" class="w-4 h-4 text-amber-400"></i>
                         </label>
-                        <textarea id="m_html_mant" rows="4" placeholder="Pega aquí el código HTML para mostrar cuando el socio esté en MANTENIMIENTO..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none font-mono text-[10px] focus:border-amber-500"></textarea>
+                        <input type="file" accept=".html" onchange="handleFileUpload(event, 'm_html_mant')" class="block w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-500/20 file:text-amber-400 hover:file:bg-amber-500/30 cursor-pointer mb-2">
+                        <textarea id="m_html_mant" rows="3" placeholder="El código cargado aparecerá aquí, o puedes pegarlo directamente..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none font-mono text-[10px] focus:border-amber-500"></textarea>
                     </div>
                 </div>
 
@@ -216,7 +218,8 @@
             projectId: "prestamos-c97ed",
             storageBucket: "prestamos-c97ed.firebasestorage.app",
             messagingSenderId: "511457800969",
-            appId: "1:511457800969:web:18b8e97383fdb630b319d8"
+            appId: "1:511457800969:web:18b8e97383fdb630b319d8",
+            measurementId: "G-N0HK4HPLP1"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -286,7 +289,6 @@
                 const t = d.data();
                 const id = d.id;
 
-                // Suspender automáticamente si es activo y la fecha de corte es menor a hoy
                 if (t.estado === 'Activo' && t.fechaCorte && t.fechaCorte < today) {
                     foundExpired = true;
                     
@@ -307,6 +309,32 @@
             else notice.classList.add('hidden');
         }
 
+        // Lógica para Abrir Sitio Interceptando Mora / Mantenimiento
+        window.openTenantSite = (id) => {
+            const t = currentTenants.find(x => x.id === id);
+            if (!t) return;
+            
+            // Si está suspendido y tiene HTML cargado, mostramos el HTML directamente sin abrir la plataforma
+            if (t.estado === 'Suspendido' && (t.htmlMora || t.mensajeSuspension)) {
+                const htmlContent = t.htmlMora || t.mensajeSuspension;
+                const newWin = window.open('', '_blank');
+                newWin.document.open();
+                newWin.document.write(htmlContent);
+                newWin.document.close();
+            } 
+            // Igual para mantenimiento
+            else if (t.estado === 'Mantenimiento' && t.htmlMantenimiento) {
+                const newWin = window.open('', '_blank');
+                newWin.document.open();
+                newWin.document.write(t.htmlMantenimiento);
+                newWin.document.close();
+            } 
+            // Si está activo, abrimos la app normal
+            else {
+                window.open(`${BASE_URL}?tenant=${id}`, '_blank');
+            }
+        };
+
         function loadData() {
             onSnapshot(collection(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants'), (snap) => {
                 checkExpirations(snap);
@@ -320,9 +348,7 @@
                     const id = d.id;
                     currentTenants.push({ id, ...t });
 
-                    const fullUrl = `${BASE_URL}?tenant=${id}`;
                     const stColor = t.estado === 'Activo' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : (t.estado === 'Mantenimiento' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20');
-                    
                     const fInicio = t.fechaInicioPlan || 'N/D';
                     const fCorte = t.fechaCorte || 'N/D';
                     const planBadge = t.tipoPlan === 'Anual' ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30';
@@ -358,7 +384,7 @@
                             </span>
                         </td>
                         <td class="p-5 text-right flex justify-end gap-2 items-center h-full mt-2">
-                            <button onclick="window.open('${fullUrl}', '_blank')" title="Ir al Sitio" class="p-2 bg-slate-700/30 text-slate-400 rounded-xl hover:bg-slate-700 hover:text-white transition-all"><i data-lucide="external-link" class="w-4 h-4"></i></button>
+                            <button onclick="openTenantSite('${id}')" title="Ir al Sitio" class="p-2 bg-slate-700/30 text-slate-400 rounded-xl hover:bg-slate-700 hover:text-white transition-all"><i data-lucide="external-link" class="w-4 h-4"></i></button>
                             <button onclick="openEdit('${id}')" title="Configurar" class="p-2 bg-indigo-500/10 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all"><i data-lucide="settings" class="w-4 h-4"></i></button>
                             <button onclick="deleteTenant('${id}')" title="Eliminar" class="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-600 hover:text-white transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </td>
@@ -395,10 +421,8 @@
                     creado: new Date().toISOString()
                 };
 
-                // Guardar en Maestro
                 await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), data);
 
-                // Configurar datos iniciales del Socio
                 await setDoc(doc(db, 'artifacts', id, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: 'Activo',
                     nombreEmpresa: name,
@@ -429,7 +453,6 @@
             document.getElementById('m_inicio').value = t.fechaInicioPlan || '';
             document.getElementById('m_corte').value = t.fechaCorte || '';
             
-            // Cargar datos al formulario
             document.getElementById('m_html_mora').value = t.mensajeSuspension || t.htmlMora || '';
             document.getElementById('m_html_mant').value = t.htmlMantenimiento || '';
             
@@ -442,6 +465,22 @@
 
         window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
 
+        // Función para procesar el archivo HTML subido
+        window.handleFileUpload = (event, targetId) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById(targetId).value = e.target.result;
+                showToast("Archivo HTML cargado correctamente", "success");
+            };
+            reader.onerror = () => {
+                showToast("Hubo un error al leer el archivo", "error");
+            };
+            reader.readAsText(file);
+        };
+
         window.saveChanges = async () => {
             const status = document.querySelector('input[name="m_status"]:checked').value;
             const plan = document.getElementById('m_plan').value;
@@ -452,23 +491,21 @@
             const htmlMant = document.getElementById('m_html_mant').value;
 
             try {
-                // Actualizar Maestro
                 await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', editingId), {
                     estado: status,
                     tipoPlan: plan,
                     montoContrato: Number(monto),
                     fechaInicioPlan: inicio,
                     fechaCorte: corte,
-                    mensajeSuspension: htmlMora, // Clave estándar
-                    htmlMora: htmlMora, // Backup
+                    mensajeSuspension: htmlMora,
+                    htmlMora: htmlMora, 
                     htmlMantenimiento: htmlMant
                 }, { merge: true });
 
-                // Sincronizar Plataforma Socio (La app cliente lee esto)
                 await setDoc(doc(db, 'artifacts', editingId, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: status,
-                    mensajeSuspension: htmlMora, // Muy probablemente el cliente lee 'mensajeSuspension'
-                    htmlMora: htmlMora, // Backup
+                    mensajeSuspension: htmlMora, 
+                    htmlMora: htmlMora, 
                     htmlMantenimiento: htmlMant
                 }, { merge: true });
 
