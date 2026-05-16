@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SaaS Master Control | ProDigital</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide:0.263.0/lucide.min.js"></script>
@@ -10,28 +10,57 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        @keyframes slideIn { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .toast-enter { animation: slideIn 0.3s ease-out forwards; }
+        
+        /* Estilos para el visor de HTML inyectado (Solución Móvil) */
+        #mobile-html-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: white;
+            display: none;
+            overflow: auto;
+        }
+        #close-viewer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: #ef4444;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
     </style>
 </head>
 <body class="bg-[#0b1120] text-slate-200 min-h-screen font-sans">
+
+    <!-- Visor de Emergencia para Móviles (Inyecta el HTML de Mora/Mant) -->
+    <div id="mobile-html-viewer">
+        <button id="close-viewer" onclick="closeMobileViewer()">Cerrar Vista</button>
+        <div id="viewer-content"></div>
+    </div>
 
     <div id="toast-container" class="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2"></div>
 
     <!-- Pantalla de Autenticación -->
     <div id="auth-overlay" class="fixed inset-0 bg-[#0b1120] z-[100] flex flex-col items-center justify-center p-6">
-        <div class="bg-[#1e293b] p-10 rounded-3xl border border-slate-700/50 w-full max-w-md shadow-2xl">
+        <div class="bg-[#1e293b] p-8 md:p-10 rounded-3xl border border-slate-700/50 w-full max-w-md shadow-2xl">
             <div class="bg-indigo-600/20 p-4 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center border border-indigo-500/30">
                 <i data-lucide="shield-lock" class="w-10 h-10 text-indigo-400"></i>
             </div>
             <h1 class="text-2xl font-black mb-1 text-white text-center uppercase tracking-tight">SaaS Control</h1>
-            <p class="text-slate-400 mb-8 text-sm text-center">Acceso exclusivo soporte: <br><span class="text-indigo-400 font-mono text-xs">norercarlop04@gmail.com</span></p>
+            <p class="text-slate-400 mb-8 text-sm text-center">Acceso Soporte Oficial</p>
             
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <input type="email" id="email" required placeholder="Email de soporte" class="w-full p-4 rounded-xl bg-[#0f172a] border border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none text-white">
                 <input type="password" id="password" required placeholder="Contraseña" class="w-full p-4 rounded-xl bg-[#0f172a] border border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none text-white">
-                <button type="submit" id="btn-login" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 rounded-xl transition-all uppercase tracking-widest shadow-lg shadow-indigo-500/20">
-                    Verificar Credenciales
+                <button type="submit" id="btn-login" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 rounded-xl transition-all uppercase tracking-widest">
+                    Entrar al Sistema
                 </button>
             </form>
             <p id="auth-error" class="text-red-400 bg-red-500/10 border border-red-500/20 p-3 rounded-lg mt-4 text-xs hidden font-bold text-center"></p>
@@ -46,55 +75,52 @@
                     <div class="bg-indigo-600 p-2 rounded-lg"><i data-lucide="globe" class="text-white w-5 h-5"></i></div>
                     <h2 class="text-lg font-black text-white uppercase tracking-tighter">ProDigital Master</h2>
                 </div>
-                <div class="flex items-center gap-4">
-                    <span id="user-display" class="hidden md:block text-[10px] font-mono text-slate-500 bg-slate-900 px-3 py-1 rounded-full"></span>
-                    <button onclick="handleLogout()" class="text-slate-400 hover:text-red-400 text-sm font-bold flex items-center gap-2">
-                        <i data-lucide="power" class="w-4 h-4"></i> Salir
-                    </button>
-                </div>
+                <button onclick="handleLogout()" class="text-slate-400 hover:text-red-400 text-sm font-bold flex items-center gap-2">
+                    <i data-lucide="power" class="w-4 h-4"></i> <span class="hidden sm:inline">Salir</span>
+                </button>
             </div>
         </header>
 
-        <main class="max-w-7xl mx-auto p-4 md:p-8 w-full flex-1 overflow-hidden">
-            <!-- Sección Nuevo Socio -->
+        <main class="max-w-7xl mx-auto p-4 md:p-8 w-full flex-1">
+            <!-- Formulario Nuevo Socio -->
             <section class="bg-[#1e293b] border border-slate-700 p-6 rounded-3xl mb-8 shadow-xl">
                 <h3 class="text-lg font-black mb-6 text-white uppercase flex items-center gap-2">
-                    <i data-lucide="plus-circle" class="text-indigo-400"></i> Desplegar Nuevo Socio
+                    <i data-lucide="plus-circle" class="text-indigo-400"></i> Nuevo Socio
                 </h3>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                     <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">ID Único (Carpeta)</label>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">ID Carpeta</label>
                         <input type="text" id="new-id" placeholder="ej: mipyme_cr" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm font-mono text-white">
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Nombre Comercial</label>
-                        <input type="text" id="new-name" placeholder="Nombre de la empresa" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm text-white">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Nombre Empresa</label>
+                        <input type="text" id="new-name" placeholder="Nombre comercial" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm text-white">
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Tipo de Plan</label>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Plan</label>
                         <select id="new-plan" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm text-white">
                             <option value="Mensual">Mensual</option>
                             <option value="Anual">Anual</option>
                         </select>
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Teléfono (WhatsApp)</label>
-                        <input type="text" id="new-telefono" placeholder="Ej: 50688888888" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm text-white">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">WhatsApp</label>
+                        <input type="text" id="new-telefono" placeholder="50688888888" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm text-white">
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Cuota (₡)</label>
                         <input type="number" id="new-monto" placeholder="0.00" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm text-white">
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Inicio de Suscripción</label>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Fecha Inicio</label>
                         <input type="date" id="new-inicio" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm text-white">
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Corte de Plan</label>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Fecha Corte</label>
                         <input type="date" id="new-corte" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm text-white">
                     </div>
                 </div>
@@ -104,113 +130,94 @@
                 </button>
             </section>
 
-            <!-- Tabla de Socios -->
+            <!-- Lista de Socios con Scroll Horizontal en móvil -->
             <div class="bg-[#1e293b] rounded-3xl border border-slate-700/50 overflow-hidden shadow-2xl">
                 <div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-900/30">
-                    <span class="text-[10px] font-black uppercase text-slate-400">Listado de Socios Activos</span>
-                    <span id="expiry-notice" class="hidden animate-pulse text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1 rounded-full font-bold uppercase">
-                        Sistemas detectados vencidos
-                    </span>
+                    <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Sistemas Bajo Control</span>
+                    <span id="expiry-notice" class="hidden text-[10px] bg-red-500/20 text-red-400 px-3 py-1 rounded-full font-bold uppercase animate-pulse">Vencimientos Detectados</span>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left min-w-[850px]">
-                        <thead class="bg-slate-900/50 text-slate-400 text-[10px] uppercase font-black tracking-widest border-b border-slate-700">
+                    <table class="w-full text-left min-w-[900px]">
+                        <thead class="bg-slate-900/50 text-slate-400 text-[10px] uppercase font-black border-b border-slate-700">
                             <tr>
-                                <th class="p-5">Socio / ID</th>
-                                <th class="p-5">Periodo del Plan</th>
-                                <th class="p-5">Cuota y Tipo</th>
+                                <th class="p-5">Socio</th>
+                                <th class="p-5">Vigencia</th>
+                                <th class="p-5">Costo/Plan</th>
                                 <th class="p-5 text-center">Estado</th>
-                                <th class="p-5 text-right whitespace-nowrap">Opciones</th>
+                                <th class="p-5 text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tenant-list" class="divide-y divide-slate-700/50"></tbody>
                     </table>
                 </div>
+                <div class="md:hidden p-3 bg-slate-900/20 text-[9px] text-center text-slate-500 font-bold uppercase">
+                    ← Desliza para ver más opciones →
+                </div>
             </div>
         </main>
     </div>
 
-    <!-- Modal de Gestión -->
+    <!-- Modal de Configuración -->
     <div id="manageModal" class="fixed inset-0 bg-[#0b1120]/95 z-[200] hidden flex items-center justify-center p-4 backdrop-blur-md overflow-y-auto">
-        <div class="bg-[#1e293b] border border-slate-600 w-full max-w-2xl rounded-3xl p-6 md:p-8 my-8 shadow-2xl">
+        <div class="bg-[#1e293b] border border-slate-600 w-full max-w-2xl rounded-3xl p-6 md:p-8 my-auto shadow-2xl">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl md:text-2xl font-black text-white uppercase flex items-center gap-2">
-                    <i data-lucide="edit" class="text-indigo-400"></i> Gestión de Socio
+                <h2 class="text-xl font-black text-white uppercase flex items-center gap-2">
+                    <i data-lucide="settings-2" class="text-indigo-400"></i> Ajustes del Socio
                 </h2>
                 <button onclick="closeModal('manageModal')" class="text-slate-500 hover:text-white"><i data-lucide="x"></i></button>
             </div>
             
-            <div class="space-y-6">
+            <div class="space-y-5">
                 <div>
-                    <label class="text-[10px] font-bold text-slate-500 uppercase">Estado Forzado del Servicio</label>
-                    <div class="grid grid-cols-3 gap-2 mt-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-2 block">Estado de Disponibilidad</label>
+                    <div class="grid grid-cols-3 gap-2">
                         <label class="cursor-pointer">
                             <input type="radio" name="m_status" value="Activo" class="hidden peer">
-                            <div class="p-2 md:p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-emerald-600/20 peer-checked:border-emerald-500 text-slate-500 peer-checked:text-emerald-400 font-bold text-[10px] uppercase tracking-wider">ACTIVO</div>
+                            <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-emerald-600/20 peer-checked:border-emerald-500 text-slate-500 peer-checked:text-emerald-400 font-bold text-[10px] uppercase">ACTIVO</div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="m_status" value="Suspendido" class="hidden peer">
-                            <div class="p-2 md:p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-red-600/20 peer-checked:border-red-500 text-slate-500 peer-checked:text-red-400 font-bold text-[10px] uppercase tracking-wider">MORA</div>
+                            <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-red-600/20 peer-checked:border-red-500 text-slate-500 peer-checked:text-red-400 font-bold text-[10px] uppercase">MORA</div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="m_status" value="Mantenimiento" class="hidden peer">
-                            <div class="p-2 md:p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-amber-600/20 peer-checked:border-amber-500 text-slate-500 peer-checked:text-amber-400 font-bold text-[10px] uppercase tracking-wider">MANT.</div>
+                            <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-amber-600/20 peer-checked:border-amber-500 text-slate-500 peer-checked:text-amber-400 font-bold text-[10px] uppercase">MANT.</div>
                         </label>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">Tipo de Plan</label>
-                        <select id="m_plan" class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none focus:border-indigo-500">
-                            <option value="Mensual">Mensual</option>
-                            <option value="Anual">Anual</option>
-                        </select>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">Cuota (₡)</label>
-                        <input type="number" id="m_monto" class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none focus:border-indigo-500">
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">Inicio de Suscripción</label>
-                        <input type="date" id="m_inicio" class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none focus:border-indigo-500">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">Fecha de Corte</label>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">Corte de Pago</label>
                         <input type="date" id="m_corte" class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none focus:border-indigo-500">
                     </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">WhatsApp Socio</label>
+                        <input type="text" id="m_telefono" class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none">
+                    </div>
                 </div>
 
-                <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase">Teléfono (WhatsApp)</label>
-                    <input type="text" id="m_telefono" placeholder="+506..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none focus:border-indigo-500">
-                </div>
-
-                <!-- Áreas de Código HTML CON OPCIÓN DE SUBIR ARCHIVO -->
                 <div class="space-y-4">
-                    <div class="space-y-2 bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-2">
-                             PANTALLA DE MORA (SUBIR .HTML) <i data-lucide="alert-circle" class="w-4 h-4 text-red-400"></i>
+                    <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-700">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block flex items-center gap-2">
+                             HTML MOROSIDAD (.HTML) <i data-lucide="file-code-2" class="w-3 h-3 text-red-400"></i>
                         </label>
-                        <input type="file" accept=".html" onchange="handleFileUpload(event, 'm_html_mora')" class="block w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-red-500/20 file:text-red-400 hover:file:bg-red-500/30 cursor-pointer mb-2">
-                        <textarea id="m_html_mora" rows="3" placeholder="El código cargado aparecerá aquí, o puedes pegarlo directamente..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none font-mono text-[10px] focus:border-red-500"></textarea>
+                        <input type="file" accept=".html" onchange="processHTML(event, 'm_html_mora')" class="text-[10px] text-slate-500 file:bg-red-500/10 file:text-red-400 file:border-0 file:rounded-lg file:px-3 file:py-1 file:mr-3 mb-2 cursor-pointer">
+                        <textarea id="m_html_mora" rows="3" placeholder="Pega el código o sube un archivo..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none font-mono text-[10px] focus:border-red-500"></textarea>
                     </div>
 
-                    <div class="space-y-2 bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-2">
-                             PANTALLA DE MANTENIMIENTO (SUBIR .HTML) <i data-lucide="wrench" class="w-4 h-4 text-amber-400"></i>
+                    <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-700">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block flex items-center gap-2">
+                             HTML MANTENIMIENTO (.HTML) <i data-lucide="wrench" class="w-3 h-3 text-amber-400"></i>
                         </label>
-                        <input type="file" accept=".html" onchange="handleFileUpload(event, 'm_html_mant')" class="block w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-500/20 file:text-amber-400 hover:file:bg-amber-500/30 cursor-pointer mb-2">
-                        <textarea id="m_html_mant" rows="3" placeholder="El código cargado aparecerá aquí, o puedes pegarlo directamente..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none font-mono text-[10px] focus:border-amber-500"></textarea>
+                        <input type="file" accept=".html" onchange="processHTML(event, 'm_html_mant')" class="text-[10px] text-slate-500 file:bg-amber-500/10 file:text-amber-400 file:border-0 file:rounded-lg file:px-3 file:py-1 file:mr-3 mb-2 cursor-pointer">
+                        <textarea id="m_html_mant" rows="3" placeholder="Pega el código o sube un archivo..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none font-mono text-[10px] focus:border-amber-500"></textarea>
                     </div>
                 </div>
 
-                <div class="flex flex-col sm:flex-row gap-3 pt-4">
-                    <button onclick="closeModal('manageModal')" class="w-full sm:w-1/3 py-4 bg-slate-800 rounded-xl font-bold text-slate-400 uppercase text-xs">Cerrar</button>
-                    <button onclick="saveChanges()" class="w-full sm:w-2/3 py-4 bg-indigo-600 rounded-xl font-black text-white shadow-lg uppercase text-xs tracking-widest hover:bg-indigo-500 transition-colors">Sincronizar y Aplicar</button>
+                <div class="flex gap-3 pt-4">
+                    <button onclick="closeModal('manageModal')" class="flex-1 py-4 bg-slate-800 rounded-xl font-bold text-slate-400 uppercase text-xs">Cerrar</button>
+                    <button onclick="saveChanges()" class="flex-[2] py-4 bg-indigo-600 rounded-xl font-black text-white uppercase text-xs tracking-widest hover:bg-indigo-500 shadow-lg shadow-indigo-500/20">Aplicar Cambios</button>
                 </div>
             </div>
         </div>
@@ -219,7 +226,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCtPXuvsDuLDkpIJBlEEHFll6N-NofQ3bI",
@@ -244,33 +251,23 @@
         window.showToast = (msg, type = 'success') => {
             const container = document.getElementById('toast-container');
             const t = document.createElement('div');
-            t.className = `toast-enter p-4 rounded-xl shadow-lg font-bold text-white text-xs ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'} z-[9999]`;
+            t.className = `p-4 rounded-xl shadow-2xl font-bold text-white text-[11px] uppercase tracking-wider ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'} transition-all`;
             t.innerText = msg;
             container.appendChild(t);
-            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 500); }, 3000);
+            setTimeout(() => t.remove(), 4000);
         };
 
         window.handleLogin = async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value.trim();
             const pass = document.getElementById('password').value;
-            const btn = document.getElementById('btn-login');
-            
-            if(email !== 'norercarlop04@gmail.com') {
-                document.getElementById('auth-error').innerText = "ERROR: Email no autorizado.";
-                document.getElementById('auth-error').classList.remove('hidden');
-                return;
-            }
-
+            if(email !== 'norercarlop04@gmail.com') return;
             try {
-                btn.disabled = true; btn.innerText = "Entrando...";
                 await setPersistence(auth, browserLocalPersistence);
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (err) {
-                document.getElementById('auth-error').innerText = "Contraseña incorrecta.";
+                document.getElementById('auth-error').innerText = "Credenciales Inválidas";
                 document.getElementById('auth-error').classList.remove('hidden');
-            } finally {
-                btn.disabled = false; btn.innerText = "Verificar Credenciales";
             }
         };
 
@@ -280,7 +277,6 @@
             if (user) {
                 document.getElementById('auth-overlay').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
-                document.getElementById('user-display').innerText = user.email;
                 loadData();
             } else {
                 document.getElementById('auth-overlay').classList.remove('hidden');
@@ -289,128 +285,83 @@
             lucide.createIcons();
         });
 
-        // Lógica de Verificación Automática de Membresía
-        async function checkExpirations(snap) {
-            const today = new Date().toISOString().split('T')[0];
-            let foundExpired = false;
-
-            snap.forEach(async (d) => {
-                const t = d.data();
-                const id = d.id;
-
-                if (t.estado === 'Activo' && t.fechaCorte && t.fechaCorte < today) {
-                    foundExpired = true;
-                    
-                    await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), {
-                        estado: 'Suspendido'
-                    }, { merge: true });
-
-                    await setDoc(doc(db, 'artifacts', id, 'public', 'data', 'usuarios', 'admin_data'), {
-                        estadoTenant: 'Suspendido'
-                    }, { merge: true });
-                    
-                    showToast(`Socio ${id} suspendido por fecha de corte vencida.`, "error");
-                }
-            });
-
-            const notice = document.getElementById('expiry-notice');
-            if(foundExpired) notice.classList.remove('hidden');
-            else notice.classList.add('hidden');
-        }
-
-        // Lógica robusta para móviles (Bloqueo de Pop-ups)
+        // VISOR DE HTML ESPECIAL PARA MÓVILES (Evita bloqueo de Pop-ups)
         window.openTenantSite = (id) => {
             const t = currentTenants.find(x => x.id === id);
             if (!t) return;
             
-            if (t.estado === 'Suspendido' && (t.htmlMora || t.mensajeSuspension)) {
-                const htmlContent = t.htmlMora || t.mensajeSuspension;
-                const newWin = window.open('', '_blank');
-                if (newWin) {
-                    newWin.document.open();
-                    newWin.document.write(htmlContent);
-                    newWin.document.close();
-                } else {
-                    showToast("Por favor habilita las ventanas emergentes (pop-ups) en tu móvil/navegador para ver la pantalla.", "error");
-                }
-            } 
-            else if (t.estado === 'Mantenimiento' && t.htmlMantenimiento) {
-                const newWin = window.open('', '_blank');
-                if (newWin) {
-                    newWin.document.open();
-                    newWin.document.write(t.htmlMantenimiento);
-                    newWin.document.close();
-                } else {
-                    showToast("Por favor habilita las ventanas emergentes (pop-ups) en tu móvil/navegador para ver la pantalla.", "error");
-                }
-            } 
-            else {
-                const newWin = window.open(`${BASE_URL}?tenant=${id}`, '_blank');
-                if(!newWin) showToast("Por favor habilita las ventanas emergentes (pop-ups).", "error");
+            const isRestricted = (t.estado === 'Suspendido' || t.estado === 'Mantenimiento');
+            const restrictedContent = t.estado === 'Suspendido' ? (t.htmlMora || t.mensajeSuspension) : t.htmlMantenimiento;
+
+            if (isRestricted && restrictedContent) {
+                // Si hay contenido HTML personalizado, lo inyectamos directamente en el visor de emergencia
+                document.getElementById('viewer-content').innerHTML = restrictedContent;
+                document.getElementById('mobile-html-viewer').style.display = 'block';
+                document.body.style.overflow = 'hidden'; // Evita scroll de fondo
+                showToast("Visualizando pantalla de restricción", "success");
+            } else {
+                // Si es un sitio activo, abrimos el link normal
+                const url = `${BASE_URL}?tenant=${id}`;
+                const newWin = window.open(url, '_blank');
+                if(!newWin) showToast("Habilite ventanas emergentes para abrir el sitio", "error");
             }
+        };
+
+        window.closeMobileViewer = () => {
+            document.getElementById('mobile-html-viewer').style.display = 'none';
+            document.getElementById('viewer-content').innerHTML = '';
+            document.body.style.overflow = 'auto';
         };
 
         function loadData() {
             onSnapshot(collection(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants'), (snap) => {
-                checkExpirations(snap);
-                
                 const list = document.getElementById('tenant-list');
                 list.innerHTML = "";
                 currentTenants = [];
+                const today = new Date().toISOString().split('T')[0];
 
                 snap.forEach(d => {
                     const t = d.data();
                     const id = d.id;
                     currentTenants.push({ id, ...t });
 
+                    const isExpired = t.fechaCorte && t.fechaCorte < today && t.estado === 'Activo';
                     const stColor = t.estado === 'Activo' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : (t.estado === 'Mantenimiento' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20');
-                    const fInicio = t.fechaInicioPlan || 'N/D';
-                    const fCorte = t.fechaCorte || 'N/D';
-                    const planBadge = t.tipoPlan === 'Anual' ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30';
                     
-                    // Configuración del Enlace de WhatsApp
-                    const mensajeWhatsApp = encodeURIComponent(`Hola ${t.empresa || id}, somos el equipo de ProDigital. Estamos a la orden por si deseas renovar tu suscripción que vence el ${fCorte}.`);
-                    const cleanPhone = t.telefono ? t.telefono.replace(/\+/g,'').replace(/\s/g,'') : '';
-                    const linkWhatsApp = cleanPhone ? `https://wa.me/${cleanPhone}?text=${mensajeWhatsApp}` : `https://wa.me/?text=${mensajeWhatsApp}`;
+                    const msgWA = encodeURIComponent(`Hola ${t.empresa}, somos ProDigital. Te recordamos que tu suscripción vence el ${t.fechaCorte}. Estamos a la orden por cualquier consulta.`);
+                    const waLink = t.telefono ? `https://wa.me/${t.telefono.replace(/\+/g,'')}?text=${msgWA}` : `https://wa.me/?text=${msgWA}`;
 
                     const row = document.createElement('tr');
-                    row.className = "hover:bg-slate-800/40 transition-all border-b border-slate-700/30 group";
+                    row.className = "hover:bg-slate-800/40 transition-all border-b border-slate-700/30";
                     row.innerHTML = `
                         <td class="p-5">
-                            <div class="font-black text-white text-xs uppercase tracking-tight">${t.empresa}</div>
-                            <div class="text-[9px] text-slate-500 font-mono flex items-center gap-1 mt-1">
-                                <i data-lucide="folder" class="w-3 h-3"></i> ${id}
-                            </div>
+                            <div class="font-black text-white text-xs uppercase">${t.empresa}</div>
+                            <div class="text-[9px] text-slate-500 font-mono mt-1">ID: ${id}</div>
                         </td>
                         <td class="p-5">
-                            <div class="flex flex-col gap-1.5">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-[9px] font-bold text-slate-500 uppercase w-10">Inicio:</span>
-                                    <span class="text-[10px] font-mono text-slate-300 bg-[#0f172a] px-2 py-0.5 rounded border border-slate-700">${fInicio}</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-[9px] font-bold text-slate-500 uppercase w-10">Corte:</span>
-                                    <span class="text-[10px] font-mono text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">${fCorte}</span>
-                                </div>
-                            </div>
+                            <div class="text-[10px] text-slate-300 font-mono bg-slate-900 px-2 py-1 rounded inline-block">Corte: ${t.fechaCorte || 'N/D'}</div>
+                            ${isExpired ? '<div class="text-[8px] text-red-400 font-bold mt-1 uppercase tracking-tighter">¡Vencido hoy!</div>' : ''}
                         </td>
                         <td class="p-5">
-                            <div class="font-mono text-slate-300 text-sm font-bold whitespace-nowrap">₡${Number(t.montoContrato || 0).toLocaleString()}</div>
-                            <div class="mt-1"><span class="text-[8px] px-2 py-0.5 rounded uppercase font-black tracking-widest border ${planBadge}">${t.tipoPlan || 'Mensual'}</span></div>
+                            <div class="font-mono text-indigo-300 text-sm font-bold">₡${Number(t.montoContrato || 0).toLocaleString()}</div>
+                            <div class="text-[8px] text-slate-500 uppercase font-black">${t.tipoPlan}</div>
                         </td>
                         <td class="p-5 text-center">
-                            <span class="px-3 py-1.5 rounded-full border ${stColor} text-[9px] font-black uppercase tracking-widest">
+                            <span class="px-3 py-1.5 rounded-full border ${stColor} text-[9px] font-black uppercase">
                                 ${t.estado}
                             </span>
                         </td>
                         <td class="p-5">
-                            <div class="flex justify-end gap-2 items-center whitespace-nowrap h-full">
-                                <a href="${linkWhatsApp}" target="_blank" title="Enviar Recordatorio WhatsApp" class="p-2 bg-emerald-500/10 text-emerald-500 rounded-xl hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center">
+                            <div class="flex justify-end gap-2 items-center">
+                                <a href="${waLink}" target="_blank" class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl hover:bg-emerald-600 hover:text-white transition-all">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
                                 </a>
-                                <button onclick="openTenantSite('${id}')" title="Ir al Sitio" class="p-2 bg-slate-700/30 text-slate-400 rounded-xl hover:bg-slate-700 hover:text-white transition-all"><i data-lucide="external-link" class="w-4 h-4"></i></button>
-                                <button onclick="openEdit('${id}')" title="Configurar" class="p-2 bg-indigo-500/10 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all"><i data-lucide="settings" class="w-4 h-4"></i></button>
-                                <button onclick="deleteTenant('${id}')" title="Eliminar" class="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-600 hover:text-white transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                <button onclick="openTenantSite('${id}')" class="p-2.5 bg-slate-700/50 text-slate-300 rounded-xl hover:bg-white hover:text-black transition-all">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="openEdit('${id}')" class="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all">
+                                    <i data-lucide="settings" class="w-4 h-4"></i>
+                                </button>
                             </div>
                         </td>
                     `;
@@ -420,141 +371,101 @@
             });
         }
 
+        window.processHTML = (e, target) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                document.getElementById(target).value = ev.target.result;
+                showToast("HTML cargado correctamente");
+            };
+            reader.readAsText(file);
+        };
+
         window.createTenant = async () => {
-            const id = document.getElementById('new-id').value.trim().toLowerCase().replace(/\s/g, '_');
+            const id = document.getElementById('new-id').value.trim().toLowerCase();
             const name = document.getElementById('new-name').value.trim();
             const plan = document.getElementById('new-plan').value;
-            const telefono = document.getElementById('new-telefono').value.trim();
+            const tel = document.getElementById('new-telefono').value.trim();
             const monto = document.getElementById('new-monto').value;
-            const inicio = document.getElementById('new-inicio').value;
             const corte = document.getElementById('new-corte').value;
-            const btn = document.getElementById('btn-create');
 
-            if(!id || !name || !corte || !inicio) return showToast("Por favor complete todos los datos del plan", "error");
+            if(!id || !name || !corte) return showToast("Faltan datos críticos", "error");
 
             try {
-                btn.disabled = true; btn.innerText = "Lanzando...";
-                
                 const data = {
                     empresa: name,
                     tipoPlan: plan,
-                    telefono: telefono,
-                    montoContrato: Number(monto) || 0,
-                    fechaInicioPlan: inicio,
+                    telefono: tel,
+                    montoContrato: Number(monto),
                     fechaCorte: corte,
                     estado: 'Activo',
-                    mensajeSuspension: '',
-                    htmlMantenimiento: '',
-                    creado: new Date().toISOString()
+                    htmlMora: '',
+                    htmlMantenimiento: ''
                 };
-
                 await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), data);
-
                 await setDoc(doc(db, 'artifacts', id, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: 'Activo',
                     nombreEmpresa: name,
-                    telefono: telefono,
-                    tenantId: id,
-                    mensajeSuspension: '',
-                    htmlMantenimiento: ''
+                    tenantId: id
                 }, { merge: true });
-
-                showToast("Socio creado con éxito");
+                
+                showToast("Socio creado exitosamente");
                 document.getElementById('new-id').value = "";
                 document.getElementById('new-name').value = "";
-                document.getElementById('new-telefono').value = "";
-                document.getElementById('new-monto').value = "";
-                document.getElementById('new-inicio').value = "";
-                document.getElementById('new-corte').value = "";
-            } catch (e) {
-                showToast("Error de conexión", "error");
-            } finally {
-                btn.disabled = false; btn.innerHTML = 'Lanzar Plataforma <i data-lucide="send" class="w-4 h-4 inline"></i>';
-                lucide.createIcons();
-            }
+            } catch (e) { showToast("Error al crear socio", "error"); }
         };
 
         window.openEdit = (id) => {
             editingId = id;
             const t = currentTenants.find(x => x.id === id);
-            document.getElementById('m_plan').value = t.tipoPlan || 'Mensual';
-            document.getElementById('m_monto').value = t.montoContrato || 0;
-            document.getElementById('m_inicio').value = t.fechaInicioPlan || '';
             document.getElementById('m_corte').value = t.fechaCorte || '';
             document.getElementById('m_telefono').value = t.telefono || '';
-            
-            document.getElementById('m_html_mora').value = t.mensajeSuspension || t.htmlMora || '';
+            document.getElementById('m_html_mora').value = t.htmlMora || t.mensajeSuspension || '';
             document.getElementById('m_html_mant').value = t.htmlMantenimiento || '';
-            
             const rads = document.getElementsByName('m_status');
             for(let r of rads) if(r.value === t.estado) r.checked = true;
-            
             document.getElementById('manageModal').classList.remove('hidden');
             lucide.createIcons();
         };
 
         window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
 
-        // Función para procesar el archivo HTML subido
-        window.handleFileUpload = (event, targetId) => {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                document.getElementById(targetId).value = e.target.result;
-                showToast("Archivo HTML cargado correctamente", "success");
-            };
-            reader.onerror = () => {
-                showToast("Hubo un error al leer el archivo", "error");
-            };
-            reader.readAsText(file);
-        };
-
         window.saveChanges = async () => {
             const status = document.querySelector('input[name="m_status"]:checked').value;
-            const plan = document.getElementById('m_plan').value;
-            const monto = document.getElementById('m_monto').value;
-            const inicio = document.getElementById('m_inicio').value;
             const corte = document.getElementById('m_corte').value;
-            const telefono = document.getElementById('m_telefono').value.trim();
-            const htmlMora = document.getElementById('m_html_mora').value;
-            const htmlMant = document.getElementById('m_html_mant').value;
+            const tel = document.getElementById('m_telefono').value;
+            const hMora = document.getElementById('m_html_mora').value;
+            const hMant = document.getElementById('m_html_mant').value;
 
             try {
+                // Actualizar Master
                 await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', editingId), {
                     estado: status,
-                    tipoPlan: plan,
-                    telefono: telefono,
-                    montoContrato: Number(monto),
-                    fechaInicioPlan: inicio,
                     fechaCorte: corte,
-                    mensajeSuspension: htmlMora,
-                    htmlMora: htmlMora, 
-                    htmlMantenimiento: htmlMant
+                    telefono: tel,
+                    htmlMora: hMora,
+                    mensajeSuspension: hMora,
+                    htmlMantenimiento: hMant
                 }, { merge: true });
 
+                // Sincronizar con App del Socio
                 await setDoc(doc(db, 'artifacts', editingId, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: status,
-                    telefono: telefono,
-                    mensajeSuspension: htmlMora, 
-                    htmlMora: htmlMora, 
-                    htmlMantenimiento: htmlMant
+                    htmlMora: hMora,
+                    mensajeSuspension: hMora,
+                    htmlMantenimiento: hMant
                 }, { merge: true });
 
-                showToast("Socio actualizado y sincronizado");
+                showToast("Sincronización completa");
                 closeModal('manageModal');
-            } catch (e) {
-                showToast("Error al sincronizar", "error");
-            }
+            } catch (e) { showToast("Error de sincronización", "error"); }
         };
 
         window.deleteTenant = async (id) => {
-            if(confirm(`¿Eliminar permanentemente el registro de ${id}?`)) {
-                try {
-                    await deleteDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id));
-                    showToast("Registro borrado");
-                } catch(e) { showToast("Error al borrar", "error"); }
+            if(confirm("¿Eliminar socio?")) {
+                await deleteDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id));
+                showToast("Socio eliminado");
             }
         };
 
