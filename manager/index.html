@@ -17,12 +17,20 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: 100%; /* Uso de 100% en lugar de 100vh corrige saltos en móviles iOS/Safari */
             z-index: 10000;
             background: white;
             display: none;
-            overflow: auto;
+            overflow: hidden; /* El iframe manejará su propio scroll */
         }
+        
+        #injected-content-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: #ffffff;
+        }
+
         #close-viewer-btn {
             position: fixed;
             top: 20px;
@@ -38,15 +46,21 @@
             box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
             border: none;
             cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #close-viewer-btn:hover {
+            background: #dc2626;
+            transform: scale(1.05);
         }
     </style>
 </head>
 <body class="bg-[#0b1120] text-slate-200 min-h-screen font-sans overflow-x-hidden">
 
-    <!-- Capa de Visualización Forzada (Para Morosidad/Mantenimiento) -->
+    <!-- Capa de Visualización Forzada (Aislada en Iframe para evitar conflictos CSS) -->
     <div id="global-html-viewer">
         <button id="close-viewer-btn" onclick="closeGlobalViewer()">Regresar al Panel</button>
-        <div id="injected-content"></div>
+        <iframe id="injected-content-frame" sandbox="allow-scripts allow-same-origin"></iframe>
     </div>
 
     <div id="toast-container" class="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2"></div>
@@ -272,6 +286,29 @@
             setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 500); }, 3500);
         };
 
+        // --- FORMATEADOR MAESTRO PARA VISTA DE PC EN MÓVILES ---
+        // Al aplicar un viewport de 1024px estático, los dispositivos móviles 
+        // hacen un "zoom out" automático y despliegan la web de manera idéntica a una PC.
+        window.formatForDesktopView = (html) => {
+            if (!html || html.trim() === '') return html;
+            let formatted = html;
+            
+            if (/<meta[^>]*name=["']viewport["'][^>]*>/i.test(formatted)) {
+                // Reemplaza viewports responsivos con uno de ancho estático
+                formatted = formatted.replace(/<meta[^>]*name=["']viewport["'][^>]*>/gi, '<meta name="viewport" content="width=1024">');
+            } else if (/<head>/i.test(formatted)) {
+                // Si tiene un head pero no viewport, se inyecta
+                formatted = formatted.replace(/<head>/i, '<head>\n    <meta name="viewport" content="width=1024">');
+            } else if (/<html/i.test(formatted)) {
+                // Si tiene html pero no head
+                formatted = formatted.replace(/<html[^>]*>/i, '$&\n<head>\n    <meta name="viewport" content="width=1024">\n</head>');
+            } else {
+                // Si solo copian/pegan un fragmento sin cuerpo (solo imagen o un div) lo aseguramos en toda la pantalla
+                formatted = `<!DOCTYPE html>\n<html lang="es">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=1024">\n    <style>body { margin: 0; padding: 0; background-color: #ffffff; min-height: 100vh; font-family: system-ui, -apple-system, sans-serif; }</style>\n</head>\n<body>\n    ${formatted}\n</body>\n</html>`;
+            }
+            return formatted;
+        };
+
         // Autenticación
         window.handleLogin = async (e) => {
             e.preventDefault();
@@ -302,18 +339,22 @@
             lucide.createIcons();
         });
 
-        // VISUALIZACIÓN FORZADA (Solución para móvil y PC)
+        // VISUALIZACIÓN FORZADA EN IFRAME
         window.visualizeTenant = (id) => {
             const t = currentTenants.find(x => x.id === id);
             if (!t) return;
 
-            // Si el sitio está restringido, inyectamos el HTML guardado para que lo vea IGUAL que el cliente
             if (t.estado === 'Suspendido' || t.estado === 'Mantenimiento') {
                 const content = t.estado === 'Suspendido' ? (t.htmlMora || t.mensajeSuspension) : t.htmlMantenimiento;
                 
                 if (!content) return showToast("No hay HTML guardado para este estado", "error");
 
-                document.getElementById('injected-content').innerHTML = content;
+                const iframe = document.getElementById('injected-content-frame');
+                
+                // Aplicamos el formateador para la previsualización del master
+                const finalContent = formatForDesktopView(content);
+
+                iframe.srcdoc = finalContent;
                 document.getElementById('global-html-viewer').style.display = 'block';
                 document.body.style.overflow = 'hidden';
                 showToast(`Visualizando vista de ${t.estado}`);
@@ -327,7 +368,7 @@
 
         window.closeGlobalViewer = () => {
             document.getElementById('global-html-viewer').style.display = 'none';
-            document.getElementById('injected-content').innerHTML = '';
+            document.getElementById('injected-content-frame').srcdoc = ''; 
             document.body.style.overflow = 'auto';
         };
 
@@ -368,16 +409,20 @@
                         </td>
                         <td class="p-6">
                             <div class="flex justify-end gap-2 items-center">
-                                <a href="${waLink}" target="_blank" class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl hover:bg-emerald-500 hover:text-white transition-all shadow-lg" title="Contactar Socio">
+                                <!-- Botón de WhatsApp -->
+                                <a href="${waLink}" target="_blank" class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl hover:bg-emerald-500 hover:text-white transition-all shadow-lg" title="Contactar Socio por WhatsApp">
                                     <i data-lucide="message-circle" class="w-4 h-4"></i>
                                 </a>
+                                <!-- Botón de Visualizar (Ojo) -->
                                 <button onclick="visualizeTenant('${id}')" class="p-2.5 bg-slate-700/50 text-slate-300 rounded-xl hover:bg-white hover:text-black transition-all shadow-lg" title="Visualizar Estado">
                                     <i data-lucide="eye" class="w-4 h-4"></i>
                                 </button>
+                                <!-- Botón de Editar -->
                                 <button onclick="openEdit('${id}')" class="p-2.5 bg-indigo-600/20 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-lg" title="Configurar">
                                     <i data-lucide="settings" class="w-4 h-4"></i>
                                 </button>
-                                <button onclick="deleteTenant('${id}')" class="p-2.5 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-lg" title="Eliminar Socio">
+                                <!-- Botón de Eliminar Manualmente -->
+                                <button onclick="deleteTenant('${id}')" class="p-2.5 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-lg" title="Eliminar Socio Manualmente">
                                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                                 </button>
                             </div>
@@ -394,8 +439,10 @@
             if(!file) return;
             const reader = new FileReader();
             reader.onload = (ev) => {
-                document.getElementById(target).value = ev.target.result;
-                showToast("HTML cargado correctamente");
+                // Lo formateamos en cuanto el usuario carga el archivo
+                const html = formatForDesktopView(ev.target.result);
+                document.getElementById(target).value = html;
+                showToast("HTML cargado y adaptado para vista de PC");
             };
             reader.readAsText(file);
         };
@@ -451,8 +498,17 @@
 
         window.saveChanges = async () => {
             const status = document.querySelector('input[name="m_status"]:checked').value;
-            const hMora = document.getElementById('m_html_mora').value;
-            const hMant = document.getElementById('m_html_mant').value;
+            let hMora = document.getElementById('m_html_mora').value;
+            let hMant = document.getElementById('m_html_mant').value;
+
+            // Formatear automáticamente ANTES de guardar en base de datos.
+            // Esto asegura que la App del socio ya reciba el HTML con el "zoom out" incrustado.
+            hMora = formatForDesktopView(hMora);
+            hMant = formatForDesktopView(hMant);
+            
+            // Actualizar vista del editor para reflejar lo que se va a guardar
+            document.getElementById('m_html_mora').value = hMora;
+            document.getElementById('m_html_mant').value = hMant;
 
             try {
                 // Actualizar Registro Maestro
@@ -463,7 +519,7 @@
                     htmlMantenimiento: hMant
                 }, { merge: true });
 
-                // Sincronizar App del Socio (El cliente lee estos campos)
+                // Sincronizar App del Socio (El cliente lee estos campos con la inyección aplicada)
                 await setDoc(doc(db, 'artifacts', editingId, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: status,
                     htmlMora: hMora,
