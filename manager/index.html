@@ -11,213 +11,228 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
         
-        /* Estilos para el visor de HTML inyectado (Solución Móvil) */
-        #mobile-html-viewer {
+        /* Visor de HTML Inyectado (Garantiza ver el mensaje en móvil y PC por igual) */
+        #global-html-viewer {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 9999;
+            z-index: 10000;
             background: white;
             display: none;
             overflow: auto;
         }
-        #close-viewer {
+        #close-viewer-btn {
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 10000;
+            z-index: 10001;
             background: #ef4444;
             color: white;
-            padding: 10px 15px;
+            padding: 12px 20px;
             border-radius: 50px;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 12px;
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+            border: none;
+            cursor: pointer;
         }
     </style>
 </head>
-<body class="bg-[#0b1120] text-slate-200 min-h-screen font-sans">
+<body class="bg-[#0b1120] text-slate-200 min-h-screen font-sans overflow-x-hidden">
 
-    <!-- Visor de Emergencia para Móviles (Inyecta el HTML de Mora/Mant) -->
-    <div id="mobile-html-viewer">
-        <button id="close-viewer" onclick="closeMobileViewer()">Cerrar Vista</button>
-        <div id="viewer-content"></div>
+    <!-- Capa de Visualización Forzada (Para Morosidad/Mantenimiento) -->
+    <div id="global-html-viewer">
+        <button id="close-viewer-btn" onclick="closeGlobalViewer()">Regresar al Panel</button>
+        <div id="injected-content"></div>
     </div>
 
     <div id="toast-container" class="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2"></div>
 
-    <!-- Pantalla de Autenticación -->
+    <!-- Pantalla de Login -->
     <div id="auth-overlay" class="fixed inset-0 bg-[#0b1120] z-[100] flex flex-col items-center justify-center p-6">
         <div class="bg-[#1e293b] p-8 md:p-10 rounded-3xl border border-slate-700/50 w-full max-w-md shadow-2xl">
-            <div class="bg-indigo-600/20 p-4 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center border border-indigo-500/30">
-                <i data-lucide="shield-lock" class="w-10 h-10 text-indigo-400"></i>
+            <div class="bg-indigo-600/20 p-4 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center border border-indigo-500/30 text-indigo-400">
+                <i data-lucide="shield-check" class="w-10 h-10"></i>
             </div>
-            <h1 class="text-2xl font-black mb-1 text-white text-center uppercase tracking-tight">SaaS Control</h1>
-            <p class="text-slate-400 mb-8 text-sm text-center">Acceso Soporte Oficial</p>
+            <h1 class="text-2xl font-black mb-1 text-white text-center uppercase tracking-tight">SaaS ProDigital</h1>
+            <p class="text-slate-400 mb-8 text-sm text-center font-bold">Panel de Soporte Maestro</p>
             
             <form onsubmit="handleLogin(event)" class="space-y-4">
-                <input type="email" id="email" required placeholder="Email de soporte" class="w-full p-4 rounded-xl bg-[#0f172a] border border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none text-white">
+                <input type="email" id="email" required placeholder="Email autorizado" class="w-full p-4 rounded-xl bg-[#0f172a] border border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none text-white">
                 <input type="password" id="password" required placeholder="Contraseña" class="w-full p-4 rounded-xl bg-[#0f172a] border border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none text-white">
-                <button type="submit" id="btn-login" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 rounded-xl transition-all uppercase tracking-widest">
-                    Entrar al Sistema
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 rounded-xl transition-all uppercase tracking-widest text-sm">
+                    Autenticar Sistema
                 </button>
             </form>
-            <p id="auth-error" class="text-red-400 bg-red-500/10 border border-red-500/20 p-3 rounded-lg mt-4 text-xs hidden font-bold text-center"></p>
+            <p id="auth-error" class="text-red-400 bg-red-500/10 border border-red-500/20 p-3 rounded-lg mt-4 text-xs hidden font-bold text-center uppercase"></p>
         </div>
     </div>
 
-    <!-- Contenido Principal -->
+    <!-- Interfaz Principal -->
     <div id="main-content" class="hidden flex-col min-h-screen">
-        <header class="bg-[#1e293b]/80 border-b border-slate-700 p-4 sticky top-0 backdrop-blur-md z-40">
-            <div class="max-w-7xl mx-auto flex justify-between items-center px-2">
+        <header class="bg-[#1e293b]/90 border-b border-slate-700 p-4 sticky top-0 backdrop-blur-xl z-40">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <div class="bg-indigo-600 p-2 rounded-lg"><i data-lucide="globe" class="text-white w-5 h-5"></i></div>
-                    <h2 class="text-lg font-black text-white uppercase tracking-tighter">ProDigital Master</h2>
+                    <div class="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-500/20">
+                        <i data-lucide="layout-dashboard" class="text-white w-5 h-5"></i>
+                    </div>
+                    <h2 class="text-lg font-black text-white uppercase tracking-tighter">Master Control <span class="text-indigo-400">v2.0</span></h2>
                 </div>
-                <button onclick="handleLogout()" class="text-slate-400 hover:text-red-400 text-sm font-bold flex items-center gap-2">
-                    <i data-lucide="power" class="w-4 h-4"></i> <span class="hidden sm:inline">Salir</span>
+                <button onclick="handleLogout()" class="bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-slate-700 flex items-center gap-2">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> Cerrar Sesión
                 </button>
             </div>
         </header>
 
         <main class="max-w-7xl mx-auto p-4 md:p-8 w-full flex-1">
-            <!-- Formulario Nuevo Socio -->
-            <section class="bg-[#1e293b] border border-slate-700 p-6 rounded-3xl mb-8 shadow-xl">
+            <!-- Registro de Nuevo Socio -->
+            <section class="bg-[#1e293b] border border-slate-700 p-6 md:p-8 rounded-3xl mb-8 shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-8 opacity-5">
+                    <i data-lucide="user-plus" class="w-24 h-24"></i>
+                </div>
+                
                 <h3 class="text-lg font-black mb-6 text-white uppercase flex items-center gap-2">
-                    <i data-lucide="plus-circle" class="text-indigo-400"></i> Nuevo Socio
+                    <i data-lucide="zap" class="text-indigo-400"></i> Desplegar Nueva Instancia
                 </h3>
                 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
                     <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">ID Carpeta</label>
-                        <input type="text" id="new-id" placeholder="ej: mipyme_cr" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm font-mono text-white">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">ID Único (Carpeta)</label>
+                        <input type="text" id="new-id" placeholder="ej: ferreteria_sj" class="w-full bg-[#0b1120] border border-slate-700 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-mono text-white">
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Nombre Empresa</label>
-                        <input type="text" id="new-name" placeholder="Nombre comercial" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm text-white">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Nombre Comercial</label>
+                        <input type="text" id="new-name" placeholder="Nombre de la empresa" class="w-full bg-[#0b1120] border border-slate-700 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-white">
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Plan</label>
-                        <select id="new-plan" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm text-white">
-                            <option value="Mensual">Mensual</option>
-                            <option value="Anual">Anual</option>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Plan de Servicio</label>
+                        <select id="new-plan" class="w-full bg-[#0b1120] border border-slate-700 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-white appearance-none">
+                            <option value="Mensual">Suscripción Mensual</option>
+                            <option value="Anual">Suscripción Anual</option>
                         </select>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">WhatsApp</label>
-                        <input type="text" id="new-telefono" placeholder="50688888888" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm text-white">
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">WhatsApp de Contacto</label>
+                        <input type="text" id="new-tel" placeholder="50688888888" class="w-full bg-[#0b1120] border border-slate-700 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-white">
+                    </div>
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Cuota (₡)</label>
-                        <input type="number" id="new-monto" placeholder="0.00" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm text-white">
+                        <input type="number" id="new-monto" placeholder="0.00" class="w-full bg-[#0b1120] border border-slate-700 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-white">
                     </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Fecha Inicio</label>
-                        <input type="date" id="new-inicio" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm text-white">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Fecha Corte</label>
-                        <input type="date" id="new-corte" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm text-white">
+                    <div class="space-y-1 md:col-span-2">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Fecha de Próximo Corte</label>
+                        <input type="date" id="new-corte" class="w-full bg-[#0b1120] border border-slate-700 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-white">
                     </div>
                 </div>
 
-                <button id="btn-create" onclick="createTenant()" class="mt-6 w-full md:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-black px-8 py-3 rounded-xl transition-all uppercase text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20">
-                    Lanzar Plataforma <i data-lucide="send" class="w-4 h-4"></i>
+                <button onclick="createTenant()" class="mt-8 w-full md:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-black px-10 py-4 rounded-2xl transition-all uppercase text-xs tracking-widest shadow-xl shadow-indigo-500/20 flex items-center justify-center gap-2">
+                    Iniciar Plataforma <i data-lucide="plus" class="w-4 h-4"></i>
                 </button>
             </section>
 
-            <!-- Lista de Socios con Scroll Horizontal en móvil -->
+            <!-- Lista Maestra de Socios -->
             <div class="bg-[#1e293b] rounded-3xl border border-slate-700/50 overflow-hidden shadow-2xl">
-                <div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-900/30">
-                    <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Sistemas Bajo Control</span>
-                    <span id="expiry-notice" class="hidden text-[10px] bg-red-500/20 text-red-400 px-3 py-1 rounded-full font-bold uppercase animate-pulse">Vencimientos Detectados</span>
+                <div class="p-6 border-b border-slate-700 bg-slate-900/40 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h4 class="text-white font-black uppercase text-sm tracking-widest">Sistemas Monitorizados</h4>
+                        <p class="text-slate-500 text-[10px] font-bold uppercase mt-1">Gestión de restricciones y acceso global</p>
+                    </div>
+                    <div class="bg-indigo-500/10 text-indigo-400 px-4 py-2 rounded-full text-[10px] font-black uppercase border border-indigo-500/20 animate-pulse">
+                        Sincronización Activa
+                    </div>
                 </div>
+                
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left min-w-[900px]">
-                        <thead class="bg-slate-900/50 text-slate-400 text-[10px] uppercase font-black border-b border-slate-700">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-900/60 text-slate-500 text-[10px] uppercase font-black border-b border-slate-700">
                             <tr>
-                                <th class="p-5">Socio</th>
-                                <th class="p-5">Vigencia</th>
-                                <th class="p-5">Costo/Plan</th>
-                                <th class="p-5 text-center">Estado</th>
-                                <th class="p-5 text-right">Acciones</th>
+                                <th class="p-6">Socio / ID</th>
+                                <th class="p-6">Plan / Vigencia</th>
+                                <th class="p-6">Inversión</th>
+                                <th class="p-6 text-center">Disponibilidad</th>
+                                <th class="p-6 text-right">Gestión</th>
                             </tr>
                         </thead>
-                        <tbody id="tenant-list" class="divide-y divide-slate-700/50"></tbody>
+                        <tbody id="tenant-list" class="divide-y divide-slate-700/40">
+                            <!-- JS inyectará las filas -->
+                        </tbody>
                     </table>
-                </div>
-                <div class="md:hidden p-3 bg-slate-900/20 text-[9px] text-center text-slate-500 font-bold uppercase">
-                    ← Desliza para ver más opciones →
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Modal de Configuración -->
+    <!-- Modal de Configuración Avanzada -->
     <div id="manageModal" class="fixed inset-0 bg-[#0b1120]/95 z-[200] hidden flex items-center justify-center p-4 backdrop-blur-md overflow-y-auto">
-        <div class="bg-[#1e293b] border border-slate-600 w-full max-w-2xl rounded-3xl p-6 md:p-8 my-auto shadow-2xl">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-black text-white uppercase flex items-center gap-2">
-                    <i data-lucide="settings-2" class="text-indigo-400"></i> Ajustes del Socio
-                </h2>
-                <button onclick="closeModal('manageModal')" class="text-slate-500 hover:text-white"><i data-lucide="x"></i></button>
+        <div class="bg-[#1e293b] border border-slate-600 w-full max-w-2xl rounded-[2.5rem] p-8 my-auto shadow-2xl relative">
+            <div class="flex justify-between items-center mb-8">
+                <div class="flex items-center gap-3">
+                    <div class="bg-indigo-500/20 p-3 rounded-2xl text-indigo-400">
+                        <i data-lucide="settings-2"></i>
+                    </div>
+                    <h2 class="text-xl font-black text-white uppercase tracking-tight">Ajustes de Servicio</h2>
+                </div>
+                <button onclick="closeModal('manageModal')" class="text-slate-500 hover:text-white transition-colors">
+                    <i data-lucide="x-circle" class="w-8 h-8"></i>
+                </button>
             </div>
             
-            <div class="space-y-5">
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 uppercase mb-2 block">Estado de Disponibilidad</label>
+            <div class="space-y-6">
+                <!-- Estado del Servicio -->
+                <div class="bg-slate-900/30 p-2 rounded-2xl border border-slate-700/50">
+                    <label class="text-[10px] font-black text-slate-500 uppercase mb-3 block px-2">Estado de Acceso</label>
                     <div class="grid grid-cols-3 gap-2">
-                        <label class="cursor-pointer">
+                        <label class="cursor-pointer group">
                             <input type="radio" name="m_status" value="Activo" class="hidden peer">
-                            <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-emerald-600/20 peer-checked:border-emerald-500 text-slate-500 peer-checked:text-emerald-400 font-bold text-[10px] uppercase">ACTIVO</div>
+                            <div class="py-4 text-center rounded-xl border border-slate-700 bg-slate-800/50 peer-checked:bg-emerald-600/20 peer-checked:border-emerald-500 text-slate-500 peer-checked:text-emerald-400 font-black text-[10px] uppercase transition-all group-hover:border-slate-500">FUNCIONAL</div>
                         </label>
-                        <label class="cursor-pointer">
+                        <label class="cursor-pointer group">
                             <input type="radio" name="m_status" value="Suspendido" class="hidden peer">
-                            <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-red-600/20 peer-checked:border-red-500 text-slate-500 peer-checked:text-red-400 font-bold text-[10px] uppercase">MORA</div>
+                            <div class="py-4 text-center rounded-xl border border-slate-700 bg-slate-800/50 peer-checked:bg-red-600/20 peer-checked:border-red-500 text-slate-500 peer-checked:text-red-400 font-black text-[10px] uppercase transition-all group-hover:border-slate-500">MOROSO</div>
                         </label>
-                        <label class="cursor-pointer">
+                        <label class="cursor-pointer group">
                             <input type="radio" name="m_status" value="Mantenimiento" class="hidden peer">
-                            <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-amber-600/20 peer-checked:border-amber-500 text-slate-500 peer-checked:text-amber-400 font-bold text-[10px] uppercase">MANT.</div>
+                            <div class="py-4 text-center rounded-xl border border-slate-700 bg-slate-800/50 peer-checked:bg-amber-600/20 peer-checked:border-amber-500 text-slate-500 peer-checked:text-amber-400 font-black text-[10px] uppercase transition-all group-hover:border-slate-500">MANTENIM.</div>
                         </label>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">Corte de Pago</label>
-                        <input type="date" id="m_corte" class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none focus:border-indigo-500">
+                <!-- Editor de Código de Restricción -->
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="bg-[#0b1120] p-5 rounded-3xl border border-slate-700">
+                        <div class="flex justify-between items-center mb-3">
+                            <label class="text-[10px] font-black text-slate-400 uppercase flex items-center gap-2">
+                                <i data-lucide="code" class="w-3 h-3 text-red-500"></i> Mensaje de Morosidad (HTML)
+                            </label>
+                            <label class="cursor-pointer text-[9px] bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-500 transition-all">
+                                Cargar Archivo <input type="file" accept=".html" onchange="processHTML(event, 'm_html_mora')" class="hidden">
+                            </label>
+                        </div>
+                        <textarea id="m_html_mora" rows="4" class="w-full bg-transparent border-0 outline-none text-indigo-300 font-mono text-[10px] resize-none" placeholder="Pega aquí el código HTML para clientes morosos..."></textarea>
                     </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">WhatsApp Socio</label>
-                        <input type="text" id="m_telefono" class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none">
+
+                    <div class="bg-[#0b1120] p-5 rounded-3xl border border-slate-700">
+                        <div class="flex justify-between items-center mb-3">
+                            <label class="text-[10px] font-black text-slate-400 uppercase flex items-center gap-2">
+                                <i data-lucide="wrench" class="w-3 h-3 text-amber-500"></i> Mensaje de Mantenimiento (HTML)
+                            </label>
+                            <label class="cursor-pointer text-[9px] bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-500 transition-all">
+                                Cargar Archivo <input type="file" accept=".html" onchange="processHTML(event, 'm_html_mant')" class="hidden">
+                            </label>
+                        </div>
+                        <textarea id="m_html_mant" rows="4" class="w-full bg-transparent border-0 outline-none text-amber-300 font-mono text-[10px] resize-none" placeholder="Pega aquí el código HTML para mantenimiento programado..."></textarea>
                     </div>
                 </div>
 
-                <div class="space-y-4">
-                    <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-700">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block flex items-center gap-2">
-                             HTML MOROSIDAD (.HTML) <i data-lucide="file-code-2" class="w-3 h-3 text-red-400"></i>
-                        </label>
-                        <input type="file" accept=".html" onchange="processHTML(event, 'm_html_mora')" class="text-[10px] text-slate-500 file:bg-red-500/10 file:text-red-400 file:border-0 file:rounded-lg file:px-3 file:py-1 file:mr-3 mb-2 cursor-pointer">
-                        <textarea id="m_html_mora" rows="3" placeholder="Pega el código o sube un archivo..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none font-mono text-[10px] focus:border-red-500"></textarea>
-                    </div>
-
-                    <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-700">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block flex items-center gap-2">
-                             HTML MANTENIMIENTO (.HTML) <i data-lucide="wrench" class="w-3 h-3 text-amber-400"></i>
-                        </label>
-                        <input type="file" accept=".html" onchange="processHTML(event, 'm_html_mant')" class="text-[10px] text-slate-500 file:bg-amber-500/10 file:text-amber-400 file:border-0 file:rounded-lg file:px-3 file:py-1 file:mr-3 mb-2 cursor-pointer">
-                        <textarea id="m_html_mant" rows="3" placeholder="Pega el código o sube un archivo..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none font-mono text-[10px] focus:border-amber-500"></textarea>
-                    </div>
-                </div>
-
-                <div class="flex gap-3 pt-4">
-                    <button onclick="closeModal('manageModal')" class="flex-1 py-4 bg-slate-800 rounded-xl font-bold text-slate-400 uppercase text-xs">Cerrar</button>
-                    <button onclick="saveChanges()" class="flex-[2] py-4 bg-indigo-600 rounded-xl font-black text-white uppercase text-xs tracking-widest hover:bg-indigo-500 shadow-lg shadow-indigo-500/20">Aplicar Cambios</button>
+                <div class="flex gap-4 pt-4">
+                    <button onclick="closeModal('manageModal')" class="flex-1 py-5 bg-slate-800 rounded-2xl font-bold text-slate-400 uppercase text-xs tracking-widest hover:bg-slate-700 transition-all">Cancelar</button>
+                    <button onclick="saveChanges()" class="flex-[2] py-5 bg-indigo-600 rounded-2xl font-black text-white uppercase text-xs tracking-widest hover:bg-indigo-500 shadow-xl shadow-indigo-500/20 transition-all">Sincronizar Cambios</button>
                 </div>
             </div>
         </div>
@@ -251,12 +266,13 @@
         window.showToast = (msg, type = 'success') => {
             const container = document.getElementById('toast-container');
             const t = document.createElement('div');
-            t.className = `p-4 rounded-xl shadow-2xl font-bold text-white text-[11px] uppercase tracking-wider ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'} transition-all`;
+            t.className = `p-4 rounded-xl shadow-2xl font-black text-white text-[10px] uppercase tracking-wider ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'} transition-all transform animate-bounce`;
             t.innerText = msg;
             container.appendChild(t);
-            setTimeout(() => t.remove(), 4000);
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 500); }, 3500);
         };
 
+        // Autenticación
         window.handleLogin = async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value.trim();
@@ -266,8 +282,9 @@
                 await setPersistence(auth, browserLocalPersistence);
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (err) {
-                document.getElementById('auth-error').innerText = "Credenciales Inválidas";
-                document.getElementById('auth-error').classList.remove('hidden');
+                const errBox = document.getElementById('auth-error');
+                errBox.innerText = "Error: Acceso Denegado";
+                errBox.classList.remove('hidden');
             }
         };
 
@@ -285,82 +302,83 @@
             lucide.createIcons();
         });
 
-        // VISOR DE HTML ESPECIAL PARA MÓVILES (Evita bloqueo de Pop-ups)
-        window.openTenantSite = (id) => {
+        // VISUALIZACIÓN FORZADA (Solución para móvil y PC)
+        window.visualizeTenant = (id) => {
             const t = currentTenants.find(x => x.id === id);
             if (!t) return;
-            
-            const isRestricted = (t.estado === 'Suspendido' || t.estado === 'Mantenimiento');
-            const restrictedContent = t.estado === 'Suspendido' ? (t.htmlMora || t.mensajeSuspension) : t.htmlMantenimiento;
 
-            if (isRestricted && restrictedContent) {
-                // Si hay contenido HTML personalizado, lo inyectamos directamente en el visor de emergencia
-                document.getElementById('viewer-content').innerHTML = restrictedContent;
-                document.getElementById('mobile-html-viewer').style.display = 'block';
-                document.body.style.overflow = 'hidden'; // Evita scroll de fondo
-                showToast("Visualizando pantalla de restricción", "success");
+            // Si el sitio está restringido, inyectamos el HTML guardado para que lo vea IGUAL que el cliente
+            if (t.estado === 'Suspendido' || t.estado === 'Mantenimiento') {
+                const content = t.estado === 'Suspendido' ? (t.htmlMora || t.mensajeSuspension) : t.htmlMantenimiento;
+                
+                if (!content) return showToast("No hay HTML guardado para este estado", "error");
+
+                document.getElementById('injected-content').innerHTML = content;
+                document.getElementById('global-html-viewer').style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                showToast(`Visualizando vista de ${t.estado}`);
             } else {
-                // Si es un sitio activo, abrimos el link normal
+                // Si está activo, abrimos la URL normal
                 const url = `${BASE_URL}?tenant=${id}`;
-                const newWin = window.open(url, '_blank');
-                if(!newWin) showToast("Habilite ventanas emergentes para abrir el sitio", "error");
+                const win = window.open(url, '_blank');
+                if(!win) showToast("Permita ventanas emergentes para ver el sitio activo", "error");
             }
         };
 
-        window.closeMobileViewer = () => {
-            document.getElementById('mobile-html-viewer').style.display = 'none';
-            document.getElementById('viewer-content').innerHTML = '';
+        window.closeGlobalViewer = () => {
+            document.getElementById('global-html-viewer').style.display = 'none';
+            document.getElementById('injected-content').innerHTML = '';
             document.body.style.overflow = 'auto';
         };
 
+        // Carga de Datos Realtime
         function loadData() {
             onSnapshot(collection(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants'), (snap) => {
                 const list = document.getElementById('tenant-list');
                 list.innerHTML = "";
                 currentTenants = [];
-                const today = new Date().toISOString().split('T')[0];
 
                 snap.forEach(d => {
                     const t = d.data();
                     const id = d.id;
                     currentTenants.push({ id, ...t });
 
-                    const isExpired = t.fechaCorte && t.fechaCorte < today && t.estado === 'Activo';
-                    const stColor = t.estado === 'Activo' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : (t.estado === 'Mantenimiento' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20');
+                    const badge = t.estado === 'Activo' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : (t.estado === 'Mantenimiento' ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' : 'text-red-400 bg-red-500/10 border-red-500/20');
                     
-                    const msgWA = encodeURIComponent(`Hola ${t.empresa}, somos ProDigital. Te recordamos que tu suscripción vence el ${t.fechaCorte}. Estamos a la orden por cualquier consulta.`);
-                    const waLink = t.telefono ? `https://wa.me/${t.telefono.replace(/\+/g,'')}?text=${msgWA}` : `https://wa.me/?text=${msgWA}`;
+                    const waLink = `https://wa.me/${t.telefono ? t.telefono.replace(/\D/g,'') : ''}?text=${encodeURIComponent('Hola ' + t.empresa + ', te contactamos de ProDigital soporte técnico.')}`;
 
                     const row = document.createElement('tr');
-                    row.className = "hover:bg-slate-800/40 transition-all border-b border-slate-700/30";
+                    row.className = "hover:bg-slate-800/30 transition-all border-b border-slate-700/30 group";
                     row.innerHTML = `
-                        <td class="p-5">
-                            <div class="font-black text-white text-xs uppercase">${t.empresa}</div>
-                            <div class="text-[9px] text-slate-500 font-mono mt-1">ID: ${id}</div>
+                        <td class="p-6">
+                            <div class="font-black text-white text-xs uppercase group-hover:text-indigo-400 transition-colors">${t.empresa}</div>
+                            <div class="text-[9px] text-slate-500 font-mono mt-1 tracking-widest">${id}</div>
                         </td>
-                        <td class="p-5">
-                            <div class="text-[10px] text-slate-300 font-mono bg-slate-900 px-2 py-1 rounded inline-block">Corte: ${t.fechaCorte || 'N/D'}</div>
-                            ${isExpired ? '<div class="text-[8px] text-red-400 font-bold mt-1 uppercase tracking-tighter">¡Vencido hoy!</div>' : ''}
+                        <td class="p-6">
+                            <div class="text-[10px] text-slate-300 font-bold uppercase">${t.tipoPlan}</div>
+                            <div class="text-[9px] text-slate-500 font-mono mt-0.5">Vence: ${t.fechaCorte}</div>
                         </td>
-                        <td class="p-5">
-                            <div class="font-mono text-indigo-300 text-sm font-bold">₡${Number(t.montoContrato || 0).toLocaleString()}</div>
-                            <div class="text-[8px] text-slate-500 uppercase font-black">${t.tipoPlan}</div>
+                        <td class="p-6">
+                            <div class="text-indigo-300 font-mono text-sm font-black">₡${Number(t.montoContrato || 0).toLocaleString()}</div>
                         </td>
-                        <td class="p-5 text-center">
-                            <span class="px-3 py-1.5 rounded-full border ${stColor} text-[9px] font-black uppercase">
+                        <td class="p-6 text-center">
+                            <span class="px-4 py-1.5 rounded-full border ${badge} text-[9px] font-black uppercase tracking-widest">
                                 ${t.estado}
                             </span>
                         </td>
-                        <td class="p-5">
+                        <td class="p-6">
                             <div class="flex justify-end gap-2 items-center">
-                                <a href="${waLink}" target="_blank" class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl hover:bg-emerald-600 hover:text-white transition-all">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                                <a href="${waLink}" target="_blank" class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl hover:bg-emerald-500 hover:text-white transition-all shadow-lg" title="Contactar Socio">
+                                    <i data-lucide="message-circle" class="w-4 h-4"></i>
                                 </a>
-                                <button onclick="openTenantSite('${id}')" class="p-2.5 bg-slate-700/50 text-slate-300 rounded-xl hover:bg-white hover:text-black transition-all">
+                                <button onclick="visualizeTenant('${id}')" class="p-2.5 bg-slate-700/50 text-slate-300 rounded-xl hover:bg-white hover:text-black transition-all shadow-lg" title="Visualizar Estado">
                                     <i data-lucide="eye" class="w-4 h-4"></i>
                                 </button>
-                                <button onclick="openEdit('${id}')" class="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all">
+                                <button onclick="openEdit('${id}')" class="p-2.5 bg-indigo-600/20 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-lg" title="Configurar">
                                     <i data-lucide="settings" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="deleteTenant('${id}')" class="p-2.5 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-lg" title="Eliminar Socio">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
                                 </button>
                             </div>
                         </td>
@@ -383,17 +401,17 @@
         };
 
         window.createTenant = async () => {
-            const id = document.getElementById('new-id').value.trim().toLowerCase();
+            const id = document.getElementById('new-id').value.trim().toLowerCase().replace(/\s/g, '_');
             const name = document.getElementById('new-name').value.trim();
             const plan = document.getElementById('new-plan').value;
-            const tel = document.getElementById('new-telefono').value.trim();
+            const tel = document.getElementById('new-tel').value.trim();
             const monto = document.getElementById('new-monto').value;
             const corte = document.getElementById('new-corte').value;
 
-            if(!id || !name || !corte) return showToast("Faltan datos críticos", "error");
+            if(!id || !name || !corte) return showToast("Complete los datos requeridos", "error");
 
             try {
-                const data = {
+                const payload = {
                     empresa: name,
                     tipoPlan: plan,
                     telefono: tel,
@@ -401,26 +419,26 @@
                     fechaCorte: corte,
                     estado: 'Activo',
                     htmlMora: '',
+                    mensajeSuspension: '',
                     htmlMantenimiento: ''
                 };
-                await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), data);
+                
+                await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), payload);
                 await setDoc(doc(db, 'artifacts', id, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: 'Activo',
                     nombreEmpresa: name,
                     tenantId: id
                 }, { merge: true });
-                
-                showToast("Socio creado exitosamente");
+
+                showToast("Nueva plataforma activada");
                 document.getElementById('new-id').value = "";
                 document.getElementById('new-name').value = "";
-            } catch (e) { showToast("Error al crear socio", "error"); }
+            } catch (e) { showToast("Error al desplegar socio", "error"); }
         };
 
         window.openEdit = (id) => {
             editingId = id;
             const t = currentTenants.find(x => x.id === id);
-            document.getElementById('m_corte').value = t.fechaCorte || '';
-            document.getElementById('m_telefono').value = t.telefono || '';
             document.getElementById('m_html_mora').value = t.htmlMora || t.mensajeSuspension || '';
             document.getElementById('m_html_mant').value = t.htmlMantenimiento || '';
             const rads = document.getElementsByName('m_status');
@@ -433,23 +451,19 @@
 
         window.saveChanges = async () => {
             const status = document.querySelector('input[name="m_status"]:checked').value;
-            const corte = document.getElementById('m_corte').value;
-            const tel = document.getElementById('m_telefono').value;
             const hMora = document.getElementById('m_html_mora').value;
             const hMant = document.getElementById('m_html_mant').value;
 
             try {
-                // Actualizar Master
+                // Actualizar Registro Maestro
                 await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', editingId), {
                     estado: status,
-                    fechaCorte: corte,
-                    telefono: tel,
                     htmlMora: hMora,
                     mensajeSuspension: hMora,
                     htmlMantenimiento: hMant
                 }, { merge: true });
 
-                // Sincronizar con App del Socio
+                // Sincronizar App del Socio (El cliente lee estos campos)
                 await setDoc(doc(db, 'artifacts', editingId, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: status,
                     htmlMora: hMora,
@@ -457,15 +471,17 @@
                     htmlMantenimiento: hMant
                 }, { merge: true });
 
-                showToast("Sincronización completa");
+                showToast("Cambios sincronizados globalmente");
                 closeModal('manageModal');
             } catch (e) { showToast("Error de sincronización", "error"); }
         };
 
         window.deleteTenant = async (id) => {
-            if(confirm("¿Eliminar socio?")) {
-                await deleteDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id));
-                showToast("Socio eliminado");
+            if(confirm(`¿Estás seguro de eliminar permanentemente a ${id.toUpperCase()}? Esta acción no se puede deshacer.`)) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id));
+                    showToast("Socio eliminado del sistema");
+                } catch(e) { showToast("Error al eliminar", "error"); }
             }
         };
 
