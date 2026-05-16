@@ -104,8 +104,8 @@
             <div class="bg-[#1e293b] rounded-3xl border border-slate-700/50 overflow-hidden shadow-2xl">
                 <div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-900/30">
                     <span class="text-[10px] font-black uppercase text-slate-400">Listado de Socios Activos</span>
-                    <span id="expiry-notice" class="hidden animate-pulse text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1 rounded-full font-bold uppercase">
-                        Sistemas detectados vencidos
+                    <span id="expiry-notice" class="hidden animate-pulse text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full font-bold uppercase">
+                        Sistemas en mantenimiento automático por fecha de corte
                     </span>
                 </div>
                 <div class="overflow-x-auto">
@@ -146,7 +146,7 @@
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="m_status" value="Suspendido" class="hidden peer">
-                            <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-red-600/20 peer-checked:border-red-500 text-slate-500 peer-checked:text-red-400 font-bold text-[10px] uppercase tracking-wider">MORA</div>
+                            <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-red-600/20 peer-checked:border-red-500 text-slate-500 peer-checked:text-red-400 font-bold text-[10px] uppercase tracking-wider">MOROSIDAD</div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="m_status" value="Mantenimiento" class="hidden peer">
@@ -186,14 +186,14 @@
                         <label class="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-2">
                              HTML PARA ESTADO MORA <i data-lucide="alert-circle" class="w-3 h-3 text-red-400"></i>
                         </label>
-                        <textarea id="m_html_mora" rows="4" placeholder="Pega aquí el código HTML para mostrar cuando el socio esté en MORA..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none font-mono text-[10px] focus:border-red-500"></textarea>
+                        <textarea id="m_html_mora" rows="3" placeholder="Pega código HTML para estado MOROSO..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none font-mono text-[10px] focus:border-red-500"></textarea>
                     </div>
 
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-2">
                              HTML PARA MANTENIMIENTO <i data-lucide="wrench" class="w-3 h-3 text-amber-400"></i>
                         </label>
-                        <textarea id="m_html_mant" rows="4" placeholder="Pega aquí el código HTML para mostrar cuando el socio esté en MANTENIMIENTO..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none font-mono text-[10px] focus:border-amber-500"></textarea>
+                        <textarea id="m_html_mant" rows="3" placeholder="Pega código HTML para MANTENIMIENTO (Suscripción vencida)..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none font-mono text-[10px] focus:border-amber-500"></textarea>
                     </div>
                 </div>
 
@@ -208,7 +208,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCtPXuvsDuLDkpIJBlEEHFll6N-NofQ3bI",
@@ -242,7 +242,6 @@
             e.preventDefault();
             const email = document.getElementById('email').value.trim();
             const pass = document.getElementById('password').value;
-            const btn = document.getElementById('btn-login');
             
             if(email !== 'norercarlop04@gmail.com') {
                 document.getElementById('auth-error').innerText = "ERROR: Email no autorizado.";
@@ -251,14 +250,11 @@
             }
 
             try {
-                btn.disabled = true; btn.innerText = "Entrando...";
                 await setPersistence(auth, browserLocalPersistence);
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (err) {
                 document.getElementById('auth-error').innerText = "Contraseña incorrecta.";
                 document.getElementById('auth-error').classList.remove('hidden');
-            } finally {
-                btn.disabled = false; btn.innerText = "Verificar Credenciales";
             }
         };
 
@@ -277,7 +273,7 @@
             lucide.createIcons();
         });
 
-        // Lógica de Verificación Automática de Membresía
+        // Lógica de Mantenimiento Automático (Cambio solicitado)
         async function checkExpirations(snap) {
             const today = new Date().toISOString().split('T')[0];
             let foundExpired = false;
@@ -286,19 +282,21 @@
                 const t = d.data();
                 const id = d.id;
 
-                // Suspender automáticamente si es activo y la fecha de corte es menor a hoy
+                // CAMBIO: Si la suscripción venció, pasar a "Mantenimiento" en lugar de "Suspendido"
                 if (t.estado === 'Activo' && t.fechaCorte && t.fechaCorte < today) {
                     foundExpired = true;
                     
+                    // Actualizar en tabla maestra
                     await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), {
-                        estado: 'Suspendido'
+                        estado: 'Mantenimiento'
                     }, { merge: true });
 
+                    // Sincronizar con el socio para mostrar pantalla de mantenimiento
                     await setDoc(doc(db, 'artifacts', id, 'public', 'data', 'usuarios', 'admin_data'), {
-                        estadoTenant: 'Suspendido'
+                        estadoTenant: 'Mantenimiento'
                     }, { merge: true });
                     
-                    showToast(`Socio ${id} suspendido por fecha de corte vencida.`, "error");
+                    showToast(`Socio ${id} puesto en MANTENIMIENTO por fecha vencida.`, "error");
                 }
             });
 
@@ -376,13 +374,10 @@
             const monto = document.getElementById('new-monto').value;
             const inicio = document.getElementById('new-inicio').value;
             const corte = document.getElementById('new-corte').value;
-            const btn = document.getElementById('btn-create');
 
-            if(!id || !name || !corte || !inicio) return showToast("Por favor complete todos los datos del plan", "error");
+            if(!id || !name || !corte || !inicio) return showToast("Por favor complete todos los datos", "error");
 
             try {
-                btn.disabled = true; btn.innerText = "Lanzando...";
-                
                 const data = {
                     empresa: name,
                     tipoPlan: plan,
@@ -390,34 +385,24 @@
                     fechaInicioPlan: inicio,
                     fechaCorte: corte,
                     estado: 'Activo',
-                    mensajeSuspension: '',
+                    htmlMora: '',
                     htmlMantenimiento: '',
                     creado: new Date().toISOString()
                 };
 
-                // Guardar en Maestro
                 await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), data);
-
-                // Configurar datos iniciales del Socio
                 await setDoc(doc(db, 'artifacts', id, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: 'Activo',
                     nombreEmpresa: name,
                     tenantId: id,
-                    mensajeSuspension: '',
+                    htmlMora: '',
                     htmlMantenimiento: ''
                 }, { merge: true });
 
                 showToast("Socio creado con éxito");
-                document.getElementById('new-id').value = "";
-                document.getElementById('new-name').value = "";
-                document.getElementById('new-monto').value = "";
-                document.getElementById('new-inicio').value = "";
-                document.getElementById('new-corte').value = "";
+                ['new-id', 'new-name', 'new-monto', 'new-inicio', 'new-corte'].forEach(i => document.getElementById(i).value = "");
             } catch (e) {
                 showToast("Error de conexión", "error");
-            } finally {
-                btn.disabled = false; btn.innerHTML = 'Lanzar Plataforma <i data-lucide="send" class="w-4 h-4 inline"></i>';
-                lucide.createIcons();
             }
         };
 
@@ -428,9 +413,7 @@
             document.getElementById('m_monto').value = t.montoContrato || 0;
             document.getElementById('m_inicio').value = t.fechaInicioPlan || '';
             document.getElementById('m_corte').value = t.fechaCorte || '';
-            
-            // Cargar datos al formulario
-            document.getElementById('m_html_mora').value = t.mensajeSuspension || t.htmlMora || '';
+            document.getElementById('m_html_mora').value = t.htmlMora || '';
             document.getElementById('m_html_mant').value = t.htmlMantenimiento || '';
             
             const rads = document.getElementsByName('m_status');
@@ -452,27 +435,23 @@
             const htmlMant = document.getElementById('m_html_mant').value;
 
             try {
-                // Actualizar Maestro
                 await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', editingId), {
                     estado: status,
                     tipoPlan: plan,
                     montoContrato: Number(monto),
                     fechaInicioPlan: inicio,
                     fechaCorte: corte,
-                    mensajeSuspension: htmlMora, // Clave estándar
-                    htmlMora: htmlMora, // Backup
+                    htmlMora: htmlMora,
                     htmlMantenimiento: htmlMant
                 }, { merge: true });
 
-                // Sincronizar Plataforma Socio (La app cliente lee esto)
                 await setDoc(doc(db, 'artifacts', editingId, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: status,
-                    mensajeSuspension: htmlMora, // Muy probablemente el cliente lee 'mensajeSuspension'
-                    htmlMora: htmlMora, // Backup
+                    htmlMora: htmlMora,
                     htmlMantenimiento: htmlMant
                 }, { merge: true });
 
-                showToast("Socio actualizado y sincronizado");
+                showToast("Cambios sincronizados");
                 closeModal('manageModal');
             } catch (e) {
                 showToast("Error al sincronizar", "error");
@@ -480,14 +459,13 @@
         };
 
         window.deleteTenant = async (id) => {
-            if(confirm(`¿Eliminar permanentemente el registro de ${id}?`)) {
+            if(confirm(`¿Eliminar permanentemente a ${id}?`)) {
                 try {
                     await deleteDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id));
-                    showToast("Registro borrado");
-                } catch(e) { showToast("Error al borrar", "error"); }
+                    showToast("Registro eliminado");
+                } catch(e) { showToast("Error", "error"); }
             }
         };
-
     </script>
 </body>
 </html>
