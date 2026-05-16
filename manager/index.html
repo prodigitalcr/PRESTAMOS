@@ -7,217 +7,133 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide:0.263.0/lucide.min.js"></script>
     <style>
-        /* Scrollbar styling */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
         
-        /* Animaciones para el Toast */
         @keyframes slideIn { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
         .toast-enter { animation: slideIn 0.3s ease-out forwards; }
-        .toast-exit { animation: fadeOut 0.3s ease-out forwards; }
     </style>
 </head>
-<body class="bg-[#0b1120] text-slate-200 min-h-screen font-sans selection:bg-indigo-500 selection:text-white">
+<body class="bg-[#0b1120] text-slate-200 min-h-screen font-sans">
 
-    <!-- Sistema de Notificaciones (Toasts) -->
-    <div id="toast-container" class="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2"></div>
 
-    <!-- Auth Guard Overlay -->
+    <!-- Auth Overlay -->
     <div id="auth-overlay" class="fixed inset-0 bg-[#0b1120] z-[100] flex flex-col items-center justify-center p-6 backdrop-blur-md">
-        <div class="bg-[#1e293b] p-10 rounded-3xl shadow-2xl border border-slate-700/50 w-full max-w-md text-center transform transition-all">
+        <div class="bg-[#1e293b] p-10 rounded-3xl border border-slate-700/50 w-full max-w-md text-center">
             <div class="bg-indigo-600/20 p-4 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center border border-indigo-500/30">
                 <i data-lucide="shield-check" class="w-10 h-10 text-indigo-400"></i>
             </div>
-            <h1 class="text-3xl font-black mb-2 text-white tracking-tight uppercase">SaaS Master</h1>
-            <p class="text-slate-400 mb-8 font-medium text-sm">Panel de Administración Global</p>
-            
+            <h1 class="text-3xl font-black mb-2 text-white uppercase">SaaS Master</h1>
+            <p class="text-slate-400 mb-8 text-sm">Panel de Administración</p>
             <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
-                <div class="text-left">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Correo de Administrador</label>
-                    <input type="email" id="email" required placeholder="admin@empresa.com" class="w-full p-4 mt-1 rounded-xl bg-[#0f172a] border border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-white placeholder-slate-600">
-                </div>
-                <div class="text-left">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Contraseña de Firebase</label>
-                    <input type="password" id="password" required placeholder="••••••••" class="w-full p-4 mt-1 rounded-xl bg-[#0f172a] border border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-white placeholder-slate-600">
-                </div>
-                <button type="submit" id="btn-login" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 rounded-xl shadow-lg shadow-indigo-900/40 transition-all uppercase tracking-widest mt-2 flex justify-center items-center gap-2">
-                    Acceder al Panel <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                </button>
+                <input type="email" id="email" required placeholder="admin@empresa.com" class="w-full p-4 rounded-xl bg-[#0f172a] border border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none text-white">
+                <input type="password" id="password" required placeholder="••••••••" class="w-full p-4 rounded-xl bg-[#0f172a] border border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none text-white">
+                <button type="submit" id="btn-login" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 rounded-xl transition-all uppercase tracking-widest">Acceder</button>
             </form>
-            <p id="auth-error" class="text-red-400 bg-red-500/10 border border-red-500/20 p-3 rounded-lg mt-4 text-xs hidden font-bold"></p>
+            <p id="auth-error" class="text-red-400 bg-red-500/10 border border-red-500/20 p-3 rounded-lg mt-4 text-xs hidden"></p>
         </div>
     </div>
 
-    <!-- Main Content -->
+    <!-- Main App -->
     <div id="main-content" class="hidden flex-col min-h-screen">
         <header class="bg-[#1e293b]/80 border-b border-slate-700 p-4 sticky top-0 backdrop-blur-md z-40">
             <div class="max-w-7xl mx-auto flex justify-between items-center px-2">
                 <div class="flex items-center gap-3">
-                    <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-2.5 rounded-xl shadow-lg">
+                    <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-lg">
                         <i data-lucide="server" class="text-white w-5 h-5"></i>
                     </div>
-                    <div>
-                        <h2 class="text-lg font-black tracking-tight text-white uppercase leading-none">ProDigital SaaS</h2>
-                        <span class="text-[10px] text-indigo-400 font-bold tracking-widest uppercase">Control Centralizado</span>
-                    </div>
+                    <h2 class="text-lg font-black text-white uppercase">ProDigital SaaS</h2>
                 </div>
-                <button onclick="handleLogout()" class="flex items-center gap-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 px-4 py-2 rounded-lg transition-colors text-sm font-bold">
-                    <i data-lucide="power" class="w-4 h-4"></i> Cerrar Sesión
+                <button onclick="handleLogout()" class="text-slate-400 hover:text-red-400 text-sm font-bold flex items-center gap-2">
+                    <i data-lucide="power" class="w-4 h-4"></i> Salir
                 </button>
             </div>
         </header>
 
-        <main class="max-w-[90rem] mx-auto p-4 md:p-8 w-full flex-1">
-            <!-- Resumen Estadístico -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <div class="bg-[#1e293b] p-6 rounded-3xl border border-slate-700/50 shadow-sm">
-                    <p class="text-slate-400 text-xs font-bold uppercase mb-1">Socios Totales</p>
-                    <h3 id="stat-total" class="text-4xl font-black text-white">0</h3>
+        <main class="max-w-7xl mx-auto p-4 md:p-8 w-full flex-1">
+            <!-- Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="bg-[#1e293b] p-6 rounded-3xl border border-slate-700/50">
+                    <p class="text-slate-400 text-[10px] font-bold uppercase">Socios Registrados</p>
+                    <h3 id="stat-total" class="text-3xl font-black text-white">0</h3>
                 </div>
-                <div class="bg-[#1e293b] p-6 rounded-3xl border border-slate-700/50 shadow-sm">
-                    <p class="text-emerald-500/70 text-xs font-bold uppercase mb-1">Sitios Activos</p>
-                    <h3 id="stat-active" class="text-4xl font-black text-emerald-400">0</h3>
+                <div class="bg-[#1e293b] p-6 rounded-3xl border border-slate-700/50">
+                    <p class="text-emerald-500 text-[10px] font-bold uppercase">Sitios Activos</p>
+                    <h3 id="stat-active" class="text-3xl font-black text-emerald-400">0</h3>
                 </div>
-                <div class="bg-[#1e293b] p-6 rounded-3xl border border-red-900/30 shadow-sm">
-                    <p class="text-red-500/80 text-xs font-bold uppercase mb-1">Pagos Vencidos</p>
-                    <h3 id="stat-vencidos" class="text-4xl font-black text-red-500">0</h3>
-                </div>
-                <div class="bg-gradient-to-br from-indigo-900/50 to-[#1e293b] p-6 rounded-3xl border border-indigo-500/20 shadow-sm">
-                    <p class="text-indigo-400/80 text-xs font-bold uppercase mb-1">Facturación Mensual</p>
+                <div class="bg-[#1e293b] p-6 rounded-3xl border border-slate-700/50">
+                    <p class="text-indigo-400 text-[10px] font-bold uppercase">Ingresos Mensuales</p>
                     <h3 id="stat-ingresos" class="text-3xl font-black text-indigo-400">₡0</h3>
                 </div>
             </div>
 
-            <!-- Registro de Nuevo Socio -->
-            <section class="bg-[#1e293b] border border-slate-700 p-6 md:p-8 rounded-3xl mb-8 shadow-xl">
-                <h3 class="text-xl font-black mb-6 flex items-center gap-2 text-white">
-                    <i data-lucide="plus-circle" class="text-indigo-400"></i> REGISTRAR NUEVA PLATAFORMA
+            <!-- New Tenant Form -->
+            <section class="bg-[#1e293b] border border-slate-700 p-6 rounded-3xl mb-8">
+                <h3 class="text-lg font-black mb-6 text-white uppercase flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="text-indigo-400"></i> Registrar Nuevo Socio
                 </h3>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">ID Único (URL)</label>
-                        <input type="text" id="new-id" placeholder="ej: mipyme" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm font-mono mt-1">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Nombre Comercial</label>
-                        <input type="text" id="new-name" placeholder="Empresa S.A." class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm mt-1">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Monto Suscripción (₡)</label>
-                        <input type="number" id="new-monto" placeholder="25000" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm mt-1">
-                    </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <input type="text" id="new-id" placeholder="ID de la empresa (ej: mipyme)" class="bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm">
+                    <input type="text" id="new-name" placeholder="Nombre Comercial" class="bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm">
+                    <input type="number" id="new-monto" placeholder="Monto (₡)" class="bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm">
                 </div>
-                <button onclick="createTenant()" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-black px-8 py-3 rounded-xl transition-all flex items-center justify-center gap-2 uppercase text-sm">
-                    Desplegar Socio <i data-lucide="rocket" class="w-4 h-4"></i>
+                <button id="btn-create" onclick="createTenant()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-8 py-3 rounded-xl transition-all uppercase text-xs flex items-center gap-2">
+                    Crear Plataforma <i data-lucide="rocket" class="w-4 h-4"></i>
                 </button>
             </section>
 
-            <!-- Directorio -->
-            <div class="bg-[#1e293b] rounded-3xl border border-slate-700/50 shadow-xl overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left min-w-[900px]">
-                        <thead>
-                            <tr class="bg-slate-900/50 text-slate-400 text-[10px] font-bold uppercase tracking-widest border-b border-slate-700">
-                                <th class="p-5">Socio</th>
-                                <th class="p-5">Plan</th>
-                                <th class="p-5 text-center">Estado Técnico</th>
-                                <th class="p-5">URL Plataforma</th>
-                                <th class="p-5 text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tenant-list" class="divide-y divide-slate-700/50">
-                            <!-- Datos en tiempo real -->
-                        </tbody>
-                    </table>
-                </div>
+            <!-- Table -->
+            <div class="bg-[#1e293b] rounded-3xl border border-slate-700/50 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-900/50 text-slate-400 text-[10px] uppercase font-bold">
+                        <tr>
+                            <th class="p-5">Empresa</th>
+                            <th class="p-5">Cuota</th>
+                            <th class="p-5 text-center">Estado</th>
+                            <th class="p-5">Enlace</th>
+                            <th class="p-5 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tenant-list" class="divide-y divide-slate-700/50"></tbody>
+                </table>
             </div>
         </main>
     </div>
 
-    <!-- MODAL DE EDICIÓN Y BLOQUEO -->
-    <div id="manageModal" class="fixed inset-0 bg-[#0b1120]/95 z-[200] hidden flex flex-col items-center justify-center p-4 backdrop-blur-md">
-        <div class="bg-[#1e293b] border border-slate-600 w-full max-w-3xl rounded-3xl p-6 shadow-2xl flex flex-col max-h-[90vh]">
-            <div class="flex justify-between items-center mb-6 shrink-0">
-                <h2 class="text-2xl font-black text-white flex items-center gap-2">
-                    <i data-lucide="edit-3" class="text-indigo-400"></i> Gestión de Socio: <span id="manage-tenant-name" class="text-indigo-400">...</span>
-                </h2>
-                <button onclick="closeModal('manageModal')" class="bg-slate-800 p-2 rounded-xl text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
-            </div>
-            
-            <div class="flex-1 overflow-y-auto pr-2 space-y-6">
-                <!-- Estado en Tiempo Real -->
-                <div class="bg-slate-900/50 p-5 rounded-2xl border border-slate-700">
-                    <h3 class="text-sm font-black text-white uppercase mb-4 tracking-widest">Estado del Sitio</h3>
-                    <div class="grid grid-cols-3 gap-2">
+    <!-- Edit Modal -->
+    <div id="manageModal" class="fixed inset-0 bg-[#0b1120]/95 z-[200] hidden flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-[#1e293b] border border-slate-600 w-full max-w-2xl rounded-3xl p-8">
+            <h2 class="text-2xl font-black text-white mb-6 uppercase flex items-center gap-2">
+                <i data-lucide="settings" class="text-indigo-400"></i> Gestionar: <span id="manage-name" class="text-indigo-400"></span>
+            </h2>
+            <div class="space-y-6">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Estado del Servicio</label>
+                    <div class="grid grid-cols-3 gap-2 mt-2">
                         <label class="cursor-pointer">
-                            <input type="radio" name="m_status" value="Activo" class="peer hidden" onchange="toggleManageViews()">
-                            <div class="text-center p-4 rounded-xl border border-slate-700 peer-checked:bg-emerald-500/20 peer-checked:border-emerald-500 peer-checked:text-emerald-400 text-slate-500 font-bold transition-all uppercase">Activar</div>
+                            <input type="radio" name="m_status" value="Activo" class="hidden peer">
+                            <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-emerald-600/20 peer-checked:border-emerald-500 text-slate-500 peer-checked:text-emerald-400 font-bold text-xs uppercase">Activo</div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="m_status" value="Suspendido" class="peer hidden" onchange="toggleManageViews()">
-                            <div class="text-center p-4 rounded-xl border border-slate-700 peer-checked:bg-red-500/20 peer-checked:border-red-500 peer-checked:text-red-400 text-slate-500 font-bold transition-all uppercase">Suspender</div>
+                            <input type="radio" name="m_status" value="Suspendido" class="hidden peer">
+                            <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-red-600/20 peer-checked:border-red-500 text-slate-500 peer-checked:text-red-400 font-bold text-xs uppercase">Mora</div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="m_status" value="Mantenimiento" class="peer hidden" onchange="toggleManageViews()">
-                            <div class="text-center p-4 rounded-xl border border-slate-700 peer-checked:bg-amber-500/20 peer-checked:border-amber-500 peer-checked:text-amber-400 text-slate-500 font-bold transition-all uppercase">Mantenimiento</div>
+                            <input type="radio" name="m_status" value="Mantenimiento" class="hidden peer">
+                            <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-amber-600/20 peer-checked:border-amber-500 text-slate-500 peer-checked:text-amber-400 font-bold text-xs uppercase">Mant.</div>
                         </label>
                     </div>
                 </div>
-
-                <!-- Configuración de Bloqueo -->
-                <div id="div-suspension" class="hidden space-y-3">
-                    <label class="text-xs font-bold text-red-400 uppercase">Mensaje de Suspensión (Mora)</label>
-                    <textarea id="m_sus_msg" rows="3" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-4 text-sm text-slate-300 outline-none focus:border-red-500"></textarea>
-                </div>
-
-                <!-- Configuración de Mantenimiento / HTML -->
-                <div id="div-maintenance" class="hidden space-y-3">
-                    <div class="flex justify-between items-center">
-                        <label class="text-xs font-bold text-amber-400 uppercase">Página Personalizada (HTML)</label>
-                        <label class="text-[10px] bg-slate-800 px-3 py-1 rounded-lg cursor-pointer hover:bg-slate-700 text-white font-bold">
-                            Subir archivo .html <input type="file" class="hidden" accept=".html" onchange="loadHTMLFile(event)">
-                        </label>
-                    </div>
-                    <textarea id="m_mant_html" rows="8" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-4 text-[10px] font-mono text-amber-100 outline-none focus:border-amber-500"></textarea>
-                </div>
-
-                <!-- Facturación rápida -->
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Monto Mensual</label>
-                        <input type="number" id="m_monto" class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Próximo Corte</label>
-                        <input type="date" id="m_fecha_corte" class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none">
-                    </div>
+                    <input type="number" id="m_monto" placeholder="Cuota Mensual" class="bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none focus:border-indigo-500">
+                    <input type="date" id="m_fecha" class="bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none focus:border-indigo-500">
                 </div>
-            </div>
-
-            <div class="pt-6 mt-4 border-t border-slate-700 flex gap-3">
-                <button onclick="closeModal('manageModal')" class="flex-1 py-4 font-bold text-slate-400 bg-slate-800 rounded-xl">Cancelar</button>
-                <button onclick="saveTenantConfig()" id="btn-save-config" class="flex-[2] py-4 font-black bg-indigo-600 text-white rounded-xl shadow-lg flex items-center justify-center gap-2">
-                    <i data-lucide="save" class="w-5 h-5"></i> GUARDAR CAMBIOS
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN -->
-    <div id="deleteConfirmModal" class="fixed inset-0 bg-[#0b1120]/95 z-[250] hidden flex flex-col items-center justify-center p-4 backdrop-blur-md">
-        <div class="bg-[#1e293b] border border-red-500/50 w-full max-w-sm rounded-3xl p-8 text-center shadow-2xl">
-            <div class="bg-red-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/30">
-                <i data-lucide="alert-triangle" class="text-red-500 w-8 h-8"></i>
-            </div>
-            <h2 class="text-xl font-black text-white mb-2">¿Eliminar Socio?</h2>
-            <p class="text-slate-400 text-sm mb-6">Esta acción borrará al socio del panel maestro. Los datos de su plataforma individual permanecerán pero ya no podrás gestionarlos desde aquí.</p>
-            <div class="flex gap-3">
-                <button onclick="closeModal('deleteConfirmModal')" class="flex-1 py-3 font-bold text-slate-400 bg-slate-800 rounded-xl">No, volver</button>
-                <button id="btn-confirm-delete" class="flex-1 py-3 font-black bg-red-600 text-white rounded-xl">Sí, eliminar</button>
+                <div class="flex gap-3 pt-4">
+                    <button onclick="closeModal('manageModal')" class="flex-1 py-4 bg-slate-800 rounded-xl font-bold text-slate-400">Cancelar</button>
+                    <button onclick="saveTenantConfig()" class="flex-[2] py-4 bg-indigo-600 rounded-xl font-black text-white shadow-lg">GUARDAR CAMBIOS</button>
+                </div>
             </div>
         </div>
     </div>
@@ -242,43 +158,29 @@
 
         const APP_MASTER_ID = "MASTER_ADMIN_SaaS";
         const BASE_URL = "https://prodigitalcr.github.io/PRESTAMOS/"; 
-
+        
         let currentTenants = [];
-        let editingTenantId = null;
+        let editingId = null;
 
-        // UI Helpers
         window.showToast = (msg, type = 'success') => {
             const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            const color = type === 'success' ? 'bg-emerald-600' : 'bg-red-600';
-            toast.className = `toast-enter flex items-center ${color} text-white px-6 py-3 rounded-2xl shadow-2xl font-bold text-sm`;
-            toast.innerText = msg;
-            container.appendChild(toast);
-            setTimeout(() => { toast.classList.replace('toast-enter', 'toast-exit'); setTimeout(() => toast.remove(), 300); }, 3000);
+            const t = document.createElement('div');
+            t.className = `toast-enter p-4 rounded-xl shadow-lg font-bold text-white text-sm ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`;
+            t.innerText = msg;
+            container.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
         };
 
-        window.openModal = (id) => document.getElementById(id).classList.remove('hidden');
-        window.closeModal = (id) => { document.getElementById(id).classList.add('hidden'); editingTenantId = null; };
-
-        // --- AUTH SISTEMA ---
         window.handleLogin = async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btn-login');
             const email = document.getElementById('email').value;
             const pass = document.getElementById('password').value;
-            const errorEl = document.getElementById('auth-error');
-            
-            btn.disabled = true;
-            btn.innerText = "Verificando...";
-
             try {
                 await setPersistence(auth, browserLocalPersistence);
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (err) {
-                errorEl.innerText = "Correo o contraseña incorrectos.";
-                errorEl.classList.remove('hidden');
-                btn.disabled = false;
-                btn.innerText = "Acceder al Panel";
+                document.getElementById('auth-error').innerText = "Credenciales inválidas.";
+                document.getElementById('auth-error').classList.remove('hidden');
             }
         };
 
@@ -288,195 +190,152 @@
             if (user) {
                 document.getElementById('auth-overlay').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
-                document.getElementById('main-content').classList.add('flex');
-                loadTenants();
+                initData();
             } else {
                 document.getElementById('auth-overlay').classList.remove('hidden');
-                document.getElementById('main-content').classList.add('hidden');
             }
             lucide.createIcons();
         });
 
-        // --- DATOS REALTIME ---
-        function loadTenants() {
-            onSnapshot(collection(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants'), (snapshot) => {
+        function initData() {
+            onSnapshot(collection(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants'), (snap) => {
                 const list = document.getElementById('tenant-list');
                 list.innerHTML = "";
-                let aCount = 0, vCount = 0, ingresos = 0;
+                let total = 0, activos = 0, ingresos = 0;
                 currentTenants = [];
-                const today = new Date(); today.setHours(0,0,0,0);
 
-                snapshot.docs.forEach(docSnap => {
-                    const t = docSnap.data();
-                    const id = docSnap.id;
+                snap.forEach(d => {
+                    const t = d.data();
+                    const id = d.id;
                     currentTenants.push({ id, ...t });
                     
-                    const fCorte = t.fechaCorte ? new Date(t.fechaCorte + 'T00:00:00') : null;
-                    if (fCorte && fCorte < today) vCount++;
-                    if(t.estado === 'Activo') aCount++;
+                    total++;
+                    if(t.estado === 'Activo') activos++;
                     ingresos += Number(t.montoContrato || 0);
 
-                    const statusColor = t.estado === 'Activo' ? 'text-emerald-400' : (t.estado === 'Mantenimiento' ? 'text-amber-400' : 'text-red-400');
-                    
-                    // Lógica solicitada: Si está activo poner extensión, sino dejar base
-                    const displayUrl = t.estado === 'Activo' ? `${BASE_URL}?tenant=${id}` : BASE_URL;
+                    const finalUrl = t.estado === 'Activo' ? `${BASE_URL}?tenant=${id}` : BASE_URL;
+                    const statusClass = t.estado === 'Activo' ? 'text-emerald-400' : 'text-red-400';
 
                     const row = document.createElement('tr');
-                    row.className = "border-b border-slate-700/50 hover:bg-slate-800/40 transition-colors";
+                    row.className = "hover:bg-slate-800/30 transition-all";
                     row.innerHTML = `
-                        <td class="p-5 font-bold text-white">${t.empresa || id}</td>
-                        <td class="p-5 font-bold text-slate-400">₡${Number(t.montoContrato).toLocaleString()}</td>
-                        <td class="p-5 text-center font-black ${statusColor} uppercase tracking-tighter">${t.estado || 'Activo'}</td>
+                        <td class="p-5 font-bold text-white uppercase text-xs">${t.empresa}</td>
+                        <td class="p-5 font-mono text-slate-400">₡${Number(t.montoContrato).toLocaleString()}</td>
+                        <td class="p-5 text-center font-black ${statusClass} uppercase text-[10px]">${t.estado}</td>
                         <td class="p-5">
-                            <div class="flex items-center gap-2 group">
-                                <span class="text-[10px] font-mono text-slate-500 bg-slate-900 px-2 py-1 rounded border border-slate-700/50 truncate max-w-[200px]">${displayUrl}</span>
-                                <button onclick="copyToClipboard('${displayUrl}')" class="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-white transition-opacity">
-                                    <i data-lucide="copy" class="w-3 h-3"></i>
-                                </button>
-                            </div>
+                            <button onclick="copyLink('${finalUrl}')" class="text-[10px] text-slate-500 hover:text-indigo-400 truncate max-w-[150px] font-mono">
+                                ${finalUrl}
+                            </button>
                         </td>
-                        <td class="p-5 text-right">
-                            <div class="flex justify-end gap-2">
-                                <button onclick="openManageModal('${id}')" class="p-2 bg-indigo-600/20 text-indigo-400 rounded-xl border border-indigo-500/30 hover:bg-indigo-600 hover:text-white transition-all shadow-lg shadow-indigo-900/10" title="Configurar">
-                                    <i data-lucide="settings" class="w-4 h-4"></i>
-                                </button>
-                                <button onclick="confirmDelete('${id}')" class="p-2 bg-red-600/10 text-red-400 rounded-xl border border-red-500/20 hover:bg-red-600 hover:text-white transition-all shadow-lg" title="Eliminar Socio">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                            </div>
+                        <td class="p-5 text-right flex justify-end gap-2">
+                            <button onclick="openEdit('${id}')" class="p-2 bg-indigo-600/10 text-indigo-400 rounded-lg hover:bg-indigo-600 hover:text-white transition-all">
+                                <i data-lucide="edit-3" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="deleteTenant('${id}')" class="p-2 bg-red-600/10 text-red-400 rounded-lg hover:bg-red-600 hover:text-white transition-all">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
                         </td>
                     `;
                     list.appendChild(row);
                 });
-                document.getElementById('stat-total').innerText = snapshot.size;
-                document.getElementById('stat-active').innerText = aCount;
-                document.getElementById('stat-vencidos').innerText = vCount;
+                document.getElementById('stat-total').innerText = total;
+                document.getElementById('stat-active').innerText = activos;
                 document.getElementById('stat-ingresos').innerText = `₡${ingresos.toLocaleString()}`;
                 lucide.createIcons();
             });
         }
 
-        window.copyToClipboard = (text) => {
-            const el = document.createElement('textarea');
-            el.value = text;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            showToast("Enlace copiado al portapapeles");
-        };
-
-        window.confirmDelete = (id) => {
-            openModal('deleteConfirmModal');
-            document.getElementById('btn-confirm-delete').onclick = async () => {
-                try {
-                    await deleteDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id));
-                    showToast("Socio eliminado permanentemente");
-                    closeModal('deleteConfirmModal');
-                } catch(e) {
-                    showToast("Error al eliminar", "error");
-                }
-            };
-        };
-
         window.createTenant = async () => {
-            const idInput = document.getElementById('new-id');
-            const nameInput = document.getElementById('new-name');
-            const montoInput = document.getElementById('new-monto');
+            const id = document.getElementById('new-id').value.trim().toLowerCase();
+            const name = document.getElementById('new-name').value.trim();
+            const monto = document.getElementById('new-monto').value;
+            const btn = document.getElementById('btn-create');
+
+            if(!id || !name) return showToast("Faltan campos obligatorios", "error");
             
-            const id = idInput.value.trim().toLowerCase();
-            const empresa = nameInput.value.trim();
-            const monto = montoInput.value;
-
-            if(!id || !empresa) return showToast("ID y Nombre son obligatorios", "error");
-
-            try {
-                const data = {
-                    empresa, montoContrato: Number(monto) || 0,
-                    estado: 'Activo', fechaAlta: new Date().toISOString(),
-                    mensajeSuspension: "Este servicio ha sido suspendido temporalmente por falta de pago.",
-                    htmlMantenimiento: "<h1>En mantenimiento</h1><p>Estamos optimizando la plataforma para usted.</p>",
-                    fechaCorte: ""
-                };
-                await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), data);
-                showToast("Socio desplegado correctamente");
-                idInput.value = ""; nameInput.value = ""; montoInput.value = "";
-            } catch (err) { showToast("Error de permisos en Firebase", "error"); }
-        };
-
-        window.openManageModal = (id) => {
-            editingTenantId = id;
-            const tenant = currentTenants.find(t => t.id === id);
-            if(!tenant) return;
-
-            document.getElementById('manage-tenant-name').innerText = tenant.empresa || id;
-            document.getElementById('m_monto').value = tenant.montoContrato || 0;
-            document.getElementById('m_fecha_corte').value = tenant.fechaCorte || '';
-            document.getElementById('m_sus_msg').value = tenant.mensajeSuspension || "";
-            document.getElementById('m_mant_html').value = tenant.htmlMantenimiento || "";
-
-            const radios = document.getElementsByName('m_status');
-            for(let r of radios) if(r.value === (tenant.estado || 'Activo')) r.checked = true;
-
-            toggleManageViews();
-            openModal('manageModal');
-            lucide.createIcons();
-        };
-
-        window.toggleManageViews = () => {
-            const status = document.querySelector('input[name="m_status"]:checked').value;
-            document.getElementById('div-suspension').className = status === 'Suspendido' ? 'block' : 'hidden';
-            document.getElementById('div-maintenance').className = (status === 'Mantenimiento' || status === 'Activo') ? 'block' : 'hidden';
-        };
-
-        window.loadHTMLFile = (event) => {
-            const file = event.target.files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = (e) => document.getElementById('m_mant_html').value = e.target.result;
-                reader.readAsText(file);
-            }
-        };
-
-        window.saveTenantConfig = async () => {
-            if(!editingTenantId) return;
-            const id = editingTenantId;
-            const estado = document.querySelector('input[name="m_status"]:checked').value;
-            const btn = document.getElementById('btn-save-config');
             btn.disabled = true;
-            btn.innerText = "Guardando...";
+            btn.innerText = "Desplegando...";
 
             try {
-                const payload = {
-                    estado,
-                    mensajeSuspension: document.getElementById('m_sus_msg').value,
-                    htmlMantenimiento: document.getElementById('m_mant_html').value,
-                    montoContrato: Number(document.getElementById('m_monto').value),
-                    fechaCorte: document.getElementById('m_fecha_corte').value
-                };
+                // 1. Guardar en Panel Maestro
+                await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), {
+                    empresa: name,
+                    montoContrato: Number(monto) || 0,
+                    estado: 'Activo',
+                    fechaAlta: new Date().toISOString()
+                });
 
-                // Actualizar Panel Maestro
-                await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), payload, { merge: true });
+                // 2. Crear documento de configuración inicial en la base del socio
+                await setDoc(doc(db, 'artifacts', id, 'public', 'data', 'configuracion'), {
+                    estadoTenant: 'Activo',
+                    nombreEmpresa: name,
+                    idTenant: id
+                });
 
-                // Actualizar Plataforma del Socio
-                await setDoc(doc(db, 'artifacts', id, 'public', 'data', 'usuarios', 'admin_data'), {
-                    estadoTenant: estado,
-                    mensajeSuspension: payload.mensajeSuspension,
-                    htmlMantenimiento: payload.htmlMantenimiento
-                }, { merge: true });
-
-                showToast(`Socio ${estado === 'Activo' ? 'activado' : 'actualizado'} con éxito`);
-                closeModal('manageModal');
-            } catch (err) {
-                showToast("Error de sincronización", "error");
+                showToast("Socio desplegado con éxito");
+                document.getElementById('new-id').value = "";
+                document.getElementById('new-name').value = "";
+                document.getElementById('new-monto').value = "";
+            } catch (e) {
+                showToast("Error de permisos en Firebase", "error");
             } finally {
                 btn.disabled = false;
-                btn.innerText = "GUARDAR CAMBIOS";
+                btn.innerHTML = 'Crear Plataforma <i data-lucide="rocket" class="w-4 h-4"></i>';
                 lucide.createIcons();
             }
         };
 
-        lucide.createIcons();
+        window.deleteTenant = async (id) => {
+            if(confirm("¿Seguro que deseas eliminar este socio permanentemente?")) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id));
+                    showToast("Socio eliminado");
+                } catch(e) { showToast("No se pudo eliminar", "error"); }
+            }
+        };
+
+        window.openEdit = (id) => {
+            editingId = id;
+            const t = currentTenants.find(x => x.id === id);
+            document.getElementById('manage-name').innerText = t.empresa;
+            document.getElementById('m_monto').value = t.montoContrato;
+            document.getElementById('m_fecha').value = t.fechaCorte || '';
+            const rads = document.getElementsByName('m_status');
+            for(let r of rads) if(r.value === t.estado) r.checked = true;
+            document.getElementById('manageModal').classList.remove('hidden');
+            lucide.createIcons();
+        };
+
+        window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
+
+        window.saveTenantConfig = async () => {
+            const status = document.querySelector('input[name="m_status"]:checked').value;
+            const monto = document.getElementById('m_monto').value;
+            const fecha = document.getElementById('m_fecha').value;
+
+            try {
+                // Actualizar Maestro
+                await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', editingId), {
+                    estado: status,
+                    montoContrato: Number(monto),
+                    fechaCorte: fecha
+                }, { merge: true });
+
+                // Sincronizar con el Socio
+                await setDoc(doc(db, 'artifacts', editingId, 'public', 'data', 'configuracion'), {
+                    estadoTenant: status
+                }, { merge: true });
+
+                showToast("Configuración actualizada");
+                closeModal('manageModal');
+            } catch(e) { showToast("Error al guardar", "error"); }
+        };
+
+        window.copyLink = (url) => {
+            navigator.clipboard.writeText(url);
+            showToast("Enlace copiado");
+        };
+
     </script>
 </body>
 </html>
