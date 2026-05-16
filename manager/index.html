@@ -390,7 +390,7 @@
                     fechaInicioPlan: inicio,
                     fechaCorte: corte,
                     estado: 'Activo',
-                    htmlMora: '',
+                    mensajeSuspension: '',
                     htmlMantenimiento: '',
                     creado: new Date().toISOString()
                 };
@@ -403,7 +403,7 @@
                     estadoTenant: 'Activo',
                     nombreEmpresa: name,
                     tenantId: id,
-                    htmlMora: '',
+                    mensajeSuspension: '',
                     htmlMantenimiento: ''
                 }, { merge: true });
 
@@ -428,7 +428,9 @@
             document.getElementById('m_monto').value = t.montoContrato || 0;
             document.getElementById('m_inicio').value = t.fechaInicioPlan || '';
             document.getElementById('m_corte').value = t.fechaCorte || '';
-            document.getElementById('m_html_mora').value = t.htmlMora || '';
+            
+            // Cargar datos al formulario
+            document.getElementById('m_html_mora').value = t.mensajeSuspension || t.htmlMora || '';
             document.getElementById('m_html_mant').value = t.htmlMantenimiento || '';
             
             const rads = document.getElementsByName('m_status');
@@ -457,14 +459,16 @@
                     montoContrato: Number(monto),
                     fechaInicioPlan: inicio,
                     fechaCorte: corte,
-                    htmlMora: htmlMora,
+                    mensajeSuspension: htmlMora, // Clave estándar
+                    htmlMora: htmlMora, // Backup
                     htmlMantenimiento: htmlMant
                 }, { merge: true });
 
-                // Sincronizar Plataforma Socio (Solo lo que necesita leer públicamente el cliente)
+                // Sincronizar Plataforma Socio (La app cliente lee esto)
                 await setDoc(doc(db, 'artifacts', editingId, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: status,
-                    htmlMora: htmlMora,
+                    mensajeSuspension: htmlMora, // Muy probablemente el cliente lee 'mensajeSuspension'
+                    htmlMora: htmlMora, // Backup
                     htmlMantenimiento: htmlMant
                 }, { merge: true });
 
