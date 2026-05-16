@@ -28,13 +28,13 @@
             <p class="text-slate-400 mb-8 text-sm text-center">Acceso exclusivo soporte: <br><span class="text-indigo-400 font-mono text-xs">norercarlop04@gmail.com</span></p>
             
             <form onsubmit="handleLogin(event)" class="space-y-4">
-                <input type="email" id="email" required placeholder="Email de soporte" class="w-full p-4 rounded-xl bg-[#0f172a] border border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none text-white">
-                <input type="password" id="password" required placeholder="Contraseña" class="w-full p-4 rounded-xl bg-[#0f172a] border border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none text-white">
-                <button type="submit" id="btn-login" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 rounded-xl transition-all uppercase tracking-widest shadow-lg shadow-indigo-500/20">
+                <input type="email" id="email" required placeholder="Email de soporte" class="w-full p-4 rounded-xl bg-[#0f172a] border border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none text-white text-sm">
+                <input type="password" id="password" required placeholder="Contraseña" class="w-full p-4 rounded-xl bg-[#0f172a] border border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none text-white text-sm">
+                <button type="submit" id="btn-login" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 rounded-xl transition-all uppercase tracking-widest shadow-lg shadow-indigo-500/20 text-xs">
                     Verificar Credenciales
                 </button>
             </form>
-            <p id="auth-error" class="text-red-400 bg-red-500/10 border border-red-500/20 p-3 rounded-lg mt-4 text-xs hidden font-bold text-center"></p>
+            <p id="auth-error" class="text-red-400 bg-red-500/10 border border-red-500/20 p-3 rounded-lg mt-4 text-[10px] hidden font-bold text-center"></p>
         </div>
     </div>
 
@@ -47,8 +47,8 @@
                     <h2 class="text-lg font-black text-white uppercase tracking-tighter">ProDigital Master</h2>
                 </div>
                 <div class="flex items-center gap-4">
-                    <span id="user-display" class="hidden md:block text-[10px] font-mono text-slate-500 bg-slate-900 px-3 py-1 rounded-full"></span>
-                    <button onclick="handleLogout()" class="text-slate-400 hover:text-red-400 text-sm font-bold flex items-center gap-2">
+                    <span id="user-display" class="hidden md:block text-[10px] font-mono text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800"></span>
+                    <button onclick="handleLogout()" class="text-slate-400 hover:text-red-400 text-xs font-bold flex items-center gap-2 transition-colors">
                         <i data-lucide="power" class="w-4 h-4"></i> Salir
                     </button>
                 </div>
@@ -103,9 +103,9 @@
             <!-- Tabla de Socios -->
             <div class="bg-[#1e293b] rounded-3xl border border-slate-700/50 overflow-hidden shadow-2xl">
                 <div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-900/30">
-                    <span class="text-[10px] font-black uppercase text-slate-400">Listado de Socios Activos</span>
+                    <span class="text-[10px] font-black uppercase text-slate-400">Control de Inquilinos SaaS</span>
                     <span id="expiry-notice" class="hidden animate-pulse text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full font-bold uppercase">
-                        Sistemas en mantenimiento automático por fecha de corte
+                         Sitios movidos a mantenimiento automáticamente
                     </span>
                 </div>
                 <div class="overflow-x-auto">
@@ -139,20 +139,17 @@
             <div class="space-y-6">
                 <div>
                     <label class="text-[10px] font-bold text-slate-500 uppercase">Estado Forzado del Servicio</label>
-                    <div class="grid grid-cols-3 gap-2 mt-2">
+                    <div class="grid grid-cols-2 gap-2 mt-2">
                         <label class="cursor-pointer">
                             <input type="radio" name="m_status" value="Activo" class="hidden peer">
                             <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-emerald-600/20 peer-checked:border-emerald-500 text-slate-500 peer-checked:text-emerald-400 font-bold text-[10px] uppercase tracking-wider">ACTIVO</div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="m_status" value="Suspendido" class="hidden peer">
-                            <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-red-600/20 peer-checked:border-red-500 text-slate-500 peer-checked:text-red-400 font-bold text-[10px] uppercase tracking-wider">MOROSIDAD</div>
-                        </label>
-                        <label class="cursor-pointer">
                             <input type="radio" name="m_status" value="Mantenimiento" class="hidden peer">
-                            <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-amber-600/20 peer-checked:border-amber-500 text-slate-500 peer-checked:text-amber-400 font-bold text-[10px] uppercase tracking-wider">MANT.</div>
+                            <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-amber-600/20 peer-checked:border-amber-500 text-slate-500 peer-checked:text-amber-400 font-bold text-[10px] uppercase tracking-wider">MANTENIMIENTO</div>
                         </label>
                     </div>
+                    <p class="text-[9px] text-slate-500 mt-2 italic">* El estado "Suspendido" ahora se muestra como "Mantenimiento" al cliente.</p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -180,20 +177,13 @@
                     </div>
                 </div>
 
-                <!-- Áreas de Código HTML -->
+                <!-- Áreas de Código HTML Personalizado -->
                 <div class="space-y-4">
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-2">
-                             HTML PARA ESTADO MORA <i data-lucide="alert-circle" class="w-3 h-3 text-red-400"></i>
-                        </label>
-                        <textarea id="m_html_mora" rows="3" placeholder="Pega código HTML para estado MOROSO..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none font-mono text-[10px] focus:border-red-500"></textarea>
-                    </div>
-
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-2">
                              HTML PARA MANTENIMIENTO <i data-lucide="wrench" class="w-3 h-3 text-amber-400"></i>
                         </label>
-                        <textarea id="m_html_mant" rows="3" placeholder="Pega código HTML para MANTENIMIENTO (Suscripción vencida)..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none font-mono text-[10px] focus:border-amber-500"></textarea>
+                        <textarea id="m_html_mant" rows="6" placeholder="Pega aquí el código HTML de mantenimiento..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none font-mono text-[10px] focus:border-amber-500"></textarea>
                     </div>
                 </div>
 
@@ -229,10 +219,27 @@
         let currentTenants = [];
         let editingId = null;
 
+        // Estructura HTML por defecto para el mensaje de mantenimiento
+        const DEFAULT_MAINTENANCE_HTML = `
+            <div style="background:#0b1120;color:white;height:100vh;display:flex;flex-direction:column;align-items:center;justify-center;text-align:center;font-family:sans-serif;padding:20px;">
+                <div style="background:rgba(245,158,11,0.1);padding:30px;border-radius:30px;border:1px solid rgba(245,158,11,0.3);max-width:500px;">
+                    <div style="font-size:60px;margin-bottom:20px;">🛠️</div>
+                    <h1 style="font-size:24px;font-weight:900;text-transform:uppercase;margin-bottom:15px;color:#f59e0b;">Mantenimiento Programado</h1>
+                    <p style="color:#94a3b8;font-size:15px;line-height:1.6;margin-bottom:25px;">
+                        Estamos optimizando nuestra infraestructura para brindarle un mejor servicio. Por favor, vuelva a intentar en unos momentos.
+                    </p>
+                    <div style="background:#1e293b;padding:15px;border-radius:15px;color:#cbd5e1;font-size:12px;font-weight:bold;text-transform:uppercase;">
+                        Estado: Verificando Sistemas
+                    </div>
+                </div>
+                <p style="margin-top:30px;color:#475569;font-size:11px;">Powered by ProDigital Support</p>
+            </div>
+        `;
+
         window.showToast = (msg, type = 'success') => {
             const container = document.getElementById('toast-container');
             const t = document.createElement('div');
-            t.className = `toast-enter p-4 rounded-xl shadow-lg font-bold text-white text-xs ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'} z-[9999]`;
+            t.className = `toast-enter p-4 rounded-xl shadow-lg font-bold text-white text-[11px] ${type === 'success' ? 'bg-emerald-600' : 'bg-amber-600'} z-[9999]`;
             t.innerText = msg;
             container.appendChild(t);
             setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 500); }, 3000);
@@ -242,6 +249,7 @@
             e.preventDefault();
             const email = document.getElementById('email').value.trim();
             const pass = document.getElementById('password').value;
+            const btn = document.getElementById('btn-login');
             
             if(email !== 'norercarlop04@gmail.com') {
                 document.getElementById('auth-error').innerText = "ERROR: Email no autorizado.";
@@ -250,11 +258,14 @@
             }
 
             try {
+                btn.disabled = true; btn.innerText = "Accediendo...";
                 await setPersistence(auth, browserLocalPersistence);
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (err) {
-                document.getElementById('auth-error').innerText = "Contraseña incorrecta.";
+                document.getElementById('auth-error').innerText = "Credenciales inválidas.";
                 document.getElementById('auth-error').classList.remove('hidden');
+            } finally {
+                btn.disabled = false; btn.innerText = "Verificar Credenciales";
             }
         };
 
@@ -273,7 +284,7 @@
             lucide.createIcons();
         });
 
-        // Lógica de Mantenimiento Automático (Cambio solicitado)
+        // Verificación Automática: Cambia "Activo" a "Mantenimiento" si vence
         async function checkExpirations(snap) {
             const today = new Date().toISOString().split('T')[0];
             let foundExpired = false;
@@ -282,21 +293,21 @@
                 const t = d.data();
                 const id = d.id;
 
-                // CAMBIO: Si la suscripción venció, pasar a "Mantenimiento" en lugar de "Suspendido"
                 if (t.estado === 'Activo' && t.fechaCorte && t.fechaCorte < today) {
                     foundExpired = true;
                     
-                    // Actualizar en tabla maestra
+                    // Actualizar en Maestro
                     await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), {
                         estado: 'Mantenimiento'
                     }, { merge: true });
 
-                    // Sincronizar con el socio para mostrar pantalla de mantenimiento
+                    // Actualizar en el Cliente (Socio)
                     await setDoc(doc(db, 'artifacts', id, 'public', 'data', 'usuarios', 'admin_data'), {
-                        estadoTenant: 'Mantenimiento'
+                        estadoTenant: 'Mantenimiento',
+                        htmlMantenimiento: t.htmlMantenimiento || DEFAULT_MAINTENANCE_HTML
                     }, { merge: true });
                     
-                    showToast(`Socio ${id} puesto en MANTENIMIENTO por fecha vencida.`, "error");
+                    showToast(`Socio ${id} movido a Mantenimiento (Corte vencido).`, "warning");
                 }
             });
 
@@ -319,7 +330,7 @@
                     currentTenants.push({ id, ...t });
 
                     const fullUrl = `${BASE_URL}?tenant=${id}`;
-                    const stColor = t.estado === 'Activo' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : (t.estado === 'Mantenimiento' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20');
+                    const stColor = t.estado === 'Activo' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20';
                     
                     const fInicio = t.fechaInicioPlan || 'N/D';
                     const fCorte = t.fechaCorte || 'N/D';
@@ -331,7 +342,7 @@
                         <td class="p-5">
                             <div class="font-black text-white text-xs uppercase tracking-tight">${t.empresa}</div>
                             <div class="text-[9px] text-slate-500 font-mono flex items-center gap-1 mt-1">
-                                <i data-lucide="folder" class="w-3 h-3"></i> ${id}
+                                <i data-lucide="folder" class="w-3 h-3 text-indigo-400"></i> ${id}
                             </div>
                         </td>
                         <td class="p-5">
@@ -355,7 +366,7 @@
                                 ${t.estado}
                             </span>
                         </td>
-                        <td class="p-5 text-right flex justify-end gap-2 items-center h-full mt-2">
+                        <td class="p-5 text-right flex justify-end gap-2 items-center h-full">
                             <button onclick="window.open('${fullUrl}', '_blank')" title="Ir al Sitio" class="p-2 bg-slate-700/30 text-slate-400 rounded-xl hover:bg-slate-700 hover:text-white transition-all"><i data-lucide="external-link" class="w-4 h-4"></i></button>
                             <button onclick="openEdit('${id}')" title="Configurar" class="p-2 bg-indigo-500/10 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all"><i data-lucide="settings" class="w-4 h-4"></i></button>
                             <button onclick="deleteTenant('${id}')" title="Eliminar" class="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-600 hover:text-white transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
@@ -374,10 +385,13 @@
             const monto = document.getElementById('new-monto').value;
             const inicio = document.getElementById('new-inicio').value;
             const corte = document.getElementById('new-corte').value;
+            const btn = document.getElementById('btn-create');
 
-            if(!id || !name || !corte || !inicio) return showToast("Por favor complete todos los datos", "error");
+            if(!id || !name || !corte || !inicio) return showToast("Faltan datos del socio", "error");
 
             try {
+                btn.disabled = true; btn.innerText = "Lanzando...";
+                
                 const data = {
                     empresa: name,
                     tipoPlan: plan,
@@ -385,24 +399,26 @@
                     fechaInicioPlan: inicio,
                     fechaCorte: corte,
                     estado: 'Activo',
-                    htmlMora: '',
-                    htmlMantenimiento: '',
+                    htmlMantenimiento: DEFAULT_MAINTENANCE_HTML,
                     creado: new Date().toISOString()
                 };
 
                 await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), data);
+
                 await setDoc(doc(db, 'artifacts', id, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: 'Activo',
                     nombreEmpresa: name,
                     tenantId: id,
-                    htmlMora: '',
-                    htmlMantenimiento: ''
+                    htmlMantenimiento: DEFAULT_MAINTENANCE_HTML
                 }, { merge: true });
 
-                showToast("Socio creado con éxito");
+                showToast("Socio desplegado con éxito");
                 ['new-id', 'new-name', 'new-monto', 'new-inicio', 'new-corte'].forEach(i => document.getElementById(i).value = "");
             } catch (e) {
                 showToast("Error de conexión", "error");
+            } finally {
+                btn.disabled = false; btn.innerHTML = 'Lanzar Plataforma <i data-lucide="send" class="w-4 h-4 inline"></i>';
+                lucide.createIcons();
             }
         };
 
@@ -413,8 +429,7 @@
             document.getElementById('m_monto').value = t.montoContrato || 0;
             document.getElementById('m_inicio').value = t.fechaInicioPlan || '';
             document.getElementById('m_corte').value = t.fechaCorte || '';
-            document.getElementById('m_html_mora').value = t.htmlMora || '';
-            document.getElementById('m_html_mant').value = t.htmlMantenimiento || '';
+            document.getElementById('m_html_mant').value = t.htmlMantenimiento || DEFAULT_MAINTENANCE_HTML;
             
             const rads = document.getElementsByName('m_status');
             for(let r of rads) if(r.value === t.estado) r.checked = true;
@@ -431,27 +446,26 @@
             const monto = document.getElementById('m_monto').value;
             const inicio = document.getElementById('m_inicio').value;
             const corte = document.getElementById('m_corte').value;
-            const htmlMora = document.getElementById('m_html_mora').value;
             const htmlMant = document.getElementById('m_html_mant').value;
 
             try {
+                // Actualizar Maestro
                 await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', editingId), {
                     estado: status,
                     tipoPlan: plan,
                     montoContrato: Number(monto),
                     fechaInicioPlan: inicio,
                     fechaCorte: corte,
-                    htmlMora: htmlMora,
                     htmlMantenimiento: htmlMant
                 }, { merge: true });
 
+                // Actualizar Socio (Sincronización pública)
                 await setDoc(doc(db, 'artifacts', editingId, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: status,
-                    htmlMora: htmlMora,
                     htmlMantenimiento: htmlMant
                 }, { merge: true });
 
-                showToast("Cambios sincronizados");
+                showToast("Socio actualizado con éxito");
                 closeModal('manageModal');
             } catch (e) {
                 showToast("Error al sincronizar", "error");
@@ -459,11 +473,11 @@
         };
 
         window.deleteTenant = async (id) => {
-            if(confirm(`¿Eliminar permanentemente a ${id}?`)) {
+            if(confirm(`¿Desea ELIMINAR el registro de ${id}? Esta acción no se puede deshacer.`)) {
                 try {
                     await deleteDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id));
-                    showToast("Registro eliminado");
-                } catch(e) { showToast("Error", "error"); }
+                    showToast("Registro borrado");
+                } catch(e) { showToast("Error al borrar", "error"); }
             }
         };
     </script>
