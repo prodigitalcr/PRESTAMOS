@@ -271,7 +271,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, updateDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, updateDoc, deleteDoc, collection, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // CREDENCIALES OFICIALES
         const firebaseConfig = {
@@ -511,7 +511,7 @@
                 };
 
                 // 1. Guardar en Maestro
-                await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), configMaestra);
+                await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), configMaestra, { merge: true });
 
                 // 2. Configurar la DB del Socio (para que las reglas lo dejen pasar)
                 await setDoc(doc(db, 'artifacts', id, 'public', 'data', 'usuarios', 'admin_data'), {
@@ -520,7 +520,7 @@
                     mensajeSuspension: DEFAULT_SUSPENSION,
                     htmlMantenimiento: DEFAULT_MAINTENANCE,
                     rol: 'maestro'
-                }, {merge: true});
+                }, { merge: true });
 
                 showToast("Socio desplegado y facturación iniciada");
                 
@@ -564,7 +564,9 @@
         };
 
         window.toggleManageViews = () => {
-            const status = document.querySelector('input[name="m_status"]:checked').value;
+            const statusRadio = document.querySelector('input[name="m_status"]:checked');
+            const status = statusRadio ? statusRadio.value : 'Activo';
+            
             const divSus = document.getElementById('div-suspension');
             const divMan = document.getElementById('div-maintenance');
 
@@ -599,30 +601,32 @@
             lucide.createIcons();
 
             try {
-                // Capturar valores
-                const estado = document.querySelector('input[name="m_status"]:checked').value;
+                // Capturar valores con fallback de seguridad
+                const estadoRadio = document.querySelector('input[name="m_status"]:checked');
+                const estado = estadoRadio ? estadoRadio.value : 'Activo';
+                
                 const msjSus = document.getElementById('m_sus_msg').value.trim();
                 const htmlMan = document.getElementById('m_mant_html').value.trim();
-                const monto = Number(document.getElementById('m_monto').value);
-                const ciclo = document.getElementById('m_ciclo').value;
-                const fechaCorte = document.getElementById('m_fecha_corte').value;
+                const monto = Number(document.getElementById('m_monto').value) || 0;
+                const ciclo = document.getElementById('m_ciclo').value || 'Mensual';
+                const fechaCorte = document.getElementById('m_fecha_corte').value || '';
 
                 // 1. Guardar en Panel Maestro
-                await updateDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), {
+                await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), {
                     estado: estado,
                     mensajeSuspension: msjSus,
                     htmlMantenimiento: htmlMan,
                     montoContrato: monto,
                     ciclo: ciclo,
                     fechaCorte: fechaCorte
-                });
+                }, { merge: true });
 
                 // 2. Guardar en Base de Datos del Cliente (Solo el estado técnico y mensajes para que la app sepa bloquearse)
-                await updateDoc(doc(db, 'artifacts', id, 'public', 'data', 'usuarios', 'admin_data'), {
+                await setDoc(doc(db, 'artifacts', id, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: estado,
                     mensajeSuspension: msjSus,
                     htmlMantenimiento: htmlMan
-                });
+                }, { merge: true });
 
                 showToast(`Datos actualizados correctamente`);
                 closeModal('manageModal');
