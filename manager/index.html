@@ -55,14 +55,14 @@
             </div>
         </header>
 
-        <main class="max-w-7xl mx-auto p-4 md:p-8 w-full flex-1">
+        <main class="max-w-7xl mx-auto p-4 md:p-8 w-full flex-1 overflow-hidden">
             <!-- Sección Nuevo Socio -->
             <section class="bg-[#1e293b] border border-slate-700 p-6 rounded-3xl mb-8 shadow-xl">
                 <h3 class="text-lg font-black mb-6 text-white uppercase flex items-center gap-2">
                     <i data-lucide="plus-circle" class="text-indigo-400"></i> Desplegar Nuevo Socio
                 </h3>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">ID Único (Carpeta)</label>
                         <input type="text" id="new-id" placeholder="ej: mipyme_cr" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm font-mono text-white">
@@ -77,6 +77,10 @@
                             <option value="Mensual">Mensual</option>
                             <option value="Anual">Anual</option>
                         </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Teléfono (WhatsApp)</label>
+                        <input type="text" id="new-telefono" placeholder="Ej: 50688888888" class="w-full bg-[#0b1120] border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500 text-sm text-white">
                     </div>
                 </div>
                 
@@ -95,7 +99,7 @@
                     </div>
                 </div>
 
-                <button id="btn-create" onclick="createTenant()" class="mt-6 bg-indigo-600 hover:bg-indigo-500 text-white font-black px-8 py-3 rounded-xl transition-all uppercase text-xs flex items-center gap-2 shadow-lg shadow-indigo-500/20">
+                <button id="btn-create" onclick="createTenant()" class="mt-6 w-full md:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-black px-8 py-3 rounded-xl transition-all uppercase text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20">
                     Lanzar Plataforma <i data-lucide="send" class="w-4 h-4"></i>
                 </button>
             </section>
@@ -109,14 +113,14 @@
                     </span>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+                    <table class="w-full text-left min-w-[850px]">
                         <thead class="bg-slate-900/50 text-slate-400 text-[10px] uppercase font-black tracking-widest border-b border-slate-700">
                             <tr>
                                 <th class="p-5">Socio / ID</th>
                                 <th class="p-5">Periodo del Plan</th>
                                 <th class="p-5">Cuota y Tipo</th>
                                 <th class="p-5 text-center">Estado</th>
-                                <th class="p-5 text-right">Opciones</th>
+                                <th class="p-5 text-right whitespace-nowrap">Opciones</th>
                             </tr>
                         </thead>
                         <tbody id="tenant-list" class="divide-y divide-slate-700/50"></tbody>
@@ -128,9 +132,9 @@
 
     <!-- Modal de Gestión -->
     <div id="manageModal" class="fixed inset-0 bg-[#0b1120]/95 z-[200] hidden flex items-center justify-center p-4 backdrop-blur-md overflow-y-auto">
-        <div class="bg-[#1e293b] border border-slate-600 w-full max-w-2xl rounded-3xl p-8 my-8 shadow-2xl">
+        <div class="bg-[#1e293b] border border-slate-600 w-full max-w-2xl rounded-3xl p-6 md:p-8 my-8 shadow-2xl">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-black text-white uppercase flex items-center gap-2">
+                <h2 class="text-xl md:text-2xl font-black text-white uppercase flex items-center gap-2">
                     <i data-lucide="edit" class="text-indigo-400"></i> Gestión de Socio
                 </h2>
                 <button onclick="closeModal('manageModal')" class="text-slate-500 hover:text-white"><i data-lucide="x"></i></button>
@@ -142,20 +146,20 @@
                     <div class="grid grid-cols-3 gap-2 mt-2">
                         <label class="cursor-pointer">
                             <input type="radio" name="m_status" value="Activo" class="hidden peer">
-                            <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-emerald-600/20 peer-checked:border-emerald-500 text-slate-500 peer-checked:text-emerald-400 font-bold text-[10px] uppercase tracking-wider">ACTIVO</div>
+                            <div class="p-2 md:p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-emerald-600/20 peer-checked:border-emerald-500 text-slate-500 peer-checked:text-emerald-400 font-bold text-[10px] uppercase tracking-wider">ACTIVO</div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="m_status" value="Suspendido" class="hidden peer">
-                            <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-red-600/20 peer-checked:border-red-500 text-slate-500 peer-checked:text-red-400 font-bold text-[10px] uppercase tracking-wider">MORA</div>
+                            <div class="p-2 md:p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-red-600/20 peer-checked:border-red-500 text-slate-500 peer-checked:text-red-400 font-bold text-[10px] uppercase tracking-wider">MORA</div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="m_status" value="Mantenimiento" class="hidden peer">
-                            <div class="p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-amber-600/20 peer-checked:border-amber-500 text-slate-500 peer-checked:text-amber-400 font-bold text-[10px] uppercase tracking-wider">MANT.</div>
+                            <div class="p-2 md:p-3 text-center rounded-xl border border-slate-700 peer-checked:bg-amber-600/20 peer-checked:border-amber-500 text-slate-500 peer-checked:text-amber-400 font-bold text-[10px] uppercase tracking-wider">MANT.</div>
                         </label>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-slate-500 uppercase">Tipo de Plan</label>
                         <select id="m_plan" class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none focus:border-indigo-500">
@@ -169,7 +173,7 @@
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-slate-500 uppercase">Inicio de Suscripción</label>
                         <input type="date" id="m_inicio" class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none focus:border-indigo-500">
@@ -178,6 +182,11 @@
                         <label class="text-[10px] font-bold text-slate-500 uppercase">Fecha de Corte</label>
                         <input type="date" id="m_corte" class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none focus:border-indigo-500">
                     </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Teléfono (WhatsApp)</label>
+                    <input type="text" id="m_telefono" placeholder="+506..." class="w-full bg-[#0f172a] border border-slate-700 p-3 rounded-xl text-white outline-none focus:border-indigo-500">
                 </div>
 
                 <!-- Áreas de Código HTML CON OPCIÓN DE SUBIR ARCHIVO -->
@@ -199,9 +208,9 @@
                     </div>
                 </div>
 
-                <div class="flex gap-3 pt-4">
-                    <button onclick="closeModal('manageModal')" class="flex-1 py-4 bg-slate-800 rounded-xl font-bold text-slate-400 uppercase text-xs">Cerrar</button>
-                    <button onclick="saveChanges()" class="flex-[2] py-4 bg-indigo-600 rounded-xl font-black text-white shadow-lg uppercase text-xs tracking-widest hover:bg-indigo-500 transition-colors">Sincronizar y Aplicar</button>
+                <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                    <button onclick="closeModal('manageModal')" class="w-full sm:w-1/3 py-4 bg-slate-800 rounded-xl font-bold text-slate-400 uppercase text-xs">Cerrar</button>
+                    <button onclick="saveChanges()" class="w-full sm:w-2/3 py-4 bg-indigo-600 rounded-xl font-black text-white shadow-lg uppercase text-xs tracking-widest hover:bg-indigo-500 transition-colors">Sincronizar y Aplicar</button>
                 </div>
             </div>
         </div>
@@ -309,29 +318,35 @@
             else notice.classList.add('hidden');
         }
 
-        // Lógica para Abrir Sitio Interceptando Mora / Mantenimiento
+        // Lógica robusta para móviles (Bloqueo de Pop-ups)
         window.openTenantSite = (id) => {
             const t = currentTenants.find(x => x.id === id);
             if (!t) return;
             
-            // Si está suspendido y tiene HTML cargado, mostramos el HTML directamente sin abrir la plataforma
             if (t.estado === 'Suspendido' && (t.htmlMora || t.mensajeSuspension)) {
                 const htmlContent = t.htmlMora || t.mensajeSuspension;
                 const newWin = window.open('', '_blank');
-                newWin.document.open();
-                newWin.document.write(htmlContent);
-                newWin.document.close();
+                if (newWin) {
+                    newWin.document.open();
+                    newWin.document.write(htmlContent);
+                    newWin.document.close();
+                } else {
+                    showToast("Por favor habilita las ventanas emergentes (pop-ups) en tu móvil/navegador para ver la pantalla.", "error");
+                }
             } 
-            // Igual para mantenimiento
             else if (t.estado === 'Mantenimiento' && t.htmlMantenimiento) {
                 const newWin = window.open('', '_blank');
-                newWin.document.open();
-                newWin.document.write(t.htmlMantenimiento);
-                newWin.document.close();
+                if (newWin) {
+                    newWin.document.open();
+                    newWin.document.write(t.htmlMantenimiento);
+                    newWin.document.close();
+                } else {
+                    showToast("Por favor habilita las ventanas emergentes (pop-ups) en tu móvil/navegador para ver la pantalla.", "error");
+                }
             } 
-            // Si está activo, abrimos la app normal
             else {
-                window.open(`${BASE_URL}?tenant=${id}`, '_blank');
+                const newWin = window.open(`${BASE_URL}?tenant=${id}`, '_blank');
+                if(!newWin) showToast("Por favor habilita las ventanas emergentes (pop-ups).", "error");
             }
         };
 
@@ -352,6 +367,11 @@
                     const fInicio = t.fechaInicioPlan || 'N/D';
                     const fCorte = t.fechaCorte || 'N/D';
                     const planBadge = t.tipoPlan === 'Anual' ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+                    
+                    // Configuración del Enlace de WhatsApp
+                    const mensajeWhatsApp = encodeURIComponent(`Hola ${t.empresa || id}, somos el equipo de ProDigital. Estamos a la orden por si deseas renovar tu suscripción que vence el ${fCorte}.`);
+                    const cleanPhone = t.telefono ? t.telefono.replace(/\+/g,'').replace(/\s/g,'') : '';
+                    const linkWhatsApp = cleanPhone ? `https://wa.me/${cleanPhone}?text=${mensajeWhatsApp}` : `https://wa.me/?text=${mensajeWhatsApp}`;
 
                     const row = document.createElement('tr');
                     row.className = "hover:bg-slate-800/40 transition-all border-b border-slate-700/30 group";
@@ -383,10 +403,15 @@
                                 ${t.estado}
                             </span>
                         </td>
-                        <td class="p-5 text-right flex justify-end gap-2 items-center h-full mt-2">
-                            <button onclick="openTenantSite('${id}')" title="Ir al Sitio" class="p-2 bg-slate-700/30 text-slate-400 rounded-xl hover:bg-slate-700 hover:text-white transition-all"><i data-lucide="external-link" class="w-4 h-4"></i></button>
-                            <button onclick="openEdit('${id}')" title="Configurar" class="p-2 bg-indigo-500/10 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all"><i data-lucide="settings" class="w-4 h-4"></i></button>
-                            <button onclick="deleteTenant('${id}')" title="Eliminar" class="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-600 hover:text-white transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <td class="p-5">
+                            <div class="flex justify-end gap-2 items-center whitespace-nowrap h-full">
+                                <a href="${linkWhatsApp}" target="_blank" title="Enviar Recordatorio WhatsApp" class="p-2 bg-emerald-500/10 text-emerald-500 rounded-xl hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                                </a>
+                                <button onclick="openTenantSite('${id}')" title="Ir al Sitio" class="p-2 bg-slate-700/30 text-slate-400 rounded-xl hover:bg-slate-700 hover:text-white transition-all"><i data-lucide="external-link" class="w-4 h-4"></i></button>
+                                <button onclick="openEdit('${id}')" title="Configurar" class="p-2 bg-indigo-500/10 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all"><i data-lucide="settings" class="w-4 h-4"></i></button>
+                                <button onclick="deleteTenant('${id}')" title="Eliminar" class="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-600 hover:text-white transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </div>
                         </td>
                     `;
                     list.appendChild(row);
@@ -399,6 +424,7 @@
             const id = document.getElementById('new-id').value.trim().toLowerCase().replace(/\s/g, '_');
             const name = document.getElementById('new-name').value.trim();
             const plan = document.getElementById('new-plan').value;
+            const telefono = document.getElementById('new-telefono').value.trim();
             const monto = document.getElementById('new-monto').value;
             const inicio = document.getElementById('new-inicio').value;
             const corte = document.getElementById('new-corte').value;
@@ -412,6 +438,7 @@
                 const data = {
                     empresa: name,
                     tipoPlan: plan,
+                    telefono: telefono,
                     montoContrato: Number(monto) || 0,
                     fechaInicioPlan: inicio,
                     fechaCorte: corte,
@@ -426,6 +453,7 @@
                 await setDoc(doc(db, 'artifacts', id, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: 'Activo',
                     nombreEmpresa: name,
+                    telefono: telefono,
                     tenantId: id,
                     mensajeSuspension: '',
                     htmlMantenimiento: ''
@@ -434,6 +462,7 @@
                 showToast("Socio creado con éxito");
                 document.getElementById('new-id').value = "";
                 document.getElementById('new-name').value = "";
+                document.getElementById('new-telefono').value = "";
                 document.getElementById('new-monto').value = "";
                 document.getElementById('new-inicio').value = "";
                 document.getElementById('new-corte').value = "";
@@ -452,6 +481,7 @@
             document.getElementById('m_monto').value = t.montoContrato || 0;
             document.getElementById('m_inicio').value = t.fechaInicioPlan || '';
             document.getElementById('m_corte').value = t.fechaCorte || '';
+            document.getElementById('m_telefono').value = t.telefono || '';
             
             document.getElementById('m_html_mora').value = t.mensajeSuspension || t.htmlMora || '';
             document.getElementById('m_html_mant').value = t.htmlMantenimiento || '';
@@ -487,6 +517,7 @@
             const monto = document.getElementById('m_monto').value;
             const inicio = document.getElementById('m_inicio').value;
             const corte = document.getElementById('m_corte').value;
+            const telefono = document.getElementById('m_telefono').value.trim();
             const htmlMora = document.getElementById('m_html_mora').value;
             const htmlMant = document.getElementById('m_html_mant').value;
 
@@ -494,6 +525,7 @@
                 await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', editingId), {
                     estado: status,
                     tipoPlan: plan,
+                    telefono: telefono,
                     montoContrato: Number(monto),
                     fechaInicioPlan: inicio,
                     fechaCorte: corte,
@@ -504,6 +536,7 @@
 
                 await setDoc(doc(db, 'artifacts', editingId, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: status,
+                    telefono: telefono,
                     mensajeSuspension: htmlMora, 
                     htmlMora: htmlMora, 
                     htmlMantenimiento: htmlMant
