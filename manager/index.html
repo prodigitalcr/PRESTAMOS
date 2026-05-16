@@ -50,41 +50,37 @@
             // Referencia al documento de control público del socio
             const adminDocRef = doc(db, 'artifacts', tenantId, 'public', 'data', 'usuarios', 'admin_data');
             
-            // Suscripción en tiempo real
+            // Suscripción en tiempo real al estado del inquilino
             onSnapshot(adminDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     
-                    // Lógica de Bloqueo: Mantenimiento o Suspendido
-                    if (data.estadoTenant === 'Mantenimiento' || data.estadoTenant === 'Suspendido') {
-                        const htmlDeBloqueo = data.htmlMantenimiento;
-
-                        if (htmlDeBloqueo && htmlDeBloqueo.trim() !== "") {
-                            // BLOQUEO TOTAL: Sobrescribir el documento completo con el HTML personalizado
+                    // 1. SI EL ESTADO ES MANTENIMIENTO
+                    if (data.estadoTenant === 'Mantenimiento') {
+                        const htmlMant = data.htmlMantenimiento;
+                        if (htmlMant && htmlMant.trim() !== "") {
                             document.open();
-                            document.write(htmlDeBloqueo);
+                            document.write(htmlMant);
                             document.close();
-                            window.stop(); // Detener cualquier otro script
+                            window.stop();
                         } else {
-                            // Diseño de respaldo si el campo está vacío en Firebase
-                            document.body.innerHTML = `
-                                <div style="background:#0b1120;color:white;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:sans-serif;padding:20px;">
-                                    <div style="background:rgba(245,158,11,0.1);padding:40px;border-radius:40px;border:1px solid rgba(245,158,11,0.3);max-width:450px;box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
-                                        <div style="font-size:70px;margin-bottom:20px;">🛠️</div>
-                                        <h1 style="font-size:22px;font-weight:900;text-transform:uppercase;margin-bottom:15px;color:#f59e0b;letter-spacing:1px;">Mantenimiento Programado</h1>
-                                        <p style="color:#94a3b8;font-size:14px;line-height:1.6;margin-bottom:25px;">
-                                            Estamos realizando mejoras técnicas en la plataforma. El acceso estará disponible en breve.
-                                        </p>
-                                        <div style="background:#1e293b;padding:12px;border-radius:12px;color:#cbd5e1;font-size:11px;font-weight:bold;text-transform:uppercase;display:inline-block;padding-left:25px;padding-right:25px;">
-                                            Estado: Sincronizando Servidores
-                                        </div>
-                                    </div>
-                                    <p style="margin-top:30px;color:#475569;font-size:10px;text-transform:uppercase;letter-spacing:2px;">ProDigital Support Management</p>
-                                </div>
-                            `;
+                            renderDefaultMessage("Mantenimiento Programado", "Estamos optimizando nuestros sistemas.");
                         }
-                    } else {
-                        // El servicio está ACTIVO
+                    } 
+                    // 2. SI EL ESTADO ES MORA O SUSPENDIDO
+                    else if (data.estadoTenant === 'Mora' || data.estadoTenant === 'Suspendido') {
+                        const htmlMora = data.htmlMora;
+                        if (htmlMora && htmlMora.trim() !== "") {
+                            document.open();
+                            document.write(htmlMora);
+                            document.close();
+                            window.stop();
+                        } else {
+                            renderDefaultMessage("Pago Pendiente", "Por favor contacte a soporte para regularizar su cuenta.");
+                        }
+                    } 
+                    // 3. SI ESTÁ ACTIVO
+                    else {
                         renderApp(data);
                     }
                 }
@@ -93,43 +89,52 @@
             });
         }
 
-        // Función para renderizar la aplicación normal cuando el estado es Activo
+        // Mensaje de respaldo por si no hay HTML en Firebase
+        function renderDefaultMessage(title, subtitle) {
+            document.body.innerHTML = `
+                <div style="background:#0b1120;color:white;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:sans-serif;padding:20px;">
+                    <div style="background:rgba(245,158,11,0.1);padding:40px;border-radius:40px;border:1px solid rgba(245,158,11,0.3);max-width:450px;">
+                        <h1 style="font-size:24px;font-weight:900;text-transform:uppercase;margin-bottom:10px;color:#f59e0b;">\${title}</h1>
+                        <p style="color:#94a3b8;font-size:14px;">\${subtitle}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Función para renderizar la aplicación normal
         function renderApp(adminData) {
             const root = document.getElementById('app-root');
             root.innerHTML = `
                 <div class="p-4 md:p-8 max-w-6xl mx-auto">
                     <header class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 bg-[#1e293b] p-6 rounded-3xl border border-slate-700/50 shadow-xl">
                         <div>
-                            <h1 class="text-2xl font-black text-white uppercase tracking-tighter">${adminData.nombreEmpresa || 'Gestión de Préstamos'}</h1>
+                            <h1 class="text-2xl font-black text-white uppercase tracking-tighter">\${adminData.nombreEmpresa || 'Gestión de Préstamos'}</h1>
                             <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">Panel Operativo de Socio</p>
                         </div>
                         <div class="flex items-center gap-3">
-                            <div class="flex flex-col items-end">
-                                <span class="text-[9px] font-bold text-slate-500 uppercase">Estado Global</span>
-                                <span class="text-emerald-400 font-black text-xs uppercase tracking-widest flex items-center gap-2">
-                                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Activo
-                                </span>
-                            </div>
+                            <span class="text-emerald-400 font-black text-xs uppercase tracking-widest flex items-center gap-2">
+                                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Servicio Activo
+                            </span>
                         </div>
                     </header>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-[#1e293b] p-6 rounded-3xl border border-slate-700/50">
-                            <span class="text-slate-500 text-[10px] font-bold uppercase">Cartera Total</span>
-                            <div class="text-3xl font-black mt-1 text-white">₡0.00</div>
+                        <div class="bg-[#1e293b] p-6 rounded-3xl border border-slate-700/50 text-center">
+                            <span class="text-slate-500 text-[10px] font-bold uppercase">Estado Operativo</span>
+                            <div class="text-xl font-black mt-1 text-white uppercase tracking-widest">En Línea</div>
                         </div>
-                        <div class="bg-[#1e293b] p-6 rounded-3xl border border-slate-700/50">
-                            <span class="text-slate-500 text-[10px] font-bold uppercase">Préstamos Vigentes</span>
-                            <div class="text-3xl font-black mt-1 text-indigo-400">0</div>
+                        <div class="bg-[#1e293b] p-6 rounded-3xl border border-slate-700/50 text-center">
+                            <span class="text-slate-500 text-[10px] font-bold uppercase">ID Inquilino</span>
+                            <div class="text-xl font-black mt-1 text-indigo-400 font-mono tracking-tighter">\${tenantId}</div>
                         </div>
-                        <div class="bg-[#1e293b] p-6 rounded-3xl border border-slate-700/50">
-                            <span class="text-slate-500 text-[10px] font-bold uppercase">Cobros para hoy</span>
-                            <div class="text-3xl font-black mt-1 text-emerald-400">0</div>
+                        <div class="bg-[#1e293b] p-6 rounded-3xl border border-slate-700/50 text-center">
+                            <span class="text-slate-500 text-[10px] font-bold uppercase">Soporte</span>
+                            <div class="text-xl font-black mt-1 text-emerald-400">ProDigital</div>
                         </div>
                     </div>
 
                     <div class="mt-8 bg-slate-800/30 border-2 border-dashed border-slate-700/50 rounded-3xl p-20 text-center">
-                        <p class="text-slate-500 font-medium text-sm">Cargando módulos operativos...</p>
+                        <p class="text-slate-500 font-medium text-sm italic">Módulo de gestión de préstamos listo para operar...</p>
                     </div>
                 </div>
             `;
