@@ -6,7 +6,6 @@
     <title>Plataforma de Préstamos y Tienda V8 - Segura</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- DOMPurify para Sanitización Robusta contra ataques XSS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
@@ -33,7 +32,7 @@
         .carousel-item { transition: opacity 0.5s ease-in-out; }
     </style>
 </head>
-<body class="antialiased text-slate-800 flex flex-col min-h-screen relative pb-20 md:pb-0">
+<body class="antialiased text-slate-800 flex flex-col min-h-screen relative pb-10">
 
     <!-- LOADER INICIAL GLOBAL -->
     <div id="globalLoader" class="fixed inset-0 bg-slate-900 z-[999] flex flex-col items-center justify-center">
@@ -45,22 +44,20 @@
     <div id="landingPage" class="hidden flex-col min-h-screen bg-slate-50">
         <nav class="bg-indigo-900 text-white p-4 flex justify-between items-center shadow-lg sticky top-0 z-40">
             <div class="font-black text-lg tracking-tight flex items-center gap-2"><span>💸</span> V8 PRÉSTAMOS</div>
-            <button onclick="openModal('loginModal')" class="bg-white text-indigo-900 px-4 py-1.5 rounded font-bold text-sm hover:bg-slate-200 transition">Ingresar</button>
+            <button onclick="openModal('loginModal')" class="bg-white text-indigo-900 px-4 py-1.5 rounded font-bold text-sm hover:bg-slate-200 transition">Acceso Clientes</button>
         </nav>
         
         <div class="flex flex-col items-center justify-center p-8 text-center bg-gradient-to-br from-indigo-900 via-slate-800 to-black text-white relative overflow-hidden shrink-0">
             <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
             <h1 class="text-4xl md:text-6xl font-black mb-4 relative z-10 leading-tight">Créditos Rápidos y <br><span class="text-emerald-400">Tienda Exclusiva</span></h1>
             <p class="text-slate-300 mb-8 max-w-xl relative z-10">Soluciones financieras a tu medida. Explora nuestro catálogo de artículos con facilidades de pago o solicita tu préstamo hoy mismo.</p>
-            <div class="flex flex-col sm:flex-row gap-4 relative z-10">
-                <button onclick="openModal('loginModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-black text-lg shadow-lg shadow-indigo-600/30 transform hover:-translate-y-1 transition">Acceso Clientes</button>
-            </div>
         </div>
         
         <div class="flex-1 bg-slate-100 py-10 px-6">
             <div class="max-w-6xl mx-auto">
                 <h2 class="text-3xl font-black text-slate-800 mb-8 text-center flex items-center justify-center gap-3"><span>🛍️</span> Nuestro Catálogo</h2>
-                <div id="landingTiendaGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+                <!-- GRID PARA PRODUCTOS AMPLIOS TIPO CARRUSEL -->
+                <div id="landingTiendaGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-8"></div>
             </div>
         </div>
     </div>
@@ -99,6 +96,10 @@
                 <input type="text" id="r_nombre" placeholder="Nombre Completo" class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-600 transition" required>
                 <input type="text" id="r_telefono" placeholder="WhatsApp (Ej: 50688888888)" class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-600 transition" required>
                 <input type="password" id="r_password" placeholder="Crea una Contraseña" class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-600 transition" required minlength="6">
+                <label class="flex items-start gap-2 text-xs text-slate-600 mt-2">
+                    <input type="checkbox" required class="mt-1">
+                    Acepto los términos, condiciones y la firma digital simple para procesos de cobro.
+                </label>
                 <button type="submit" id="btnRegister" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 shadow-lg">Registrarme</button>
             </form>
             <div class="mt-4 text-center">
@@ -112,10 +113,13 @@
         <div class="flex items-center gap-3">
             <div id="navRoleBadge" class="px-2 py-1 rounded text-[10px] font-black tracking-widest border border-white/30 bg-black/20">ROL</div>
             <span id="navTitle" class="font-bold tracking-tight text-sm md:text-base hidden sm:inline">SISTEMA V8</span>
-            <button id="btnNavContrato" onclick="verContratoSocio()" class="hidden bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-300 shadow transition">📄 Ver Contrato Activo</button>
+            
+            <!-- Botones Exclusivos Socio -->
+            <button id="btnNavContrato" onclick="verContratoSocio()" class="hidden bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-300 shadow transition">📄 Contrato ProDigital</button>
+            <button id="btnNavSoporte" onclick="window.open('https://wa.me/50672284602?text=Hola%20Soporte%20ProDigital,%20necesito%20ayuda%20con%20la%20plataforma.', '_blank')" class="hidden bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-blue-300 shadow transition">🎧 Soporte Técnico</button>
         </div>
         <div class="flex items-center gap-2">
-            <button onclick="openCarrito()" class="relative bg-emerald-600 hover:bg-emerald-700 transition px-3 py-2 rounded-lg font-bold text-xs flex items-center gap-1 shadow-inner">
+            <button onclick="openCarrito()" class="relative bg-emerald-600 hover:bg-emerald-700 transition px-3 py-2 rounded-lg font-bold text-xs flex items-center gap-1 shadow-inner hidden" id="navBtnCarrito">
                 🛒 <span id="cartCountGlobal" class="bg-white text-emerald-700 rounded-full px-1.5 py-0.5 text-[10px]">0</span>
             </button>
             <button onclick="openPerfil()" class="text-xs hover:bg-white/20 transition px-3 py-2 rounded-lg font-bold border border-white/30">⚙️ Perfil</button>
@@ -125,34 +129,40 @@
 
     <!-- ==================== VISTA SOCIO ==================== -->
     <div id="app-socio" class="hidden flex-col flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 pb-24 md:pb-6">
+        
+        <!-- KPIs Avanzados (Visión de Negocio) -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 col-span-2 md:col-span-1">
-                <h3 class="text-slate-500 font-bold text-[10px] uppercase mb-1">Total Clientes</h3>
-                <p class="text-3xl font-black text-slate-800" id="s-totales">0</p>
+            <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-200">
+                <h3 class="text-indigo-700 font-bold text-[10px] uppercase mb-1">Cierre de Caja Hoy</h3>
+                <p class="text-2xl font-black text-indigo-800" id="s-cierre-hoy">₡0</p>
+                <p class="text-[9px] text-indigo-500 mt-1">Abonos recibidos hoy</p>
             </div>
             <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200">
-                <h3 class="text-emerald-700 font-bold text-[10px] uppercase mb-1">Al Día</h3>
-                <p class="text-2xl font-black text-emerald-800" id="s-aldia">0</p>
+                <h3 class="text-emerald-700 font-bold text-[10px] uppercase mb-1">Capital en la Calle</h3>
+                <p class="text-2xl font-black text-emerald-800" id="s-capital">₡0</p>
+                <p class="text-[9px] text-emerald-500 mt-1">Total prestado activo</p>
             </div>
-            <div class="bg-red-50 p-4 rounded-xl border border-red-200">
-                <h3 class="text-red-700 font-bold text-[10px] uppercase mb-1">Morosos</h3>
-                <p class="text-2xl font-black text-red-800" id="s-morosos">0</p>
+            <div class="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                <h3 class="text-amber-700 font-bold text-[10px] uppercase mb-1">Interés Proyectado</h3>
+                <p class="text-2xl font-black text-amber-800" id="s-interes-proy">₡0</p>
+                <p class="text-[9px] text-amber-500 mt-1">Ganancia mensual est.</p>
             </div>
-            <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-200 col-span-2 md:col-span-1">
-                <h3 class="text-indigo-700 font-bold text-[10px] uppercase mb-1">Capital Activo</h3>
-                <p class="text-xl font-black text-indigo-800" id="s-capital">₡0</p>
+            <div class="bg-red-50 p-4 rounded-xl border border-red-200 flex flex-col justify-center items-center cursor-pointer hover:bg-red-100 transition" onclick="document.getElementById('cobroInteligenteSec').scrollIntoView({behavior: 'smooth'})">
+                <h3 class="text-red-700 font-bold text-xs uppercase mb-1 text-center">Riesgo / Mora</h3>
+                <p class="text-3xl font-black text-red-800" id="s-morosos">0</p>
             </div>
         </div>
 
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 gap-3">
             <h2 class="text-xl font-black text-slate-800">Cartera de Préstamos</h2>
-            <div class="flex gap-2 w-full sm:w-auto">
+            <div class="flex gap-2 w-full sm:w-auto flex-wrap">
+                <button onclick="exportarCSV()" class="flex-1 sm:flex-none bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-bold shadow-lg hover:bg-emerald-700 text-sm">📊 Exportar Excel</button>
                 <button onclick="openModal('tiendaSocioModal'); switchTiendaTab('inv')" class="flex-1 sm:flex-none bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold shadow-lg hover:bg-slate-700 text-sm">📦 Mi Tienda</button>
                 <button onclick="openModal('addModal')" class="flex-1 sm:flex-none bg-indigo-600 text-white px-4 py-2.5 rounded-xl font-bold shadow-lg hover:bg-indigo-700 text-sm">➕ Préstamo</button>
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto mb-8">
             <table class="w-full text-left border-collapse min-w-[900px]">
                 <thead class="bg-slate-50 border-b text-[10px] uppercase text-slate-500 font-black tracking-wider">
                     <tr>
@@ -167,6 +177,14 @@
                 <tbody id="tableBody" class="divide-y text-sm"></tbody>
             </table>
         </div>
+
+        <!-- Cobro Inteligente -->
+        <div id="cobroInteligenteSec" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h3 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">🎯 Lista de Cobro Inteligente <span class="text-xs font-normal text-slate-500">(Vencen hoy o están en mora)</span></h3>
+            <div id="listaCobroBody" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Se llena por JS -->
+            </div>
+        </div>
     </div>
 
     <!-- ==================== VISTA CLIENTE ==================== -->
@@ -177,52 +195,91 @@
     <!-- ==================== VISTA SOPORTE (ADMIN) ==================== -->
     <div id="app-admin" class="hidden flex-col flex-1 w-full max-w-7xl mx-auto p-6 space-y-6">
         <div class="flex justify-between items-center">
-            <h2 class="text-3xl font-black text-slate-800">Panel Central de Soporte</h2>
+            <h2 class="text-3xl font-black text-slate-800">Panel ProDigital (Admin)</h2>
         </div>
         
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Pagos Mensualidad -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
-                <h3 class="font-black text-lg text-emerald-700 border-b pb-2 mb-4">💰 Control de Mensualidad (Socio)</h3>
+                <h3 class="font-black text-lg text-emerald-700 border-b pb-2 mb-4">💰 Control Pagos de Plataforma</h3>
                 <div class="flex gap-2 mb-4">
-                    <input type="text" id="adminPagoDesc" placeholder="Mes a cancelar (Ej: Mayo 2026)" class="flex-1 border p-2 rounded text-sm bg-slate-50 font-bold">
+                    <input type="text" id="adminPagoDesc" placeholder="Socio / Mes (Ej: Juan - Mayo)" class="flex-1 border p-2 rounded text-sm bg-slate-50 font-bold">
                     <input type="number" id="adminPagoMonto" placeholder="Monto" class="w-32 border p-2 rounded text-sm bg-slate-50 font-bold">
                     <button onclick="guardarPagoAdmin()" class="bg-emerald-600 text-white px-4 py-2 rounded font-bold hover:bg-emerald-700">Agregar</button>
                 </div>
                 <div id="adminPagosList" class="space-y-2 flex-1 overflow-y-auto max-h-64"></div>
             </div>
 
-            <!-- Mantenimiento -->
+            <!-- Mantenimiento y Ajustes Globales -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
-                <h3 class="font-black text-lg text-indigo-700 border-b pb-2 mb-4">⚙️ Bitácora de Mantenimiento</h3>
-                <div class="flex gap-2 mb-4">
-                    <input type="text" id="adminMantDesc" placeholder="Descripción de la mejora/arreglo" class="flex-1 border p-2 rounded text-sm bg-slate-50 font-bold">
-                    <button onclick="guardarMantenimientoAdmin()" class="bg-indigo-600 text-white px-4 py-2 rounded font-bold hover:bg-indigo-700">Registrar</button>
+                <h3 class="font-black text-lg text-indigo-700 border-b pb-2 mb-4">⚙️ Ajustes y Bitácora</h3>
+                <div class="mb-4">
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Texto Pie de Página (Footer Global)</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="adminFooterText" placeholder="Ej: derechos reservados prodigital /7228-4602" class="flex-1 border p-2 rounded text-sm bg-slate-50 font-bold">
+                        <button onclick="guardarFooterAdmin()" class="bg-indigo-600 text-white px-4 py-2 rounded font-bold hover:bg-indigo-700">Actualizar</button>
+                    </div>
                 </div>
-                <div id="adminMantList" class="space-y-2 flex-1 overflow-y-auto max-h-64"></div>
+                <div class="flex gap-2 mb-4 border-t pt-4">
+                    <input type="text" id="adminMantDesc" placeholder="Registro de mantenimiento..." class="flex-1 border p-2 rounded text-sm bg-slate-50 font-bold">
+                    <button onclick="guardarMantenimientoAdmin()" class="bg-slate-800 text-white px-4 py-2 rounded font-bold hover:bg-slate-900">Bitácora</button>
+                </div>
+                <div id="adminMantList" class="space-y-2 flex-1 overflow-y-auto max-h-32"></div>
             </div>
 
             <!-- Contrato de Alquiler -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2">
-                <h3 class="font-black text-lg text-slate-800 border-b pb-2 mb-4">📄 Contrato de Alquiler de Plataforma</h3>
-                <p class="text-sm text-slate-500 mb-4">Sube un archivo PDF o imagen clara del contrato. Este documento será visible para el Socio en su panel principal.</p>
-                
+                <h3 class="font-black text-lg text-slate-800 border-b pb-2 mb-4">📄 Contrato Global para Socios</h3>
                 <div class="flex flex-col sm:flex-row items-center gap-4">
                     <input type="file" id="adminContratoFile" accept=".pdf, image/*" class="w-full sm:w-auto p-2 border rounded bg-slate-50 text-sm">
-                    <button onclick="subirContratoAdmin()" class="w-full sm:w-auto bg-slate-800 text-white px-6 py-2.5 rounded-lg font-bold shadow hover:bg-slate-900">Subir y Compartir con Socio</button>
-                    <button onclick="verContratoSocio()" class="w-full sm:w-auto bg-emerald-100 text-emerald-800 px-6 py-2.5 rounded-lg font-bold border border-emerald-300 hover:bg-emerald-200 hidden" id="btnAdminVerContrato">Ver Contrato Subido</button>
+                    <button onclick="subirContratoAdmin()" class="w-full sm:w-auto bg-slate-800 text-white px-6 py-2.5 rounded-lg font-bold shadow hover:bg-slate-900">Subir Documento</button>
+                    <button onclick="verContratoSocio()" class="w-full sm:w-auto bg-emerald-100 text-emerald-800 px-6 py-2.5 rounded-lg font-bold border border-emerald-300 hover:bg-emerald-200 hidden" id="btnAdminVerContrato">Ver Contrato Actual</button>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white mt-6 rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
-            <div class="p-4 bg-slate-900 text-white font-black text-lg">Base de Datos de Usuarios (Solo Lectura Admin)</div>
-            <table class="w-full text-left border-collapse min-w-[600px]">
-                <thead class="bg-slate-100 text-slate-600 border-b text-[10px] uppercase font-black">
-                    <tr><th class="p-4">Sistema ID (UID)</th><th class="p-4">Cliente / Info</th><th class="p-4 text-center">Acciones</th></tr>
-                </thead>
-                <tbody id="adminTableBody" class="divide-y text-sm"></tbody>
-            </table>
+        <!-- GESTOR DE SOCIOS SUSCRITOS -->
+        <div class="bg-white mt-6 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-4 bg-slate-900 text-white flex justify-between items-center">
+                <h3 class="font-black text-lg">Directorio de Socios (Clientes ProDigital)</h3>
+                <button onclick="openModal('addSocioAdminModal')" class="bg-emerald-500 hover:bg-emerald-400 text-white px-3 py-1.5 rounded font-bold text-sm">+ Registrar Socio</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[800px]">
+                    <thead class="bg-slate-100 text-slate-600 border-b text-[10px] uppercase font-black">
+                        <tr><th class="p-4">Socio / Proyecto</th><th class="p-4">Plan</th><th class="p-4">Estado</th><th class="p-4">Suscripción</th><th class="p-4 text-center">Acciones</th></tr>
+                    </thead>
+                    <tbody id="adminSociosListBody" class="divide-y text-sm"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AGREGAR SOCIO (ADMIN) -->
+    <div id="addSocioAdminModal" class="fixed inset-0 bg-slate-900/80 hidden z-[200] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-md">
+            <h3 class="text-xl font-black mb-4">Registrar Nuevo Socio</h3>
+            <form id="addSocioFormAdmin" onsubmit="guardarSocioAdmin(event)" class="space-y-3">
+                <input type="hidden" id="as_id">
+                <input type="text" id="as_nombre" placeholder="Nombre del Socio / Empresa" class="w-full p-2 border rounded bg-slate-50" required>
+                <input type="text" id="as_tel" placeholder="WhatsApp (Ej: 50688888888)" class="w-full p-2 border rounded bg-slate-50" required>
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="as_plan" class="w-full p-2 border rounded bg-slate-50 font-bold text-sm">
+                        <option value="Mensual">Plan Mensual</option>
+                        <option value="Anual">Plan Anual</option>
+                    </select>
+                    <select id="as_estado" class="w-full p-2 border rounded bg-slate-50 font-bold text-sm">
+                        <option value="Activo">🟢 Activo</option>
+                        <option value="Moroso">🔴 Moroso</option>
+                        <option value="Suspendido">⚫ Suspendido</option>
+                    </select>
+                </div>
+                <input type="date" id="as_fecha" class="w-full p-2 border rounded bg-slate-50 text-sm" required>
+                <div class="flex gap-2 pt-4">
+                    <button type="button" onclick="closeModal('addSocioAdminModal')" class="flex-1 py-2 bg-slate-200 rounded font-bold">Cancelar</button>
+                    <button type="submit" class="flex-1 py-2 bg-indigo-600 text-white rounded font-bold hover:bg-indigo-700">Guardar</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -238,7 +295,6 @@
             </div>
         </div>
         <div class="flex-1 overflow-y-auto p-4 md:p-8">
-            <!-- AQUI SE RENDERIZAN LOS PRODUCTOS PARA EL CLIENTE LOGUEADO (VERSIÓN GRANDE DEFINIDA) -->
             <div class="max-w-6xl mx-auto"><div id="tiendaGrid" class="grid grid-cols-1 md:grid-cols-2 gap-8"></div></div>
         </div>
     </div>
@@ -292,19 +348,32 @@
     </div>
 
     <!-- MODAL AGREGAR CLIENTE -->
-    <div id="addModal" class="fixed inset-0 bg-slate-900/70 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto"><h3 class="text-2xl font-black mb-6 text-slate-800">Registrar Préstamo</h3><form id="loanForm" class="space-y-3"><input type="text" id="n_nombre" placeholder="Nombre del Cliente" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><div class="grid grid-cols-2 gap-3"><input type="text" id="n_cedula" placeholder="Cédula" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><input type="text" id="n_password" placeholder="Contraseña Prov." class="w-full p-3 border border-indigo-200 rounded-xl bg-indigo-50 text-sm font-bold placeholder-indigo-300 text-indigo-800" required></div><input type="text" id="n_telefono" placeholder="WhatsApp" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><input type="text" id="n_direccion" placeholder="Dirección Exacta" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><input type="text" id="n_autorizado" placeholder="Autorizado por..." class="w-full p-3 border rounded-xl bg-indigo-50 font-medium text-sm" required><div class="grid grid-cols-2 gap-3 mt-2"><div><label class="text-[10px] font-bold text-slate-500">MONTO (₡)</label><input type="number" id="n_monto" class="w-full p-3 border rounded-xl font-black text-indigo-700 text-lg" required></div><div><label class="text-[10px] font-bold text-slate-500">INTERÉS MENS. (%)</label><input type="number" id="n_interes_pct" class="w-full p-3 border rounded-xl font-black text-lg text-center" required></div></div><div class="grid grid-cols-2 gap-3 text-xs bg-slate-100 p-4 rounded-xl mt-2 border border-slate-200"><div><label class="font-bold block mb-2 text-slate-600">📸 CÉDULA</label><input type="file" id="n_img_cedula" accept="image/*" class="w-full text-slate-500 text-[10px]"></div><div><label class="font-bold block mb-2 text-slate-600">📸 PRENDA</label><input type="file" id="n_img_prenda" accept="image/*" class="w-full text-slate-500 text-[10px]"></div></div><div class="flex gap-2 pt-4"><button type="button" onclick="closeModal('addModal')" class="flex-1 py-3 font-bold bg-slate-200 text-slate-700 rounded-xl">Cancelar</button><button type="submit" id="btnSaveClient" class="flex-[2] bg-indigo-600 text-white py-3 rounded-xl font-black shadow-lg">Crear y Aprobar</button></div></form></div></div>
+    <div id="addModal" class="fixed inset-0 bg-slate-900/70 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto"><h3 class="text-2xl font-black mb-6 text-slate-800">Registrar Préstamo</h3><form id="loanForm" class="space-y-3"><input type="text" id="n_nombre" placeholder="Nombre del Cliente" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><div class="grid grid-cols-2 gap-3"><input type="text" id="n_cedula" placeholder="Cédula" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><input type="text" id="n_password" placeholder="Contraseña Prov." class="w-full p-3 border border-indigo-200 rounded-xl bg-indigo-50 text-sm font-bold placeholder-indigo-300 text-indigo-800" required></div><input type="text" id="n_telefono" placeholder="WhatsApp" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><input type="text" id="n_direccion" placeholder="Dirección Exacta" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><input type="text" id="n_autorizado" placeholder="Autorizado por..." class="w-full p-3 border rounded-xl bg-indigo-50 font-medium text-sm" required><div class="grid grid-cols-2 gap-3 mt-2"><div><label class="text-[10px] font-bold text-slate-500">MONTO (₡)</label><input type="number" id="n_monto" class="w-full p-3 border rounded-xl font-black text-indigo-700 text-lg" required></div><div><label class="text-[10px] font-bold text-slate-500">INTERÉS MENS. (%)</label><input type="number" id="n_interes_pct" class="w-full p-3 border rounded-xl font-black text-lg text-center" required></div></div><div class="grid grid-cols-2 gap-3 text-xs bg-slate-100 p-4 rounded-xl mt-2 border border-slate-200"><div><label class="font-bold block mb-2 text-slate-600">📸 CÉDULA</label><input type="file" id="n_img_cedula" accept="image/*" class="w-full text-slate-500 text-[10px]"></div><div><label class="font-bold block mb-2 text-slate-600">📸 PRENDA</label><input type="file" id="n_img_prenda" accept="image/*" class="w-full text-slate-500 text-[10px]"></div></div>
+    <label class="flex items-start gap-2 text-[10px] text-slate-600 mt-2 bg-slate-50 p-2 rounded border">
+        <input type="checkbox" required class="mt-0.5">
+        El cliente acepta términos, condiciones y uso de firma digital simple.
+    </label>
+    <div class="flex gap-2 pt-4"><button type="button" onclick="closeModal('addModal')" class="flex-1 py-3 font-bold bg-slate-200 text-slate-700 rounded-xl">Cancelar</button><button type="submit" id="btnSaveClient" class="flex-[2] bg-indigo-600 text-white py-3 rounded-xl font-black shadow-lg">Crear y Aprobar</button></div></form></div></div>
 
     <!-- MODAL EDITAR CLIENTE (FICHA TÉCNICA) -->
-    <div id="editModal" class="fixed inset-0 bg-slate-900/80 hidden z-[100] flex items-center justify-center p-0 md:p-4 backdrop-blur-sm"><div class="bg-white md:rounded-2xl w-full max-w-5xl h-full md:h-[95vh] flex flex-col shadow-2xl overflow-hidden"><div class="p-4 border-b flex justify-between items-center bg-slate-50 shrink-0"><div><h3 id="edit_titulo" class="text-xl md:text-2xl font-black text-slate-800 leading-none"></h3><p id="edit_cedula" class="text-[10px] md:text-xs text-slate-500 font-bold mt-1"></p></div><div class="flex items-center gap-2"><button onclick="compartirReporteWA()" class="bg-emerald-100 text-emerald-800 border border-emerald-200 px-3 py-2 rounded-lg text-xs font-bold hover:bg-emerald-200 transition hidden sm:block">📲 Compartir PDF</button><button onclick="generarPDF()" class="bg-slate-200 text-slate-800 px-3 py-2 rounded-lg text-xs font-bold hover:bg-slate-300">📄 PDF</button><button onclick="closeModal('editModal')" class="text-slate-400 hover:text-slate-700 bg-white border rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">&times;</button></div></div><div class="flex-1 overflow-y-auto flex flex-col lg:flex-row p-4 gap-6 bg-slate-100"><div class="w-full lg:w-1/2 space-y-4"><div id="solicitudContainer" class="hidden bg-amber-100 border border-amber-300 p-4 rounded-xl shadow-sm"><h4 class="text-sm font-black text-amber-800 mb-2 flex items-center gap-2">📢 NUEVA SOLICITUD DE PRÉSTAMO</h4><div id="solicitudDetalle" class="text-sm font-medium text-amber-900 mb-3 bg-white p-3 rounded-lg border border-amber-200"></div><div id="solicitudAprobarForm" class="hidden bg-white p-3 rounded-xl border border-amber-200 mb-3 space-y-3"><h5 class="text-xs font-bold text-slate-600">Nuevas Condiciones:</h5><div class="grid grid-cols-2 gap-2 text-sm"><div><label class="block text-[10px] font-bold text-slate-500">Monto Final</label><input type="number" id="ap_monto" class="w-full border p-2 rounded font-bold bg-slate-50"></div><div><label class="block text-[10px] font-bold text-slate-500">Interés (%)</label><input type="number" id="ap_interes" class="w-full border p-2 rounded font-bold bg-slate-50"></div><div class="col-span-2"><label class="block text-[10px] font-bold text-slate-500">Día Pago Mensual (1-31)</label><input type="number" id="ap_dia" min="1" max="31" class="w-full border p-2 rounded font-bold bg-slate-50"></div></div><button onclick="confirmarAprobacion()" class="w-full bg-emerald-600 text-white py-2.5 rounded-lg font-black shadow">✅ Confirmar Aprobación</button></div><div class="flex gap-2" id="solicitudActionBtns"><button onclick="mostrarFormAprobacion()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold text-sm shadow">Aprobar...</button><button onclick="responderSolicitud('rechazado')" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-bold text-sm shadow">Rechazar</button></div></div><div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative"><button onclick="deleteCurrentClient()" class="absolute top-3 right-3 text-red-500 hover:bg-red-50 p-1.5 rounded-lg text-xs" title="Borrar todo">🗑️</button><h4 class="font-black text-slate-800 mb-3 text-sm">📝 DATOS DEL CLIENTE</h4><div class="grid grid-cols-2 gap-3 text-xs"><div class="col-span-2"><label class="font-bold text-slate-400">NOMBRE</label><input type="text" id="f_nombre" class="w-full p-2 border rounded bg-slate-50 font-bold"></div><div><label class="font-bold text-slate-400">CÉDULA</label><input type="text" id="f_cedula" class="w-full p-2 border rounded bg-slate-50" readonly></div><div><label class="font-bold text-slate-400">TELÉFONO</label><input type="text" id="f_telefono" class="w-full p-2 border rounded bg-slate-50"></div><div class="col-span-2"><label class="font-bold text-slate-400">DIRECCIÓN</label><input type="text" id="f_direccion" class="w-full p-2 border rounded bg-slate-50"></div><div class="col-span-2"><label class="font-bold text-slate-400">CORREO (Logueo)</label><input type="text" id="f_correo" class="w-full p-2 border rounded bg-slate-50"></div><div class="col-span-2"><label class="font-bold text-slate-400">CONTRASEÑA ASIGNADA</label><input type="text" id="f_password" class="w-full p-2 border rounded bg-yellow-50 border-yellow-200 text-slate-700 font-mono"></div><div class="col-span-2"><label class="font-bold text-indigo-400">AUTORIZADO POR</label><input type="text" id="f_autorizado" class="w-full p-2 border border-indigo-200 rounded bg-indigo-50 font-medium"></div></div><button onclick="guardarFicha()" class="mt-4 w-full bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg font-bold text-xs shadow">Guardar Cambios Personales</button><p class="text-[9px] text-slate-400 mt-2 text-center">*Nota: Cambiar la contraseña y correo aquí solo actualiza el registro visible. El acceso Auth oficial debe restaurarse si el usuario lo olvida.</p></div><div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm"><h4 class="font-black text-slate-800 mb-3 text-sm">📊 FINANZAS Y CONDICIONES</h4><div class="flex items-center justify-between bg-slate-50 border p-2 rounded-lg mb-3"><span class="text-[11px] font-bold text-slate-600">Estado Cálculo:</span><select id="e_estado" class="p-1 rounded border text-xs font-bold outline-none" onchange="updateStatusManual()"><option value="auto">Automático (Mensual)</option><option value="al_dia">Forzar: Al Día</option><option value="moroso">Forzar: Moroso</option></select></div><div class="grid grid-cols-3 gap-2 text-xs"><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">DÍA PAGO</label><input type="number" id="e_dia" min="1" max="31" class="w-full p-2 border rounded-lg font-bold text-indigo-700 text-center bg-slate-50"></div><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">SALDO ₡</label><input type="number" id="e_saldo" class="w-full p-2 border rounded-lg font-bold text-indigo-700 bg-slate-50"></div><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">INTERÉS %</label><input type="number" id="e_interes_pct" class="w-full p-2 border rounded-lg font-bold text-indigo-700 bg-slate-50 text-center"></div><button onclick="updateAmounts()" class="col-span-3 bg-slate-200 hover:bg-slate-300 text-slate-800 py-2.5 rounded-lg font-black text-[11px] mt-2">APLICAR REAJUSTE NUMÉRICO</button></div></div></div><div class="w-full lg:w-1/2 flex flex-col gap-4"><div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 shadow-sm shrink-0"><label class="block text-sm font-black text-emerald-800 mb-2">💰 REGISTRAR ABONO</label><div class="flex flex-col gap-2"><div class="relative"><span class="absolute left-3 top-2 text-emerald-600 font-bold">₡</span><input type="number" id="abono_monto" class="w-full pl-8 pr-3 py-2 border border-emerald-300 rounded-lg font-black text-emerald-900 outline-none text-lg bg-white shadow-inner" placeholder="Monto entregado"></div><div class="flex items-center gap-2"><input type="file" id="abono_img" accept="image/*" class="text-[10px] w-full text-slate-500 bg-white p-1.5 rounded-lg border"><button onclick="calculateAndAddPayment()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-black shadow-md whitespace-nowrap">ABONAR</button></div></div></div><div id="historialComprasSocio" class="bg-white border rounded-xl p-3 shadow-sm shrink-0 hidden"><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-b pb-1">Pedidos de Tienda de este Cliente</h4><div id="comprasBodySocio" class="space-y-2 text-xs max-h-48 overflow-y-auto"></div></div><div class="bg-white border border-slate-200 rounded-xl flex flex-col overflow-hidden h-[200px] shrink-0 shadow-sm"><div class="bg-indigo-50 p-2 border-b text-[10px] font-black tracking-widest text-indigo-800 text-center uppercase">Chat Interno con Cliente</div><div id="chatSocio" class="flex-1 p-2 chat-container bg-slate-50"></div><div class="p-2 bg-white border-t flex gap-2"><input type="text" id="chatInputSocio" class="flex-1 border rounded-lg px-2 text-sm outline-none" placeholder="Escribe..."><button onclick="sendMsg('socio')" class="bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm font-bold">→</button></div></div><div class="bg-white border border-slate-200 rounded-xl p-4 flex-1 overflow-y-auto shadow-sm min-h-[200px]"><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-b pb-2">Historial de Pagos</h4><div id="historyBody" class="space-y-2 text-sm"></div></div></div></div></div></div>
+    <div id="editModal" class="fixed inset-0 bg-slate-900/80 hidden z-[100] flex items-center justify-center p-0 md:p-4 backdrop-blur-sm"><div class="bg-white md:rounded-2xl w-full max-w-5xl h-full md:h-[95vh] flex flex-col shadow-2xl overflow-hidden"><div class="p-4 border-b flex justify-between items-center bg-slate-50 shrink-0"><div><h3 id="edit_titulo" class="text-xl md:text-2xl font-black text-slate-800 leading-none"></h3><p id="edit_cedula" class="text-[10px] md:text-xs text-slate-500 font-bold mt-1"></p></div><div class="flex items-center gap-2"><button onclick="compartirReporteWA()" class="bg-emerald-100 text-emerald-800 border border-emerald-200 px-3 py-2 rounded-lg text-xs font-bold hover:bg-emerald-200 transition hidden sm:block">📲 Compartir PDF</button><button onclick="generarPDF()" class="bg-slate-200 text-slate-800 px-3 py-2 rounded-lg text-xs font-bold hover:bg-slate-300">📄 PDF</button><button onclick="closeModal('editModal')" class="text-slate-400 hover:text-slate-700 bg-white border rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">&times;</button></div></div><div class="flex-1 overflow-y-auto flex flex-col lg:flex-row p-4 gap-6 bg-slate-100"><div class="w-full lg:w-1/2 space-y-4"><div id="solicitudContainer" class="hidden bg-amber-100 border border-amber-300 p-4 rounded-xl shadow-sm"><h4 class="text-sm font-black text-amber-800 mb-2 flex items-center gap-2">📢 NUEVA SOLICITUD DE PRÉSTAMO</h4><div id="solicitudDetalle" class="text-sm font-medium text-amber-900 mb-3 bg-white p-3 rounded-lg border border-amber-200"></div><div id="solicitudAprobarForm" class="hidden bg-white p-3 rounded-xl border border-amber-200 mb-3 space-y-3"><h5 class="text-xs font-bold text-slate-600">Nuevas Condiciones:</h5><div class="grid grid-cols-2 gap-2 text-sm"><div><label class="block text-[10px] font-bold text-slate-500">Monto Final</label><input type="number" id="ap_monto" class="w-full border p-2 rounded font-bold bg-slate-50"></div><div><label class="block text-[10px] font-bold text-slate-500">Interés (%)</label><input type="number" id="ap_interes" class="w-full border p-2 rounded font-bold bg-slate-50"></div><div class="col-span-2"><label class="block text-[10px] font-bold text-slate-500">Día Pago Mensual (1-31)</label><input type="number" id="ap_dia" min="1" max="31" class="w-full border p-2 rounded font-bold bg-slate-50"></div></div><button onclick="confirmarAprobacion()" class="w-full bg-emerald-600 text-white py-2.5 rounded-lg font-black shadow">✅ Confirmar Aprobación</button></div><div class="flex gap-2" id="solicitudActionBtns"><button onclick="mostrarFormAprobacion()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold text-sm shadow">Aprobar...</button><button onclick="responderSolicitud('rechazado')" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-bold text-sm shadow">Rechazar</button></div></div><div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative"><button onclick="deleteCurrentClient()" class="absolute top-3 right-3 text-red-500 hover:bg-red-50 p-1.5 rounded-lg text-xs" title="Borrar todo">🗑️</button><h4 class="font-black text-slate-800 mb-3 text-sm">📝 DATOS DEL CLIENTE</h4><div class="grid grid-cols-2 gap-3 text-xs"><div class="col-span-2"><label class="font-bold text-slate-400">NOMBRE</label><input type="text" id="f_nombre" class="w-full p-2 border rounded bg-slate-50 font-bold"></div><div><label class="font-bold text-slate-400">CÉDULA</label><input type="text" id="f_cedula" class="w-full p-2 border rounded bg-slate-50" readonly></div><div><label class="font-bold text-slate-400">TELÉFONO</label><input type="text" id="f_telefono" class="w-full p-2 border rounded bg-slate-50"></div><div class="col-span-2"><label class="font-bold text-slate-400">DIRECCIÓN</label><input type="text" id="f_direccion" class="w-full p-2 border rounded bg-slate-50"></div><div class="col-span-2"><label class="font-bold text-slate-400">CORREO (Logueo)</label><input type="text" id="f_correo" class="w-full p-2 border rounded bg-slate-50"></div><div class="col-span-2"><label class="font-bold text-slate-400">CONTRASEÑA ASIGNADA</label><input type="text" id="f_password" class="w-full p-2 border rounded bg-yellow-50 border-yellow-200 text-slate-700 font-mono"></div><div class="col-span-2"><label class="font-bold text-indigo-400">AUTORIZADO POR</label><input type="text" id="f_autorizado" class="w-full p-2 border border-indigo-200 rounded bg-indigo-50 font-medium"></div></div><button onclick="guardarFicha()" class="mt-4 w-full bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg font-bold text-xs shadow">Guardar Cambios Personales</button><p class="text-[9px] text-slate-400 mt-2 text-center">*Nota: Cambiar la contraseña y correo aquí solo actualiza el registro visible. El acceso Auth oficial debe restaurarse si el usuario lo olvida.</p></div><div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm"><h4 class="font-black text-slate-800 mb-3 text-sm">📊 FINANZAS Y CONDICIONES</h4><div class="flex items-center justify-between bg-slate-50 border p-2 rounded-lg mb-3"><span class="text-[11px] font-bold text-slate-600">Estado Cálculo:</span><select id="e_estado" class="p-1 rounded border text-xs font-bold outline-none" onchange="updateStatusManual()"><option value="auto">Automático (Mensual)</option><option value="al_dia">Forzar: Al Día</option><option value="moroso">Forzar: Moroso</option></select></div><div class="grid grid-cols-3 gap-2 text-xs"><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">DÍA PAGO</label><input type="number" id="e_dia" min="1" max="31" class="w-full p-2 border rounded-lg font-bold text-indigo-700 text-center bg-slate-50"></div><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">SALDO ₡</label><input type="number" id="e_saldo" class="w-full p-2 border rounded-lg font-bold text-indigo-700 bg-slate-50"></div><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">INTERÉS %</label><input type="number" id="e_interes_pct" class="w-full p-2 border rounded-lg font-bold text-indigo-700 bg-slate-50 text-center"></div>
+        <!-- Botón para acumular intereses -->
+        <button onclick="capitalizarIntereses()" class="col-span-3 bg-amber-100 border border-amber-300 text-amber-800 py-2 rounded-lg font-black text-[11px] mt-1 shadow-sm hover:bg-amber-200 transition">⚠️ CAPITALIZAR INTERÉS (Sumar mora al saldo)</button>
+        <button onclick="updateAmounts()" class="col-span-3 bg-slate-200 hover:bg-slate-300 text-slate-800 py-2.5 rounded-lg font-black text-[11px] mt-2">APLICAR REAJUSTE NUMÉRICO MANUAL</button></div></div></div><div class="w-full lg:w-1/2 flex flex-col gap-4"><div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 shadow-sm shrink-0"><label class="block text-sm font-black text-emerald-800 mb-2">💰 REGISTRAR ABONO</label><div class="flex flex-col gap-2"><div class="relative"><span class="absolute left-3 top-2 text-emerald-600 font-bold">₡</span><input type="number" id="abono_monto" class="w-full pl-8 pr-3 py-2 border border-emerald-300 rounded-lg font-black text-emerald-900 outline-none text-lg bg-white shadow-inner" placeholder="Monto entregado"></div><div class="flex items-center gap-2"><input type="file" id="abono_img" accept="image/*" required class="text-[10px] w-full text-slate-500 bg-white p-1.5 rounded-lg border border-red-300" title="Comprobante obligatorio"><button onclick="calculateAndAddPayment()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-black shadow-md whitespace-nowrap">ABONAR</button></div><p class="text-[9px] text-emerald-700 font-bold">*Foto de comprobante requerida por seguridad.</p></div></div><div id="historialComprasSocio" class="bg-white border rounded-xl p-3 shadow-sm shrink-0 hidden"><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-b pb-1">Pedidos de Tienda de este Cliente</h4><div id="comprasBodySocio" class="space-y-2 text-xs max-h-48 overflow-y-auto"></div></div><div class="bg-white border border-slate-200 rounded-xl flex flex-col overflow-hidden h-[200px] shrink-0 shadow-sm"><div class="bg-indigo-50 p-2 border-b text-[10px] font-black tracking-widest text-indigo-800 text-center uppercase">Chat Interno con Cliente</div><div id="chatSocio" class="flex-1 p-2 chat-container bg-slate-50"></div><div class="p-2 bg-white border-t flex gap-2"><input type="text" id="chatInputSocio" class="flex-1 border rounded-lg px-2 text-sm outline-none" placeholder="Escribe..."><button onclick="sendMsg('socio')" class="bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm font-bold">→</button></div></div><div class="bg-white border border-slate-200 rounded-xl p-4 flex-1 overflow-y-auto shadow-sm min-h-[200px]"><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-b pb-2">Historial de Pagos</h4><div id="historyBody" class="space-y-2 text-sm"></div></div></div></div></div></div>
 
     <div id="tiendaSocioModal" class="fixed inset-0 bg-slate-900/80 hidden z-[100] flex items-center justify-center p-0 md:p-4 backdrop-blur-sm"><div class="bg-white md:rounded-2xl w-full max-w-6xl h-full md:h-[95vh] flex flex-col shadow-2xl overflow-hidden"><div class="p-4 md:p-6 border-b flex justify-between items-center bg-slate-50 shrink-0"><div><h3 class="text-xl md:text-2xl font-black text-slate-800">📦 Gestión de la Tienda</h3><p class="text-[10px] md:text-xs text-slate-500 font-bold uppercase tracking-widest">Catálogo y Facturas</p></div><div class="flex flex-wrap items-center gap-2 justify-end"><button onclick="generarReporteInventario()" class="bg-indigo-100 text-indigo-800 border border-indigo-200 px-3 py-2 rounded-lg text-xs font-bold hover:bg-indigo-200 transition">📄 PDF Inv.</button><button onclick="openModalEditProducto()" class="bg-emerald-600 text-white px-3 md:px-4 py-2 rounded-lg font-bold shadow hover:bg-emerald-700 text-xs md:text-sm transition">+ Nuevo Artículo</button><button onclick="closeModal('tiendaSocioModal')" class="text-slate-400 hover:text-slate-700 bg-white border rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">&times;</button></div></div><div class="flex gap-4 border-b px-4 md:px-6 mt-4 shrink-0 bg-white"><button onclick="switchTiendaTab('inv')" id="tabBtnInv" class="pb-2 font-black border-b-2 border-indigo-600 text-indigo-600 transition">📦 Inventario Público</button><button onclick="switchTiendaTab('ventas')" id="tabBtnVentas" class="pb-2 font-bold text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition">🧾 Historial de Ventas</button></div><div id="tiendaTabInv" class="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-100"><div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"><div class="bg-white p-3 rounded-xl border shadow-sm"><span class="block text-[10px] font-bold text-slate-400">TOTAL ARTÍCULOS</span><span class="text-xl font-black text-slate-800" id="inv_total">0</span></div><div class="bg-white p-3 rounded-xl border shadow-sm"><span class="block text-[10px] font-bold text-slate-400">COSTO TOTAL</span><span class="text-xl font-black text-red-600" id="inv_costo">₡0</span></div><div class="bg-white p-3 rounded-xl border shadow-sm"><span class="block text-[10px] font-bold text-slate-400">VALOR VENTA</span><span class="text-xl font-black text-indigo-600" id="inv_venta">₡0</span></div><div class="bg-white p-3 rounded-xl border shadow-sm"><span class="block text-[10px] font-bold text-slate-400">GANANCIA PROY.</span><span class="text-xl font-black text-emerald-600" id="inv_ganancia">₡0</span></div></div><div id="socioProductosGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div></div><div id="tiendaTabVentas" class="hidden flex-1 overflow-y-auto p-4 md:p-6 bg-slate-100"><div class="max-w-4xl mx-auto"><div class="mb-5"><label class="text-xs font-black text-slate-500 block mb-1">Buscar Factura Específica</label><input type="text" id="searchFacturaInput" oninput="renderVentasSocio()" placeholder="🔍 Código de factura (Ej: FAC-123456)..." class="w-full p-3 border border-slate-300 rounded-xl shadow-sm outline-none focus:ring-2 focus:ring-indigo-600 font-bold bg-white"></div><div id="socioVentasList" class="space-y-3"></div></div></div></div></div>
 
-    <div id="addProductoModal" class="fixed inset-0 bg-slate-900/90 hidden z-[200] flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl max-h-[95vh] overflow-y-auto relative"><button onclick="closeModal('addProductoModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 text-2xl font-bold">&times;</button><h3 class="text-xl font-black mb-4" id="modalProdTitle">Nuevo Producto</h3><form id="productoForm" onsubmit="saveProducto(event)" class="space-y-3"><input type="hidden" id="p_id"><div><label class="text-[10px] font-bold text-slate-500">TÍTULO</label><input type="text" id="p_nombre" class="w-full p-2 border rounded-lg font-bold bg-slate-50" required></div><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500">CATEGORÍA</label><select id="p_categoria" class="w-full p-2 border rounded-lg bg-slate-50 text-sm font-medium" required><option value="Herramienta">Herramienta</option><option value="Electrónica">Electrónica</option><option value="Vehículos">Vehículos</option><option value="Hogar">Hogar</option><option value="Joyas">Joyas</option><option value="Otros">Otros</option></select></div><div><label class="text-[10px] font-bold text-red-500">COSTO (₡)</label><input type="number" id="p_costo" class="w-full p-2 border border-red-200 rounded-lg font-bold text-red-700 bg-red-50" required></div></div><div><label class="text-[10px] font-bold text-emerald-600">PRECIO DE VENTA (₡)</label><input type="number" id="p_precio" class="w-full p-3 border-2 border-emerald-300 rounded-xl font-black text-emerald-800 text-lg bg-emerald-50" required></div><div><label class="text-[10px] font-bold text-slate-500">DESCRIPCIÓN</label><textarea id="p_desc" class="w-full p-2 border rounded-lg h-20 resize-none text-sm bg-slate-50" required></textarea></div><div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100"><label class="text-[10px] font-black text-indigo-800 block mb-2">FOTOS (Hasta 3)</label><div class="space-y-2"><input type="file" id="p_img1" accept="image/*" class="w-full text-[10px] text-slate-600 bg-white border rounded"><input type="file" id="p_img2" accept="image/*" class="w-full text-[10px] text-slate-600 bg-white border rounded"><input type="file" id="p_img3" accept="image/*" class="w-full text-[10px] text-slate-600 bg-white border rounded"></div><p class="text-[9px] text-indigo-500 mt-2">*Si editas y no subes fotos, se mantendrán las actuales.</p></div><div class="flex gap-2 pt-2"><button type="submit" id="btnSaveProd" class="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-lg shadow-lg">Guardar Artículo</button></div></form></div></div>
+    <div id="addProductoModal" class="fixed inset-0 bg-slate-900/90 hidden z-[200] flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl max-h-[95vh] overflow-y-auto relative"><button onclick="closeModal('addProductoModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 text-2xl font-bold">&times;</button><h3 class="text-xl font-black mb-4" id="modalProdTitle">Nuevo Producto</h3><form id="productoForm" onsubmit="saveProducto(event)" class="space-y-3"><input type="hidden" id="p_id"><div><label class="text-[10px] font-bold text-slate-500">TÍTULO</label><input type="text" id="p_nombre" class="w-full p-2 border rounded-lg font-bold bg-slate-50" required></div><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-slate-500">CATEGORÍA</label><select id="p_categoria" class="w-full p-2 border rounded-lg bg-slate-50 text-sm font-medium" required><option value="Herramienta">Herramienta</option><option value="Electrónica">Electrónica</option><option value="Vehículos">Vehículos</option><option value="Hogar">Hogar</option><option value="Joyas">Joyas</option><option value="Otros">Otros</option></select></div><div><label class="text-[10px] font-bold text-red-500">COSTO (₡)</label><input type="number" id="p_costo" class="w-full p-2 border border-red-200 rounded-lg font-bold text-red-700 bg-red-50" required></div></div><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold text-emerald-600">PRECIO VENTA (₡)</label><input type="number" id="p_precio" class="w-full p-3 border-2 border-emerald-300 rounded-xl font-black text-emerald-800 bg-emerald-50" required></div><div><label class="text-[10px] font-bold text-indigo-600">STOCK DISPONIBLE</label><input type="number" id="p_stock" min="0" class="w-full p-3 border border-indigo-300 rounded-xl font-black text-indigo-800 bg-indigo-50" required></div></div><div><label class="text-[10px] font-bold text-slate-500">DESCRIPCIÓN</label><textarea id="p_desc" class="w-full p-2 border rounded-lg h-20 resize-none text-sm bg-slate-50" required></textarea></div><div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100"><label class="text-[10px] font-black text-indigo-800 block mb-2">FOTOS OBLIGATORIAS (Hasta 3)</label><div class="space-y-2"><input type="file" id="p_img1" accept="image/*" class="w-full text-[10px] text-slate-600 bg-white border rounded"><input type="file" id="p_img2" accept="image/*" class="w-full text-[10px] text-slate-600 bg-white border rounded"><input type="file" id="p_img3" accept="image/*" class="w-full text-[10px] text-slate-600 bg-white border rounded"></div><p class="text-[9px] text-indigo-500 mt-2">*Si editas y no subes fotos, se mantendrán las actuales.</p></div><div class="flex gap-2 pt-2"><button type="submit" id="btnSaveProd" class="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-lg shadow-lg">Guardar Artículo</button></div></form></div></div>
 
     <div id="pdf-container" class="hidden p-8 bg-white text-black font-sans"></div>
 
-    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-4 rounded-full shadow-2xl transform transition-all duration-300 translate-y-32 opacity-0 z-[999] font-bold text-sm flex items-center gap-3"><span id="toastIcon">✅</span><span id="toastMsg">Mensaje</span></div>
+    <div id="toast" class="fixed bottom-12 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-4 rounded-full shadow-2xl transform transition-all duration-300 translate-y-32 opacity-0 z-[999] font-bold text-sm flex items-center gap-3"><span id="toastIcon">✅</span><span id="toastMsg">Mensaje</span></div>
     <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 hidden z-[700] flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center"><h3 class="text-xl font-black mb-2 text-slate-800">¿Confirmar Acción?</h3><p id="confirmMessage" class="text-sm text-slate-500 mb-6">Esta acción es irreversible.</p><div class="flex gap-2"><button onclick="closeConfirm()" class="flex-1 py-3 font-bold bg-slate-100 rounded-xl hover:bg-slate-200">Atrás</button><button id="confirmBtn" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-red-700">Proceder</button></div></div></div>
+
+    <!-- FOOTER GLOBAL DINÁMICO -->
+    <div class="fixed bottom-0 w-full bg-slate-100 border-t border-slate-200 p-2 text-center text-[10px] font-bold text-slate-400 z-30" id="globalFooterText">
+        derechos reservados prodigital /7228-4602
+    </div>
 
     <!-- SCRIPT PRINCIPAL Y SEGURIDAD -->
     <script type="module">
@@ -334,7 +403,7 @@
         let dbProductos = [];
         let dbVentas = []; 
         let socioConfig = { whatsapp: '', sinpe: '' }; 
-        let adminData = { pagos: [], mantenimientos: [], contrato: null };
+        let adminData = { pagos: [], mantenimientos: [], contrato: null, footerText: 'derechos reservados prodigital /7228-4602', sociosSuscritos: [] };
         
         let currentUser = null;
         let currentRole = null; 
@@ -368,15 +437,15 @@
                 }, e => console.error(e));
             }
 
-            // Subscripción a datos compartidos Administrador/Socio
             if (!unsubAdminData) {
                 unsubAdminData = onSnapshot(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'admin_data'), (docSnap) => {
                     if(docSnap.exists()) {
-                        adminData = docSnap.data();
+                        adminData = { ...adminData, ...docSnap.data() };
                         if(!adminData.pagos) adminData.pagos = [];
                         if(!adminData.mantenimientos) adminData.mantenimientos = [];
-                    } else {
-                        adminData = { pagos: [], mantenimientos: [], contrato: null };
+                        if(!adminData.sociosSuscritos) adminData.sociosSuscritos = [];
+                        
+                        document.getElementById('globalFooterText').innerText = adminData.footerText || 'derechos reservados prodigital /7228-4602';
                     }
                     if (currentRole === 'admin') renderAdminData();
                     if (currentRole === 'socio') {
@@ -448,7 +517,6 @@
             setTimeout(() => toast.classList.add('translate-y-32', 'opacity-0'), 3500);
         };
         
-        // VISOR DE IMÁGENES COMPATIBLE CON PDF (Iframe) O IMAGEN
         window.viewImage = (src) => { 
             if(!src) return; 
             if(src.includes('application/pdf')) {
@@ -471,11 +539,7 @@
                 const reader = new FileReader(); 
                 reader.readAsDataURL(file);
                 reader.onload = (e) => {
-                    // Si es un pdf, retornamos el base64 sin comprimir imagen
-                    if(file.type === "application/pdf") {
-                        resolve(e.target.result);
-                        return;
-                    }
+                    if(file.type === "application/pdf") { resolve(e.target.result); return; }
                     const img = new Image(); img.src = e.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
@@ -530,7 +594,7 @@
                     nombre: nombre,
                     cedula: cedula,
                     correo: email,
-                    passwordProv: pwd, // Guardado para lectura del socio
+                    passwordProv: pwd,
                     telefono: telefono,
                     direccion: "",
                     autorizadoPor: "Autoregistro web",
@@ -581,6 +645,11 @@
                     document.getElementById('globalNav').className = `text-white p-3 md:p-4 flex justify-between items-center shadow-lg sticky top-0 z-40 shrink-0 ${navColor}`;
                     document.getElementById('navRoleBadge').innerText = currentRole.toUpperCase();
                     
+                    // Show/Hide specific nav buttons
+                    document.getElementById('btnNavContrato').classList.toggle('hidden', currentRole !== 'socio');
+                    document.getElementById('btnNavSoporte').classList.toggle('hidden', currentRole !== 'socio');
+                    document.getElementById('navBtnCarrito').classList.toggle('hidden', currentRole === 'socio' || currentRole === 'admin');
+
                     subscribePrivateData();
                 }
             } else {
@@ -611,7 +680,7 @@
             activeApp.classList.add('flex');
 
             if(currentRole === 'socio') { renderSocio(); renderTiendaSocio(); renderVentasSocio(); }
-            if(currentRole === 'admin') { renderAdmin(); renderAdminData(); }
+            if(currentRole === 'admin') { renderAdminData(); }
             if(currentRole === 'cliente') renderCliente();
         }
 
@@ -665,14 +734,13 @@
                 return;
             }
 
-            let fullHtmlLanding = '';
-            let fullHtmlCliente = '';
+            let fullHtml = '';
 
             dbProductos.forEach(prod => {
-                // ---- RENDERIZADO LANDING (Carrusel Manual) ----
-                let imgsCarousel = prod.fotos.map((f, idx) => `
-                    <div class="carousel-item ${idx===0?'opacity-100 z-10':'opacity-0 z-0'} absolute inset-0 flex items-center justify-center bg-slate-100" data-idx="${idx}">
-                        <img src="${DOMPurify.sanitize(f)}" class="max-w-full max-h-full object-contain cursor-pointer" onclick="viewImage(this.src)">
+                let gridColsClass = prod.fotos.length === 1 ? 'grid-cols-1' : prod.fotos.length === 2 ? 'grid-cols-2' : 'grid-cols-3';
+                let imgsLarge = prod.fotos.map((f, idx) => `
+                    <div class="carousel-item ${idx===0?'opacity-100 z-10':'opacity-0 z-0'} absolute inset-0 flex items-center justify-center bg-slate-100">
+                        <img src="${DOMPurify.sanitize(f)}" class="w-full h-full object-cover cursor-pointer" onclick="viewImage(this.src)">
                     </div>
                 `).join('');
                 
@@ -681,61 +749,40 @@
                     <button onclick="navCarousel('${prod.id}', 1, event)" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center z-20 hover:bg-black/90 font-black shadow transition">❯</button>
                 ` : '';
 
-                fullHtmlLanding += `
-                    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden flex flex-col transform hover:-translate-y-1 transition duration-300">
-                        <div class="relative h-56 bg-slate-100 border-b border-slate-200" id="carousel_${prod.id}">
-                            ${imgsCarousel}
-                            ${navBtns}
-                        </div>
-                        <div class="p-5 flex-1 flex flex-col">
-                            <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">${DOMPurify.sanitize(prod.categoria)}</span>
-                            <h3 class="font-black text-xl text-slate-800 mb-2 leading-tight">${DOMPurify.sanitize(prod.nombre)}</h3>
-                            <p class="text-xs text-slate-500 flex-1 mb-4 line-clamp-3">${DOMPurify.sanitize(prod.descripcion)}</p>
-                            <div class="font-black text-2xl text-emerald-600 mb-4">₡${fColones(prod.precio)}</div>
-                            <button onclick="openModal('loginModal')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-xl shadow-md transition-all flex justify-center items-center gap-2">
-                                🛍️ Comprar / Ingresar
-                            </button>
-                        </div>
-                    </div>
-                `;
+                let btnAccion = currentRole ? 
+                    `<button onclick="agregarAlCarrito('${prod.id}')" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-xl transition-all flex justify-center items-center gap-2 text-lg">🛒 Añadir al Carrito</button>` : 
+                    `<button onclick="openModal('loginModal')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl shadow-xl transition-all flex justify-center items-center gap-2 text-lg">🛍️ Comprar / Ingresar</button>`;
 
-                // ---- RENDERIZADO CLIENTE (3 Fotos en Grande y Definidas) ----
-                let gridColsClass = prod.fotos.length === 1 ? 'grid-cols-1' : prod.fotos.length === 2 ? 'grid-cols-2' : 'grid-cols-3';
-                let imgsLarge = prod.fotos.map(f => `
-                    <img src="${DOMPurify.sanitize(f)}" class="w-full h-40 sm:h-56 lg:h-72 object-cover rounded-xl cursor-pointer shadow-sm border border-slate-200 hover:shadow-lg transition duration-300 transform hover:scale-[1.01]" onclick="viewImage(this.src)">
-                `).join('');
-
-                fullHtmlCliente += `
-                    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col p-6 lg:p-8 col-span-full">
-                        <div class="flex flex-col sm:flex-row justify-between items-start mb-4 gap-4">
-                            <div>
-                                <span class="bg-indigo-100 text-indigo-800 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded mb-2 inline-block">${DOMPurify.sanitize(prod.categoria)}</span>
-                                <h3 class="font-black text-2xl md:text-3xl text-slate-800 leading-tight">${DOMPurify.sanitize(prod.nombre)}</h3>
-                            </div>
-                            <div class="font-black text-3xl md:text-4xl text-emerald-600 shrink-0">₡${fColones(prod.precio)}</div>
-                        </div>
-                        <p class="text-sm md:text-base text-slate-600 mb-6 max-w-4xl">${DOMPurify.sanitize(prod.descripcion)}</p>
-                        
-                        <div class="grid ${gridColsClass} gap-4 mb-6">
+                fullHtml += `
+                    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col transform hover:-translate-y-1 transition duration-300">
+                        <!-- Visor 3 fotos -->
+                        <div class="relative h-64 md:h-80 bg-slate-100 border-b border-slate-200" id="carousel_${prod.id}">
                             ${imgsLarge}
+                            ${navBtns}
+                            <div class="absolute bottom-2 right-2 z-20 bg-black/70 text-white text-[10px] px-2 py-1 rounded">Desliza o haz clic para ver más</div>
                         </div>
-                        
-                        <div class="mt-auto sm:ml-auto">
-                            <button onclick="agregarAlCarrito('${prod.id}')" class="w-full sm:w-auto px-10 bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-xl shadow-xl transition-all flex justify-center items-center gap-2 text-lg">
-                                🛒 Añadir al Carrito
-                            </button>
+                        <div class="p-6 flex-1 flex flex-col">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="bg-indigo-100 text-indigo-800 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded inline-block">${DOMPurify.sanitize(prod.categoria)}</span>
+                                ${prod.stock < 3 ? `<span class="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">¡Últimas unidades!</span>` : ''}
+                            </div>
+                            <h3 class="font-black text-2xl text-slate-800 mb-2 leading-tight">${DOMPurify.sanitize(prod.nombre)}</h3>
+                            <div class="font-black text-3xl text-emerald-600 mb-4">₡${fColones(prod.precio)}</div>
+                            <p class="text-sm text-slate-600 mb-6 flex-1">${DOMPurify.sanitize(prod.descripcion)}</p>
+                            ${btnAccion}
                         </div>
                     </div>
                 `;
             });
 
-            if(gridLanding) gridLanding.innerHTML = fullHtmlLanding;
-            if(gridOverlay) gridOverlay.innerHTML = fullHtmlCliente;
+            if(gridLanding) gridLanding.innerHTML = fullHtml;
+            if(gridOverlay) gridOverlay.innerHTML = fullHtml;
         }
 
         window.agregarAlCarrito = (prodId) => {
             const prod = dbProductos.find(p => p.id === prodId);
             if(!prod) return;
+            if(prod.stock <= 0) return showToast("Agotado temporalmente", "⚠️");
             carrito.push(prod);
             actualizarCarritoUI();
             showToast(`${prod.nombre} añadido`, "🛒");
@@ -822,6 +869,12 @@
                 clienteId: isClienteLogueado ? clienteDoc.userId : 'publico'
             };
 
+            // Deduct stock
+            for(let p of carrito) {
+                let currentStock = p.stock || 0;
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'productos', p.id), {stock: Math.max(0, currentStock - 1)}, {merge:true});
+            }
+
             await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'ventas', numFactura), nuevaVenta);
 
             if(isClienteLogueado && clienteDoc) {
@@ -885,10 +938,6 @@
                             <td style="padding:10px; border:1px solid #cbd5e1; text-align:right; font-weight:bold;">₡${fColones(compra.total)}</td>
                         </tr>
                     </table>
-                    <div style="margin-top: 40px; text-align:center; font-size: 12px; color: #64748b;">
-                        <p>Gracias por su compra.</p>
-                        <p>Plataforma de Préstamos y Tienda V8</p>
-                    </div>
                 </div>
             `;
             container.classList.remove('hidden');
@@ -952,13 +1001,23 @@
         // ================= SOCIO (CARTERA Y GESTIÓN) =================
         function renderSocio() {
             const body = document.getElementById('tableBody'); body.innerHTML = '';
-            let cAlDia = 0, cMorosos = 0, capTotal = 0;
+            const listCobro = document.getElementById('listaCobroBody'); listCobro.innerHTML = '';
+            
+            let cAlDia = 0, cMorosos = 0, capTotal = 0, interesEsperado = 0, cierreCajaHoy = 0;
+            const hoyFormat = new Date().toLocaleDateString('es-CR');
             
             dbLocal.forEach(item => {
                 const estado = getEstadoCalculado(item);
                 if (estado === 'al_dia') cAlDia++; else cMorosos++;
+                
                 const intMonto = (item.saldo * (item.interesPct / 100));
                 capTotal += item.saldo;
+                interesEsperado += intMonto;
+
+                // Sumar abonos de hoy para cierre de caja
+                if(item.historial) {
+                    item.historial.forEach(h => { if(h.fecha === hoyFormat) cierreCajaHoy += h.total; });
+                }
                 
                 let bColor = estado === 'moroso' ? 'bg-red-50 border-l-4 border-red-200' : 'hover:bg-slate-50 transition';
                 let stBadge = estado === 'moroso' ? '<span class="bg-red-600 text-white px-2 py-1 rounded text-[10px] font-bold">MOROSO</span>' : 
@@ -993,13 +1052,55 @@
                         </td>
                     </tr>
                 `;
+
+                // Agregar a Lista de Cobro Inteligente
+                if(estado === 'moroso' || item.diaPago === new Date().getDate()) {
+                    let msgCobro = encodeURIComponent(`Hola ${item.nombre.split(' ')[0]}, te recuerdo amablemente el pago de tu cuota de ₡${fColones(intMonto)} correspondiente al mes. ¡Gracias!`);
+                    let badgeColor = estado === 'moroso' ? 'bg-red-100 text-red-800 border-red-300' : 'bg-amber-100 text-amber-800 border-amber-300';
+                    let badgeText = estado === 'moroso' ? '🔴 MOROSO' : '🟡 VENCE HOY';
+                    
+                    listCobro.innerHTML += `
+                        <div class="p-3 border rounded-xl flex flex-col justify-between ${badgeColor} shadow-sm">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <span class="font-black block">${DOMPurify.sanitize(item.nombre)}</span>
+                                    <span class="text-[10px] font-bold">Cuota int: ₡${fColones(intMonto)}</span>
+                                </div>
+                                <span class="text-[9px] font-black uppercase px-2 py-1 rounded bg-white/50 border border-white">${badgeText}</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="window.open('https://wa.me/${item.telefono}?text=${msgCobro}', '_blank')" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 rounded-lg shadow-sm">📲 Notificar Cobro</button>
+                                <button onclick="openEdit('${item.userId}')" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-2 rounded-lg shadow-sm">Ver Ficha</button>
+                            </div>
+                        </div>
+                    `;
+                }
             });
 
-            document.getElementById('s-totales').innerText = dbLocal.length;
-            document.getElementById('s-aldia').innerText = cAlDia;
-            document.getElementById('s-morosos').innerText = cMorosos;
+            if(listCobro.innerHTML === '') listCobro.innerHTML = '<p class="text-sm text-slate-400 col-span-full">No hay cobros pendientes urgentes para hoy.</p>';
+
+            document.getElementById('s-cierre-hoy').innerText = `₡${fColones(cierreCajaHoy)}`;
             document.getElementById('s-capital').innerText = `₡${fColones(capTotal)}`;
+            document.getElementById('s-interes-proy').innerText = `₡${fColones(interesEsperado)}`;
+            document.getElementById('s-morosos').innerText = cMorosos;
         }
+
+        window.exportarCSV = () => {
+            let csv = "Nombre,Cedula,Telefono,Saldo_Capital,Interes_Mensual_Pct,Dia_Pago,Estado_Calculado\n";
+            dbLocal.forEach(c => {
+                csv += `"${c.nombre}","${c.cedula}","${c.telefono}","${c.saldo}","${c.interesPct}","${c.diaPago}","${getEstadoCalculado(c)}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Cartera_V8_${new Date().toLocaleDateString('es-CR')}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Archivo CSV descargado", "📊");
+        };
 
         document.getElementById('loanForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1028,7 +1129,7 @@
                     nombre: sanitizeInput(document.getElementById('n_nombre').value),
                     cedula: cedula,
                     correo: email,
-                    passwordProv: pwdProv, // Guardado para lectura del socio
+                    passwordProv: pwdProv, 
                     telefono: sanitizeInput(document.getElementById('n_telefono').value),
                     direccion: sanitizeInput(document.getElementById('n_direccion').value),
                     autorizadoPor: sanitizeInput(document.getElementById('n_autorizado').value),
@@ -1078,11 +1179,14 @@
                     costoT += (p.costo || 0); ventaT += p.precio; const gan = p.precio - (p.costo || 0); gananciaT += gan;
 
                     let imgs = p.fotos.map(f => `<img src="${DOMPurify.sanitize(f)}" class="w-12 h-12 object-cover rounded cursor-pointer border" onclick="viewImage(this.src)">`).join('');
+                    let stockBadge = (p.stock || 0) < 3 ? `<span class="bg-red-100 text-red-600 px-2 py-0.5 rounded text-[10px] font-black border border-red-200">Stock Bajo: ${p.stock||0}</span>` : `<span class="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-[10px] font-bold border">Stock: ${p.stock||0}</span>`;
+
                     grid.innerHTML += `
                         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col justify-between">
                             <div>
                                 <div class="flex justify-between items-start mb-1">
                                     <span class="text-[9px] font-black bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded uppercase">${DOMPurify.sanitize(p.categoria)}</span>
+                                    ${stockBadge}
                                 </div>
                                 <h4 class="font-black text-slate-800 text-base leading-tight mb-1">${DOMPurify.sanitize(p.nombre)}</h4>
                                 <div class="text-emerald-700 font-bold text-lg mb-2">₡${fColones(p.precio)}</div>
@@ -1145,6 +1249,7 @@
                 document.getElementById('p_categoria').value = p.categoria || 'Otros';
                 document.getElementById('p_costo').value = p.costo || 0;
                 document.getElementById('p_precio').value = p.precio;
+                document.getElementById('p_stock').value = p.stock || 0;
                 document.getElementById('p_desc').value = p.descripcion;
                 document.getElementById('p_img1').removeAttribute('required');
             } else {
@@ -1184,6 +1289,7 @@
                     categoria: sanitizeInput(document.getElementById('p_categoria').value),
                     costo: parseFloat(document.getElementById('p_costo').value),
                     precio: parseFloat(document.getElementById('p_precio').value),
+                    stock: parseInt(document.getElementById('p_stock').value) || 0,
                     descripcion: sanitizeInput(document.getElementById('p_desc').value),
                     fotos: fotos
                 };
@@ -1208,6 +1314,7 @@
                 return `<tr>
                     <td style="padding:6px; border:1px solid #ddd;">${DOMPurify.sanitize(p.nombre)}</td>
                     <td style="padding:6px; border:1px solid #ddd;">${DOMPurify.sanitize(p.categoria)}</td>
+                    <td style="padding:6px; border:1px solid #ddd;">${p.stock || 0}</td>
                     <td style="padding:6px; border:1px solid #ddd;">₡${fColones(p.costo || 0)}</td>
                     <td style="padding:6px; border:1px solid #ddd;">₡${fColones(p.precio)}</td>
                     <td style="padding:6px; border:1px solid #ddd;">₡${fColones(p.precio - (p.costo || 0))}</td>
@@ -1223,19 +1330,13 @@
                         <tr style="background:#f1f5f9; text-align:left;">
                             <th style="padding:6px; border:1px solid #ddd;">Producto</th>
                             <th style="padding:6px; border:1px solid #ddd;">Categoría</th>
+                            <th style="padding:6px; border:1px solid #ddd;">Stock</th>
                             <th style="padding:6px; border:1px solid #ddd;">Costo</th>
                             <th style="padding:6px; border:1px solid #ddd;">Venta</th>
                             <th style="padding:6px; border:1px solid #ddd;">Ganancia</th>
                         </tr>
                         ${filas}
                     </table>
-                    
-                    <div style="font-size:12px; font-weight:bold; background:#f8fafc; padding:10px; border:1px solid #ddd;">
-                        <p>Total Artículos: ${dbProductos.length}</p>
-                        <p>Costo Total: ₡${fColones(costoT)}</p>
-                        <p>Valor de Venta: ₡${fColones(ventaT)}</p>
-                        <p style="color:#059669;">Ganancia Proyectada: ₡${fColones(gananciaT)}</p>
-                    </div>
                 </div>
             `;
             container.classList.remove('hidden');
@@ -1344,7 +1445,29 @@
             showToast("Estado actualizado");
         };
 
+        // CAPITALIZAR INTERESES (Acumulativo)
+        window.capitalizarIntereses = async () => {
+            openConfirm("¿Deseas sumar el interés del mes actual al saldo principal? El saldo aumentará.", async () => {
+                const item = dbLocal.find(l => l.userId === currentEditId);
+                const intMensual = (item.saldo * (item.interesPct / 100));
+                
+                item.saldo = item.saldo + intMensual;
+                
+                item.historial.push({ fecha: new Date().toLocaleDateString('es-CR'), total: 0, int: 0, cap: 0, sFinal: item.saldo, img: null, nota: "Capitalización de intereses adeudados" });
+                
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.userId), item);
+                showToast("Intereses sumados al saldo principal", "📈"); 
+                openEdit(currentEditId);
+            });
+        };
+
         window.calculateAndAddPayment = async () => {
+            const fileInput = document.getElementById('abono_img');
+            if(!fileInput.files[0]) {
+                showToast("Debes adjuntar la foto del comprobante", "⚠️");
+                return;
+            }
+
             const monto = parseFloat(document.getElementById('abono_monto').value);
             if(!monto || monto <= 0) return showToast("Monto inválido", "⚠️");
             
@@ -1353,11 +1476,11 @@
             let pInt = Math.min(monto, intMensual); let pCap = Math.max(0, monto - intMensual);
             item.saldo = Math.max(0, item.saldo - pCap);
 
-            const imgB64 = await compressImage(document.getElementById('abono_img').files[0]);
+            const imgB64 = await compressImage(fileInput.files[0]);
 
             item.historial.push({ fecha: new Date().toLocaleDateString('es-CR'), total: monto, int: pInt, cap: pCap, sFinal: item.saldo, img: imgB64 });
             await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.userId), item);
-            document.getElementById('abono_monto').value = ''; document.getElementById('abono_img').value = '';
+            document.getElementById('abono_monto').value = ''; fileInput.value = '';
             showToast("Abono registrado", "💰"); openEdit(currentEditId);
         };
 
@@ -1543,6 +1666,10 @@
                             <div><label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">TELÉFONO</label><input type="text" id="req_telefono" value="${DOMPurify.sanitize(cliente.telefono)}" class="w-full p-2 border rounded-lg text-sm" required></div>
                             <div><label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">FOTO CÉDULA NUEVA (Opcional)</label><input type="file" id="req_img_cedula" accept="image/*" class="w-full text-xs text-slate-500 p-1 border rounded bg-slate-50"></div>
                             <div class="pt-2"><label class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">MONTO SOLICITADO (₡)</label><input type="number" id="req_monto" class="w-full p-3 border-2 border-indigo-200 rounded-xl font-black text-indigo-800 text-lg bg-indigo-50" required></div>
+                            <label class="flex items-start gap-2 text-[10px] text-slate-600 mt-2 bg-slate-50 p-2 rounded border">
+                                <input type="checkbox" required class="mt-0.5">
+                                Acepto términos, condiciones y uso de firma digital simple para esta nueva solicitud.
+                            </label>
                             <div class="flex gap-2 pt-4"><button type="button" onclick="closeModal('reqLoanModal')" class="flex-1 py-3 font-bold bg-slate-100 rounded-xl hover:bg-slate-200">Cancelar</button><button type="submit" class="flex-[2] bg-indigo-600 text-white py-3 rounded-xl font-black shadow-lg hover:bg-indigo-700">Enviar Solicitud</button></div>
                         </form>
                     </div>
@@ -1618,23 +1745,14 @@
         };
 
         // ================= ADMIN Y SOPORTE =================
-        function renderAdmin() {
-            const body = document.getElementById('adminTableBody'); body.innerHTML = '';
-            dbLocal.forEach(item => {
-                body.innerHTML += `
-                    <tr class="hover:bg-slate-50 border-b">
-                        <td class="p-4 font-mono text-[10px] text-slate-500">${DOMPurify.sanitize(item.userId || item.id)}</td>
-                        <td class="p-4"><span class="font-bold block">${DOMPurify.sanitize(item.nombre)}</span><span class="text-[10px] text-slate-400">Cédula: ${DOMPurify.sanitize(item.cedula)} | Tel: ${DOMPurify.sanitize(item.telefono)}</span></td>
-                        <td class="p-4 text-center"><span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded border">Usuario Activo</span></td>
-                    </tr>`;
-            });
-        }
-
         function renderAdminData() {
             const pagosList = document.getElementById('adminPagosList');
             const mantList = document.getElementById('adminMantList');
+            const sociosList = document.getElementById('adminSociosListBody');
             const btnVer = document.getElementById('btnAdminVerContrato');
             
+            document.getElementById('adminFooterText').value = adminData.footerText || '';
+
             if(pagosList) {
                 pagosList.innerHTML = adminData.pagos.slice().reverse().map(p => `
                     <div class="bg-slate-50 p-3 rounded border border-slate-200 flex justify-between items-center text-sm">
@@ -1648,6 +1766,22 @@
                         <span class="text-[10px] font-bold text-indigo-500">${m.fecha}</span>
                         <span class="text-slate-800 font-medium">${DOMPurify.sanitize(m.desc)}</span>
                     </div>`).join('');
+            }
+            if(sociosList) {
+                sociosList.innerHTML = (adminData.sociosSuscritos || []).slice().reverse().map((s, idx) => {
+                    let badgeColor = s.estado === 'Activo' ? 'bg-emerald-100 text-emerald-800' : (s.estado === 'Moroso' ? 'bg-red-100 text-red-800' : 'bg-slate-200 text-slate-800');
+                    return `
+                    <tr class="hover:bg-slate-50 border-b">
+                        <td class="p-4"><span class="font-bold block">${DOMPurify.sanitize(s.nombre)}</span><span class="text-[10px] text-slate-400">Tel: ${DOMPurify.sanitize(s.tel)}</span></td>
+                        <td class="p-4"><span class="font-bold text-indigo-700">${DOMPurify.sanitize(s.plan)}</span></td>
+                        <td class="p-4"><span class="text-[10px] font-bold px-2 py-1 rounded border ${badgeColor}">${DOMPurify.sanitize(s.estado)}</span></td>
+                        <td class="p-4 text-[10px] font-bold text-slate-500">${DOMPurify.sanitize(s.fecha)}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="window.open('https://wa.me/${DOMPurify.sanitize(s.tel)}', '_blank')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 px-2 py-1 rounded text-xs">📲 WA</button>
+                            <button onclick="borrarSocioAdmin(${idx})" class="text-red-400 hover:bg-red-50 px-2 py-1 rounded ml-1 text-xs">🗑️</button>
+                        </td>
+                    </tr>`;
+                }).join('');
             }
             if(btnVer) {
                 btnVer.classList.toggle('hidden', !adminData.contrato);
@@ -1681,6 +1815,14 @@
             showToast("Mantenimiento registrado", "⚙️");
         };
 
+        window.guardarFooterAdmin = async () => {
+            const txt = document.getElementById('adminFooterText').value;
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'admin_data'), {
+                footerText: txt
+            }, { merge: true });
+            showToast("Pie de página global actualizado", "✅");
+        };
+
         window.subirContratoAdmin = async () => {
             const file = document.getElementById('adminContratoFile').files[0];
             if(!file) return showToast("Seleccione un archivo", "⚠️");
@@ -1702,6 +1844,39 @@
             } else {
                 showToast("El administrador no ha subido ningún contrato", "⚠️");
             }
+        };
+
+        window.guardarSocioAdmin = async (e) => {
+            e.preventDefault();
+            const nuevo = {
+                nombre: sanitizeInput(document.getElementById('as_nombre').value),
+                tel: sanitizeInput(document.getElementById('as_tel').value),
+                plan: document.getElementById('as_plan').value,
+                estado: document.getElementById('as_estado').value,
+                fecha: document.getElementById('as_fecha').value
+            };
+
+            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'admin_data'), {
+                sociosSuscritos: arrayUnion(nuevo)
+            }, { merge: true });
+
+            closeModal('addSocioAdminModal');
+            document.getElementById('addSocioFormAdmin').reset();
+            showToast("Socio suscrito agregado", "✅");
+        };
+
+        window.borrarSocioAdmin = async (idxReversed) => {
+            openConfirm("¿Eliminar este socio de la lista de suscripciones?", async () => {
+                const arr = adminData.sociosSuscritos || [];
+                const realIdx = arr.length - 1 - idxReversed;
+                arr.splice(realIdx, 1);
+
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'admin_data'), {
+                    sociosSuscritos: arr
+                }, { merge: true });
+                
+                showToast("Socio eliminado");
+            });
         };
 
     </script>
