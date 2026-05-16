@@ -155,15 +155,15 @@
                     <div class="grid grid-cols-3 gap-2">
                         <label class="cursor-pointer">
                             <input type="radio" name="m_status" value="Activo" class="peer hidden" onchange="toggleManageViews()">
-                            <div class="text-center p-4 rounded-xl border border-slate-700 peer-checked:bg-emerald-500/20 peer-checked:border-emerald-500 peer-checked:text-emerald-400 text-slate-500 font-bold transition-all">ACTIVO</div>
+                            <div class="text-center p-4 rounded-xl border border-slate-700 peer-checked:bg-emerald-500/20 peer-checked:border-emerald-500 peer-checked:text-emerald-400 text-slate-500 font-bold transition-all uppercase">Activar</div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="m_status" value="Suspendido" class="peer hidden" onchange="toggleManageViews()">
-                            <div class="text-center p-4 rounded-xl border border-slate-700 peer-checked:bg-red-500/20 peer-checked:border-red-500 peer-checked:text-red-400 text-slate-500 font-bold transition-all">BLOQUEAR</div>
+                            <div class="text-center p-4 rounded-xl border border-slate-700 peer-checked:bg-red-500/20 peer-checked:border-red-500 peer-checked:text-red-400 text-slate-500 font-bold transition-all uppercase">Suspender</div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="m_status" value="Mantenimiento" class="peer hidden" onchange="toggleManageViews()">
-                            <div class="text-center p-4 rounded-xl border border-slate-700 peer-checked:bg-amber-500/20 peer-checked:border-amber-500 peer-checked:text-amber-400 text-slate-500 font-bold transition-all">MANTENIMIENTO</div>
+                            <div class="text-center p-4 rounded-xl border border-slate-700 peer-checked:bg-amber-500/20 peer-checked:border-amber-500 peer-checked:text-amber-400 text-slate-500 font-bold transition-all uppercase">Mantenimiento</div>
                         </label>
                     </div>
                 </div>
@@ -201,8 +201,23 @@
             <div class="pt-6 mt-4 border-t border-slate-700 flex gap-3">
                 <button onclick="closeModal('manageModal')" class="flex-1 py-4 font-bold text-slate-400 bg-slate-800 rounded-xl">Cancelar</button>
                 <button onclick="saveTenantConfig()" id="btn-save-config" class="flex-[2] py-4 font-black bg-indigo-600 text-white rounded-xl shadow-lg flex items-center justify-center gap-2">
-                    <i data-lucide="save" class="w-5 h-5"></i> GUARDAR CAMBIOS EN TIEMPO REAL
+                    <i data-lucide="save" class="w-5 h-5"></i> GUARDAR CAMBIOS
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN -->
+    <div id="deleteConfirmModal" class="fixed inset-0 bg-[#0b1120]/95 z-[250] hidden flex flex-col items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-[#1e293b] border border-red-500/50 w-full max-w-sm rounded-3xl p-8 text-center shadow-2xl">
+            <div class="bg-red-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/30">
+                <i data-lucide="alert-triangle" class="text-red-500 w-8 h-8"></i>
+            </div>
+            <h2 class="text-xl font-black text-white mb-2">¿Eliminar Socio?</h2>
+            <p class="text-slate-400 text-sm mb-6">Esta acción borrará al socio del panel maestro. Los datos de su plataforma individual permanecerán pero ya no podrás gestionarlos desde aquí.</p>
+            <div class="flex gap-3">
+                <button onclick="closeModal('deleteConfirmModal')" class="flex-1 py-3 font-bold text-slate-400 bg-slate-800 rounded-xl">No, volver</button>
+                <button id="btn-confirm-delete" class="flex-1 py-3 font-black bg-red-600 text-white rounded-xl">Sí, eliminar</button>
             </div>
         </div>
     </div>
@@ -254,14 +269,13 @@
             const errorEl = document.getElementById('auth-error');
             
             btn.disabled = true;
-            btn.innerText = "Verificando en Firebase...";
+            btn.innerText = "Verificando...";
 
             try {
-                // Establecemos persistencia local para no perder el login al recargar
                 await setPersistence(auth, browserLocalPersistence);
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (err) {
-                errorEl.innerText = "Acceso denegado. Verifica tu correo o contraseña en la consola de Firebase.";
+                errorEl.innerText = "Correo o contraseña incorrectos.";
                 errorEl.classList.remove('hidden');
                 btn.disabled = false;
                 btn.innerText = "Acceder al Panel";
@@ -303,19 +317,33 @@
                     ingresos += Number(t.montoContrato || 0);
 
                     const statusColor = t.estado === 'Activo' ? 'text-emerald-400' : (t.estado === 'Mantenimiento' ? 'text-amber-400' : 'text-red-400');
-                    const url = `${BASE_URL}?tenant=${id}`;
+                    
+                    // Lógica solicitada: Si está activo poner extensión, sino dejar base
+                    const displayUrl = t.estado === 'Activo' ? `${BASE_URL}?tenant=${id}` : BASE_URL;
 
                     const row = document.createElement('tr');
-                    row.className = "border-b border-slate-700/50 hover:bg-slate-800/40";
+                    row.className = "border-b border-slate-700/50 hover:bg-slate-800/40 transition-colors";
                     row.innerHTML = `
                         <td class="p-5 font-bold text-white">${t.empresa || id}</td>
                         <td class="p-5 font-bold text-slate-400">₡${Number(t.montoContrato).toLocaleString()}</td>
-                        <td class="p-5 text-center font-black ${statusColor}">${t.estado || 'Activo'}</td>
-                        <td class="p-5 text-[10px] font-mono text-slate-500">${url}</td>
+                        <td class="p-5 text-center font-black ${statusColor} uppercase tracking-tighter">${t.estado || 'Activo'}</td>
+                        <td class="p-5">
+                            <div class="flex items-center gap-2 group">
+                                <span class="text-[10px] font-mono text-slate-500 bg-slate-900 px-2 py-1 rounded border border-slate-700/50 truncate max-w-[200px]">${displayUrl}</span>
+                                <button onclick="copyToClipboard('${displayUrl}')" class="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-white transition-opacity">
+                                    <i data-lucide="copy" class="w-3 h-3"></i>
+                                </button>
+                            </div>
+                        </td>
                         <td class="p-5 text-right">
-                            <button onclick="openManageModal('${id}')" class="p-2 bg-indigo-600/20 text-indigo-400 rounded-lg border border-indigo-500/30 hover:bg-indigo-600 hover:text-white transition-all">
-                                <i data-lucide="settings" class="w-4 h-4"></i>
-                            </button>
+                            <div class="flex justify-end gap-2">
+                                <button onclick="openManageModal('${id}')" class="p-2 bg-indigo-600/20 text-indigo-400 rounded-xl border border-indigo-500/30 hover:bg-indigo-600 hover:text-white transition-all shadow-lg shadow-indigo-900/10" title="Configurar">
+                                    <i data-lucide="settings" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="confirmDelete('${id}')" class="p-2 bg-red-600/10 text-red-400 rounded-xl border border-red-500/20 hover:bg-red-600 hover:text-white transition-all shadow-lg" title="Eliminar Socio">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
                         </td>
                     `;
                     list.appendChild(row);
@@ -328,25 +356,52 @@
             });
         }
 
-        window.createTenant = async () => {
-            const id = document.getElementById('new-id').value.trim().toLowerCase();
-            const empresa = document.getElementById('new-name').value.trim();
-            const monto = document.getElementById('new-monto').value;
+        window.copyToClipboard = (text) => {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast("Enlace copiado al portapapeles");
+        };
 
-            if(!id || !empresa) return showToast("Faltan datos", "error");
+        window.confirmDelete = (id) => {
+            openModal('deleteConfirmModal');
+            document.getElementById('btn-confirm-delete').onclick = async () => {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id));
+                    showToast("Socio eliminado permanentemente");
+                    closeModal('deleteConfirmModal');
+                } catch(e) {
+                    showToast("Error al eliminar", "error");
+                }
+            };
+        };
+
+        window.createTenant = async () => {
+            const idInput = document.getElementById('new-id');
+            const nameInput = document.getElementById('new-name');
+            const montoInput = document.getElementById('new-monto');
+            
+            const id = idInput.value.trim().toLowerCase();
+            const empresa = nameInput.value.trim();
+            const monto = montoInput.value;
+
+            if(!id || !empresa) return showToast("ID y Nombre son obligatorios", "error");
 
             try {
                 const data = {
                     empresa, montoContrato: Number(monto) || 0,
                     estado: 'Activo', fechaAlta: new Date().toISOString(),
-                    mensajeSuspension: "Suscripción Vencida. Contacte a soporte.",
-                    htmlMantenimiento: "<h1>Sitio en Mantenimiento</h1>",
+                    mensajeSuspension: "Este servicio ha sido suspendido temporalmente por falta de pago.",
+                    htmlMantenimiento: "<h1>En mantenimiento</h1><p>Estamos optimizando la plataforma para usted.</p>",
                     fechaCorte: ""
                 };
                 await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), data);
-                showToast("Socio creado exitosamente");
-                document.getElementById('new-id').value = ""; document.getElementById('new-name').value = "";
-            } catch (err) { showToast("Error al crear", "error"); }
+                showToast("Socio desplegado correctamente");
+                idInput.value = ""; nameInput.value = ""; montoInput.value = "";
+            } catch (err) { showToast("Error de permisos en Firebase", "error"); }
         };
 
         window.openManageModal = (id) => {
@@ -365,6 +420,7 @@
 
             toggleManageViews();
             openModal('manageModal');
+            lucide.createIcons();
         };
 
         window.toggleManageViews = () => {
@@ -399,23 +455,23 @@
                     fechaCorte: document.getElementById('m_fecha_corte').value
                 };
 
-                // Guardado en el Panel Maestro
+                // Actualizar Panel Maestro
                 await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), payload, { merge: true });
 
-                // Guardado en la base del Socio (Activación/Bloqueo inmediata)
+                // Actualizar Plataforma del Socio
                 await setDoc(doc(db, 'artifacts', id, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: estado,
                     mensajeSuspension: payload.mensajeSuspension,
                     htmlMantenimiento: payload.htmlMantenimiento
                 }, { merge: true });
 
-                showToast("Socio actualizado en tiempo real");
+                showToast(`Socio ${estado === 'Activo' ? 'activado' : 'actualizado'} con éxito`);
                 closeModal('manageModal');
             } catch (err) {
-                showToast("Fallo en la sincronización con Firebase", "error");
+                showToast("Error de sincronización", "error");
             } finally {
                 btn.disabled = false;
-                btn.innerText = "GUARDAR CAMBIOS EN TIEMPO REAL";
+                btn.innerText = "GUARDAR CAMBIOS";
                 lucide.createIcons();
             }
         };
