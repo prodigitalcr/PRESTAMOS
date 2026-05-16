@@ -34,6 +34,15 @@
 </head>
 <body class="antialiased text-slate-800 flex flex-col min-h-screen relative pb-10">
 
+    <!-- BLOQUEO POR SUSPENSIÓN DE ALQUILER (SAAS) -->
+    <div id="suspendedOverlay" class="fixed inset-0 bg-slate-900 z-[9999] hidden flex-col items-center justify-center text-white text-center p-6 backdrop-blur-md">
+        <div class="text-6xl mb-4">⚠️</div>
+        <h1 class="text-3xl md:text-5xl font-black text-red-500 mb-4 tracking-tighter">SERVICIO SUSPENDIDO</h1>
+        <p class="text-lg md:text-xl text-slate-300 max-w-lg mb-6">El acceso a la plataforma para este inquilino ha sido bloqueado temporalmente por falta de pago o revisión administrativa.</p>
+        <p class="text-sm font-bold text-slate-400 border border-slate-700 bg-slate-800 px-6 py-3 rounded-xl">Contacte a ProDigital (Soporte Técnico) para reactivar el servicio.</p>
+        <button onclick="logout()" class="mt-8 bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-6 rounded-lg transition">Cerrar Sesión</button>
+    </div>
+
     <!-- LOADER INICIAL GLOBAL -->
     <div id="globalLoader" class="fixed inset-0 bg-slate-900 z-[999] flex flex-col items-center justify-center">
         <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
@@ -56,7 +65,6 @@
         <div class="flex-1 bg-slate-100 py-10 px-6">
             <div class="max-w-6xl mx-auto">
                 <h2 class="text-3xl font-black text-slate-800 mb-8 text-center flex items-center justify-center gap-3"><span>🛍️</span> Nuestro Catálogo</h2>
-                <!-- GRID PARA PRODUCTOS AMPLIOS TIPO CARRUSEL -->
                 <div id="landingTiendaGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-8"></div>
             </div>
         </div>
@@ -114,7 +122,6 @@
             <div id="navRoleBadge" class="px-2 py-1 rounded text-[10px] font-black tracking-widest border border-white/30 bg-black/20">ROL</div>
             <span id="navTitle" class="font-bold tracking-tight text-sm md:text-base hidden sm:inline">SISTEMA V8</span>
             
-            <!-- Botones Exclusivos Socio -->
             <button id="btnNavContrato" onclick="verContratoSocio()" class="hidden bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-300 shadow transition">📄 Contrato ProDigital</button>
             <button id="btnNavSoporte" onclick="window.open('https://wa.me/50672284602?text=Hola%20Soporte%20ProDigital,%20necesito%20ayuda%20con%20la%20plataforma.', '_blank')" class="hidden bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-blue-300 shadow transition">🎧 Soporte Técnico</button>
         </div>
@@ -130,7 +137,7 @@
     <!-- ==================== VISTA SOCIO ==================== -->
     <div id="app-socio" class="hidden flex-col flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 pb-24 md:pb-6">
         
-        <!-- KPIs Avanzados (Visión de Negocio) -->
+        <!-- KPIs Avanzados -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-200">
                 <h3 class="text-indigo-700 font-bold text-[10px] uppercase mb-1">Cierre de Caja Hoy</h3>
@@ -181,9 +188,7 @@
         <!-- Cobro Inteligente -->
         <div id="cobroInteligenteSec" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
             <h3 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">🎯 Lista de Cobro Inteligente <span class="text-xs font-normal text-slate-500">(Vencen hoy o están en mora)</span></h3>
-            <div id="listaCobroBody" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Se llena por JS -->
-            </div>
+            <div id="listaCobroBody" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
     </div>
 
@@ -199,7 +204,6 @@
         </div>
         
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Pagos Mensualidad -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
                 <h3 class="font-black text-lg text-emerald-700 border-b pb-2 mb-4">💰 Control Pagos de Plataforma</h3>
                 <div class="flex gap-2 mb-4">
@@ -210,7 +214,6 @@
                 <div id="adminPagosList" class="space-y-2 flex-1 overflow-y-auto max-h-64"></div>
             </div>
 
-            <!-- Mantenimiento y Ajustes Globales -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
                 <h3 class="font-black text-lg text-indigo-700 border-b pb-2 mb-4">⚙️ Ajustes y Bitácora</h3>
                 <div class="mb-4">
@@ -227,7 +230,6 @@
                 <div id="adminMantList" class="space-y-2 flex-1 overflow-y-auto max-h-32"></div>
             </div>
 
-            <!-- Contrato de Alquiler -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2">
                 <h3 class="font-black text-lg text-slate-800 border-b pb-2 mb-4">📄 Contrato Global para Socios</h3>
                 <div class="flex flex-col sm:flex-row items-center gap-4">
@@ -238,7 +240,6 @@
             </div>
         </div>
 
-        <!-- GESTOR DE SOCIOS SUSCRITOS -->
         <div class="bg-white mt-6 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="p-4 bg-slate-900 text-white flex justify-between items-center">
                 <h3 class="font-black text-lg">Directorio de Socios (Clientes ProDigital)</h3>
@@ -355,9 +356,8 @@
     </label>
     <div class="flex gap-2 pt-4"><button type="button" onclick="closeModal('addModal')" class="flex-1 py-3 font-bold bg-slate-200 text-slate-700 rounded-xl">Cancelar</button><button type="submit" id="btnSaveClient" class="flex-[2] bg-indigo-600 text-white py-3 rounded-xl font-black shadow-lg">Crear y Aprobar</button></div></form></div></div>
 
-    <!-- MODAL EDITAR CLIENTE (FICHA TÉCNICA) -->
+    <!-- MODAL EDITAR CLIENTE -->
     <div id="editModal" class="fixed inset-0 bg-slate-900/80 hidden z-[100] flex items-center justify-center p-0 md:p-4 backdrop-blur-sm"><div class="bg-white md:rounded-2xl w-full max-w-5xl h-full md:h-[95vh] flex flex-col shadow-2xl overflow-hidden"><div class="p-4 border-b flex justify-between items-center bg-slate-50 shrink-0"><div><h3 id="edit_titulo" class="text-xl md:text-2xl font-black text-slate-800 leading-none"></h3><p id="edit_cedula" class="text-[10px] md:text-xs text-slate-500 font-bold mt-1"></p></div><div class="flex items-center gap-2"><button onclick="compartirReporteWA()" class="bg-emerald-100 text-emerald-800 border border-emerald-200 px-3 py-2 rounded-lg text-xs font-bold hover:bg-emerald-200 transition hidden sm:block">📲 Compartir PDF</button><button onclick="generarPDF()" class="bg-slate-200 text-slate-800 px-3 py-2 rounded-lg text-xs font-bold hover:bg-slate-300">📄 PDF</button><button onclick="closeModal('editModal')" class="text-slate-400 hover:text-slate-700 bg-white border rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">&times;</button></div></div><div class="flex-1 overflow-y-auto flex flex-col lg:flex-row p-4 gap-6 bg-slate-100"><div class="w-full lg:w-1/2 space-y-4"><div id="solicitudContainer" class="hidden bg-amber-100 border border-amber-300 p-4 rounded-xl shadow-sm"><h4 class="text-sm font-black text-amber-800 mb-2 flex items-center gap-2">📢 NUEVA SOLICITUD DE PRÉSTAMO</h4><div id="solicitudDetalle" class="text-sm font-medium text-amber-900 mb-3 bg-white p-3 rounded-lg border border-amber-200"></div><div id="solicitudAprobarForm" class="hidden bg-white p-3 rounded-xl border border-amber-200 mb-3 space-y-3"><h5 class="text-xs font-bold text-slate-600">Nuevas Condiciones:</h5><div class="grid grid-cols-2 gap-2 text-sm"><div><label class="block text-[10px] font-bold text-slate-500">Monto Final</label><input type="number" id="ap_monto" class="w-full border p-2 rounded font-bold bg-slate-50"></div><div><label class="block text-[10px] font-bold text-slate-500">Interés (%)</label><input type="number" id="ap_interes" class="w-full border p-2 rounded font-bold bg-slate-50"></div><div class="col-span-2"><label class="block text-[10px] font-bold text-slate-500">Día Pago Mensual (1-31)</label><input type="number" id="ap_dia" min="1" max="31" class="w-full border p-2 rounded font-bold bg-slate-50"></div></div><button onclick="confirmarAprobacion()" class="w-full bg-emerald-600 text-white py-2.5 rounded-lg font-black shadow">✅ Confirmar Aprobación</button></div><div class="flex gap-2" id="solicitudActionBtns"><button onclick="mostrarFormAprobacion()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold text-sm shadow">Aprobar...</button><button onclick="responderSolicitud('rechazado')" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-bold text-sm shadow">Rechazar</button></div></div><div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative"><button onclick="deleteCurrentClient()" class="absolute top-3 right-3 text-red-500 hover:bg-red-50 p-1.5 rounded-lg text-xs" title="Borrar todo">🗑️</button><h4 class="font-black text-slate-800 mb-3 text-sm">📝 DATOS DEL CLIENTE</h4><div class="grid grid-cols-2 gap-3 text-xs"><div class="col-span-2"><label class="font-bold text-slate-400">NOMBRE</label><input type="text" id="f_nombre" class="w-full p-2 border rounded bg-slate-50 font-bold"></div><div><label class="font-bold text-slate-400">CÉDULA</label><input type="text" id="f_cedula" class="w-full p-2 border rounded bg-slate-50" readonly></div><div><label class="font-bold text-slate-400">TELÉFONO</label><input type="text" id="f_telefono" class="w-full p-2 border rounded bg-slate-50"></div><div class="col-span-2"><label class="font-bold text-slate-400">DIRECCIÓN</label><input type="text" id="f_direccion" class="w-full p-2 border rounded bg-slate-50"></div><div class="col-span-2"><label class="font-bold text-slate-400">CORREO (Logueo)</label><input type="text" id="f_correo" class="w-full p-2 border rounded bg-slate-50"></div><div class="col-span-2"><label class="font-bold text-slate-400">CONTRASEÑA ASIGNADA</label><input type="text" id="f_password" class="w-full p-2 border rounded bg-yellow-50 border-yellow-200 text-slate-700 font-mono"></div><div class="col-span-2"><label class="font-bold text-indigo-400">AUTORIZADO POR</label><input type="text" id="f_autorizado" class="w-full p-2 border border-indigo-200 rounded bg-indigo-50 font-medium"></div></div><button onclick="guardarFicha()" class="mt-4 w-full bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg font-bold text-xs shadow">Guardar Cambios Personales</button><p class="text-[9px] text-slate-400 mt-2 text-center">*Nota: Cambiar la contraseña y correo aquí solo actualiza el registro visible. El acceso Auth oficial debe restaurarse si el usuario lo olvida.</p></div><div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm"><h4 class="font-black text-slate-800 mb-3 text-sm">📊 FINANZAS Y CONDICIONES</h4><div class="flex items-center justify-between bg-slate-50 border p-2 rounded-lg mb-3"><span class="text-[11px] font-bold text-slate-600">Estado Cálculo:</span><select id="e_estado" class="p-1 rounded border text-xs font-bold outline-none" onchange="updateStatusManual()"><option value="auto">Automático (Mensual)</option><option value="al_dia">Forzar: Al Día</option><option value="moroso">Forzar: Moroso</option></select></div><div class="grid grid-cols-3 gap-2 text-xs"><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">DÍA PAGO</label><input type="number" id="e_dia" min="1" max="31" class="w-full p-2 border rounded-lg font-bold text-indigo-700 text-center bg-slate-50"></div><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">SALDO ₡</label><input type="number" id="e_saldo" class="w-full p-2 border rounded-lg font-bold text-indigo-700 bg-slate-50"></div><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">INTERÉS %</label><input type="number" id="e_interes_pct" class="w-full p-2 border rounded-lg font-bold text-indigo-700 bg-slate-50 text-center"></div>
-        <!-- Botón para acumular intereses -->
         <button onclick="capitalizarIntereses()" class="col-span-3 bg-amber-100 border border-amber-300 text-amber-800 py-2 rounded-lg font-black text-[11px] mt-1 shadow-sm hover:bg-amber-200 transition">⚠️ CAPITALIZAR INTERÉS (Sumar mora al saldo)</button>
         <button onclick="updateAmounts()" class="col-span-3 bg-slate-200 hover:bg-slate-300 text-slate-800 py-2.5 rounded-lg font-black text-[11px] mt-2">APLICAR REAJUSTE NUMÉRICO MANUAL</button></div></div></div><div class="w-full lg:w-1/2 flex flex-col gap-4"><div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 shadow-sm shrink-0"><label class="block text-sm font-black text-emerald-800 mb-2">💰 REGISTRAR ABONO</label><div class="flex flex-col gap-2"><div class="relative"><span class="absolute left-3 top-2 text-emerald-600 font-bold">₡</span><input type="number" id="abono_monto" class="w-full pl-8 pr-3 py-2 border border-emerald-300 rounded-lg font-black text-emerald-900 outline-none text-lg bg-white shadow-inner" placeholder="Monto entregado"></div><div class="flex items-center gap-2"><input type="file" id="abono_img" accept="image/*" required class="text-[10px] w-full text-slate-500 bg-white p-1.5 rounded-lg border border-red-300" title="Comprobante obligatorio"><button onclick="calculateAndAddPayment()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-black shadow-md whitespace-nowrap">ABONAR</button></div><p class="text-[9px] text-emerald-700 font-bold">*Foto de comprobante requerida por seguridad.</p></div></div><div id="historialComprasSocio" class="bg-white border rounded-xl p-3 shadow-sm shrink-0 hidden"><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-b pb-1">Pedidos de Tienda de este Cliente</h4><div id="comprasBodySocio" class="space-y-2 text-xs max-h-48 overflow-y-auto"></div></div><div class="bg-white border border-slate-200 rounded-xl flex flex-col overflow-hidden h-[200px] shrink-0 shadow-sm"><div class="bg-indigo-50 p-2 border-b text-[10px] font-black tracking-widest text-indigo-800 text-center uppercase">Chat Interno con Cliente</div><div id="chatSocio" class="flex-1 p-2 chat-container bg-slate-50"></div><div class="p-2 bg-white border-t flex gap-2"><input type="text" id="chatInputSocio" class="flex-1 border rounded-lg px-2 text-sm outline-none" placeholder="Escribe..."><button onclick="sendMsg('socio')" class="bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm font-bold">→</button></div></div><div class="bg-white border border-slate-200 rounded-xl p-4 flex-1 overflow-y-auto shadow-sm min-h-[200px]"><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-b pb-2">Historial de Pagos</h4><div id="historyBody" class="space-y-2 text-sm"></div></div></div></div></div></div>
 
@@ -379,9 +379,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updatePassword, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, updateDoc, arrayUnion, onSnapshot, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getDoc, collection, doc, setDoc, updateDoc, arrayUnion, onSnapshot, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // CREDENCIALES OFICIALES
+        // CREDENCIALES OFICIALES (INTACTAS)
         const firebaseConfig = {
             apiKey: "AIzaSyCtPXuvsDuLDkpIJBlEEHFll6N-NofQ3bI",
             authDomain: "prestamos-c97ed.firebaseapp.com",
@@ -392,11 +392,18 @@
             measurementId: "G-N0HK4HPLP1"
         };
         
-        const appFirebaseId = 'prestamos-c97ed'; 
+        // MULTI-TENANT (APP_ID DINÁMICO)
+        // Lee la URL en busca de "?tenant=empresa2". Si no existe, usa la base principal.
+        const urlParams = new URLSearchParams(window.location.search);
+        const appFirebaseId = urlParams.get('tenant') || 'prestamos-c97ed'; 
         
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const dbFirestore = getFirestore(app);
+        
+        // MODO OFFLINE NATIVO ACTIVADO
+        const dbFirestore = initializeFirestore(app, {
+            localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
+        });
 
         // State Global
         let dbLocal = [];
@@ -417,6 +424,20 @@
             if (typeof str !== 'string') return str;
             return DOMPurify.sanitize(str.trim(), { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
         };
+
+        // LIBRO MAYOR INMUTABLE (Auditoría Financiera)
+        async function registrarAuditoria(tipo, monto, detalle, clienteId) {
+            if (currentRole !== 'socio') return;
+            try {
+                const tx = { id: Date.now(), tipo, monto, detalle, clienteId, fecha: new Date().toISOString(), usuario: currentUser.email };
+                // Se guarda en /usuarios/auditoria porque las reglas permiten write a esSocio() en /usuarios/{usuarioId}
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'auditoria'), {
+                    transacciones: arrayUnion(tx)
+                }, { merge: true });
+            } catch(e) {
+                console.error("Auditoría financiera asentada en caché local.", e);
+            }
+        }
 
         let unsubProductos = null, unsubConfig = null, unsubClientes = null, unsubVentas = null, unsubAdminData = null;
 
@@ -446,6 +467,15 @@
                         if(!adminData.sociosSuscritos) adminData.sociosSuscritos = [];
                         
                         document.getElementById('globalFooterText').innerText = adminData.footerText || 'derechos reservados prodigital /7228-4602';
+
+                        // Validación Automática de Bloqueo / Suspensión de Servicio
+                        if(adminData.estadoTenant === 'Suspendido' && currentRole !== 'admin') {
+                            document.getElementById('suspendedOverlay').classList.remove('hidden');
+                            document.getElementById('suspendedOverlay').classList.add('flex');
+                        } else {
+                            document.getElementById('suspendedOverlay').classList.add('hidden');
+                            document.getElementById('suspendedOverlay').classList.remove('flex');
+                        }
                     }
                     if (currentRole === 'admin') renderAdminData();
                     if (currentRole === 'socio') {
@@ -619,7 +649,7 @@
 
         window.logout = async () => { await signOut(auth); };
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             document.getElementById('globalLoader').classList.add('hidden');
             subscribePublicData();
 
@@ -628,9 +658,19 @@
                 if (user.isAnonymous) {
                     currentRole = null;
                 } else {
+                    // ABSTRACCIÓN DE IDENTIDAD (Multi-tenant)
+                    // Verifica si en la BD el usuario tiene rol 'socio', sin quemar el correo en código.
+                    let isDynamicSocio = false;
+                    try {
+                        const userDoc = await getDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', user.uid));
+                        if(userDoc.exists() && userDoc.data().rol === 'socio') {
+                            isDynamicSocio = true;
+                        }
+                    } catch(e) {}
+
                     if (user.email === 'norercarlop04@gmail.com') {
                         currentRole = 'admin';
-                    } else if (user.email === 'socio@prestamos.com') {
+                    } else if (user.email === 'socio@prestamos.com' || isDynamicSocio) {
                         currentRole = 'socio';
                     } else {
                         currentRole = 'cliente';
@@ -660,6 +700,7 @@
                 
                 document.getElementById('landingPage').classList.remove('hidden');
                 document.getElementById('landingPage').classList.add('flex');
+                document.getElementById('suspendedOverlay').classList.add('hidden');
                 
                 if(countdownInterval) clearInterval(countdownInterval);
                 carrito = []; actualizarCarritoUI();
@@ -1122,6 +1163,7 @@
                 } catch(e) { console.error("Error Auth", e); }
 
                 const now = new Date();
+                const montoApertura = parseFloat(document.getElementById('n_monto').value);
                 
                 const nuevo = {
                     id: newUid,
@@ -1133,8 +1175,8 @@
                     telefono: sanitizeInput(document.getElementById('n_telefono').value),
                     direccion: sanitizeInput(document.getElementById('n_direccion').value),
                     autorizadoPor: sanitizeInput(document.getElementById('n_autorizado').value),
-                    montoOriginal: parseFloat(document.getElementById('n_monto').value),
-                    saldo: parseFloat(document.getElementById('n_monto').value),
+                    montoOriginal: montoApertura,
+                    saldo: montoApertura,
                     interesPct: parseFloat(document.getElementById('n_interes_pct').value),
                     fecha: now.toLocaleDateString('es-CR'), diaPago: now.getDate(),
                     estadoManual: 'auto',
@@ -1144,6 +1186,7 @@
                 };
 
                 await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', newUid), nuevo);
+                await registrarAuditoria('PRESTAMO_NUEVO', montoApertura, `Apertura crédito: ${nuevo.nombre}`, newUid);
                 
                 closeModal('addModal'); e.target.reset(); showToast("Préstamo y Cliente creados");
             } catch (err) { showToast("Error", "❌"); console.error(err); }
@@ -1456,6 +1499,8 @@
                 item.historial.push({ fecha: new Date().toLocaleDateString('es-CR'), total: 0, int: 0, cap: 0, sFinal: item.saldo, img: null, nota: "Capitalización de intereses adeudados" });
                 
                 await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.userId), item);
+                await registrarAuditoria('CAPITALIZACION', intMensual, 'Interés sumado a capital', item.userId);
+
                 showToast("Intereses sumados al saldo principal", "📈"); 
                 openEdit(currentEditId);
             });
@@ -1480,6 +1525,10 @@
 
             item.historial.push({ fecha: new Date().toLocaleDateString('es-CR'), total: monto, int: pInt, cap: pCap, sFinal: item.saldo, img: imgB64 });
             await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.userId), item);
+            
+            // Asentar pago en libro mayor
+            await registrarAuditoria('ABONO', monto, 'Abono registrado con comprobante', item.userId);
+
             document.getElementById('abono_monto').value = ''; fileInput.value = '';
             showToast("Abono registrado", "💰"); openEdit(currentEditId);
         };
@@ -1509,6 +1558,8 @@
             item.chat.push({ sender: 'socio', msg: `✅ Solicitud Aprobada. Saldo Final: ₡${fColones(n_monto)}. Interés: ${n_interes}%. Día de pago mensual: ${n_dia}.`, time: new Date().toLocaleString('es-CR')});
             
             await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.userId), item);
+            await registrarAuditoria('PRESTAMO_REFINANCIADO', n_monto, 'Nueva solicitud de préstamo aprobada', item.userId);
+
             showToast("Préstamo Aprobado y Actualizado"); openEdit(currentEditId);
         };
 
