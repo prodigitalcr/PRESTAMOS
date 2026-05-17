@@ -34,6 +34,7 @@
 </head>
 <body class="antialiased text-slate-800 flex flex-col min-h-screen relative pb-10">
 
+    <!-- BLOQUEO POR SUSPENSIÓN DE ALQUILER (SAAS) -->
     <div id="suspendedOverlay" class="fixed inset-0 bg-slate-900 z-[9999] hidden flex-col items-center justify-center text-white text-center p-6 backdrop-blur-md">
         <div class="text-6xl mb-4">⚠️</div>
         <h1 class="text-3xl md:text-5xl font-black text-red-500 mb-4 tracking-tighter">SERVICIO SUSPENDIDO</h1>
@@ -42,15 +43,17 @@
         <button onclick="logout()" class="mt-8 bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-6 rounded-lg transition">Cerrar Sesión</button>
     </div>
 
+    <!-- LOADER INICIAL GLOBAL -->
     <div id="globalLoader" class="fixed inset-0 bg-slate-900 z-[999] flex flex-col items-center justify-center">
         <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
         <p class="text-sm font-bold text-white tracking-widest">INICIANDO SISTEMA SEGURO...</p>
     </div>
 
+    <!-- ==================== LANDING PAGE PÚBLICA ==================== -->
     <div id="landingPage" class="hidden flex-col min-h-screen bg-slate-50">
         <nav class="bg-indigo-900 text-white p-4 flex justify-between items-center shadow-lg sticky top-0 z-40">
             <div class="font-black text-lg tracking-tight flex items-center gap-2"><span>💸</span> V8 PRÉSTAMOS</div>
-            <button onclick="openModal('loginModal')" class="bg-white text-indigo-900 px-4 py-1.5 rounded font-bold text-sm hover:bg-slate-200 transition">Ingresar al Sistema</button>
+            <button onclick="openModal('loginModal')" class="bg-white text-indigo-900 px-4 py-1.5 rounded font-bold text-sm hover:bg-slate-200 transition">Acceso Clientes</button>
         </nav>
         
         <div class="flex flex-col items-center justify-center p-8 text-center bg-gradient-to-br from-indigo-900 via-slate-800 to-black text-white relative overflow-hidden shrink-0">
@@ -67,6 +70,7 @@
         </div>
     </div>
 
+    <!-- MODAL DE LOGIN -->
     <div id="loginModal" class="fixed inset-0 bg-slate-900/80 hidden z-[200] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-t-4 border-indigo-600 relative">
             <button onclick="closeModal('loginModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 text-2xl font-bold">&times;</button>
@@ -82,31 +86,12 @@
             </form>
             <div class="mt-5 text-center border-t pt-5">
                 <p class="text-xs text-slate-500 mb-2">¿Eres nuevo en la plataforma?</p>
-                <button onclick="closeModal('loginModal'); openModal('registerModal')" class="w-full bg-emerald-100 text-emerald-800 py-3 rounded-xl font-bold hover:bg-emerald-200 transition shadow-sm border border-emerald-200 mb-2">Crear cuenta como Cliente</button>
-                <button onclick="closeModal('loginModal'); openModal('registerSocioModal')" class="w-full bg-indigo-100 text-indigo-800 py-3 rounded-xl font-bold hover:bg-indigo-200 transition shadow-sm border border-indigo-200">Inicializar Plataforma (Solo Dueño)</button>
+                <button onclick="closeModal('loginModal'); openModal('registerModal')" class="w-full bg-emerald-100 text-emerald-800 py-3 rounded-xl font-bold hover:bg-emerald-200 transition shadow-sm border border-emerald-200">Crear cuenta como Cliente</button>
             </div>
         </div>
     </div>
 
-    <div id="registerSocioModal" class="fixed inset-0 bg-slate-900/80 hidden z-[200] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-t-4 border-indigo-600 relative">
-            <button onclick="closeModal('registerSocioModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 text-2xl font-bold">&times;</button>
-            <div class="text-center mb-6">
-                <h2 class="text-2xl font-black text-slate-800">INICIALIZAR PLATAFORMA</h2>
-                <p class="text-xs font-medium text-slate-500 mt-1">Crear cuenta maestra para este enlace</p>
-            </div>
-            <form id="registerSocioForm" onsubmit="registerSocio(event)" class="space-y-4">
-                <input type="text" id="rs_nombre" placeholder="Nombre de la Empresa o Socio" class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-600 transition" required>
-                <input type="email" id="rs_email" placeholder="Correo de Administrador" class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-600 transition" required>
-                <input type="password" id="rs_password" placeholder="Crea una Contraseña Segura" class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-600 transition" required minlength="6">
-                <button type="submit" id="btnRegisterSocio" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 shadow-lg">Activar mi Plataforma</button>
-            </form>
-            <div class="mt-4 text-center">
-                <button onclick="closeModal('registerSocioModal'); openModal('loginModal')" class="text-xs text-slate-500 hover:text-indigo-600 font-bold underline">Volver al inicio de sesión</button>
-            </div>
-        </div>
-    </div>
-
+    <!-- MODAL DE REGISTRO CLIENTE -->
     <div id="registerModal" class="fixed inset-0 bg-slate-900/80 hidden z-[200] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-t-4 border-emerald-600 relative">
             <button onclick="closeModal('registerModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 text-2xl font-bold">&times;</button>
@@ -131,6 +116,7 @@
         </div>
     </div>
 
+    <!-- NAVEGACIÓN GLOBAL -->
     <nav id="globalNav" class="hidden text-white p-4 flex justify-between items-center shadow-lg sticky top-0 z-40 shrink-0">
         <div class="flex items-center gap-3">
             <div id="navRoleBadge" class="px-2 py-1 rounded text-[10px] font-black tracking-widest border border-white/30 bg-black/20">ROL</div>
@@ -148,8 +134,10 @@
         </div>
     </nav>
 
+    <!-- ==================== VISTA SOCIO ==================== -->
     <div id="app-socio" class="hidden flex-col flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 pb-24 md:pb-6">
         
+        <!-- KPIs Avanzados -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-200">
                 <h3 class="text-indigo-700 font-bold text-[10px] uppercase mb-1">Cierre de Caja Hoy</h3>
@@ -197,16 +185,19 @@
             </table>
         </div>
 
+        <!-- Cobro Inteligente -->
         <div id="cobroInteligenteSec" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
             <h3 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">🎯 Lista de Cobro Inteligente <span class="text-xs font-normal text-slate-500">(Vencen hoy o están en mora)</span></h3>
             <div id="listaCobroBody" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
     </div>
 
+    <!-- ==================== VISTA CLIENTE ==================== -->
     <div id="app-cliente" class="hidden flex-col flex-1 w-full max-w-4xl mx-auto p-4 md:p-6 pb-24 md:pb-6 relative">
         <div id="cliente-content-wrapper" class="w-full"></div>
     </div>
 
+    <!-- ==================== VISTA SOPORTE (ADMIN) ==================== -->
     <div id="app-admin" class="hidden flex-col flex-1 w-full max-w-7xl mx-auto p-6 space-y-6">
         <div class="flex justify-between items-center">
             <h2 class="text-3xl font-black text-slate-800">Panel ProDigital (Admin)</h2>
@@ -265,6 +256,7 @@
         </div>
     </div>
 
+    <!-- MODAL AGREGAR SOCIO (ADMIN) -->
     <div id="addSocioAdminModal" class="fixed inset-0 bg-slate-900/80 hidden z-[200] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-md">
             <h3 class="text-xl font-black mb-4">Registrar Nuevo Socio</h3>
@@ -292,6 +284,7 @@
         </div>
     </div>
 
+    <!-- ==================== RESTO DE MODALES ==================== -->
     <div id="tiendaOverlay" class="fixed inset-0 bg-slate-100 z-[150] hidden flex-col">
         <div class="bg-slate-900 text-white p-4 flex justify-between items-center shrink-0 shadow-lg sticky top-0 z-50">
             <h2 class="text-lg font-black flex items-center gap-2"><span>🛍️</span> Catálogo de Productos</h2>
@@ -355,6 +348,7 @@
         </div>
     </div>
 
+    <!-- MODAL AGREGAR CLIENTE -->
     <div id="addModal" class="fixed inset-0 bg-slate-900/70 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto"><h3 class="text-2xl font-black mb-6 text-slate-800">Registrar Préstamo</h3><form id="loanForm" class="space-y-3"><input type="text" id="n_nombre" placeholder="Nombre del Cliente" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><div class="grid grid-cols-2 gap-3"><input type="text" id="n_cedula" placeholder="Cédula" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><input type="text" id="n_password" placeholder="Contraseña Prov." class="w-full p-3 border border-indigo-200 rounded-xl bg-indigo-50 text-sm font-bold placeholder-indigo-300 text-indigo-800" required></div><input type="text" id="n_telefono" placeholder="WhatsApp" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><input type="text" id="n_direccion" placeholder="Dirección Exacta" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><input type="text" id="n_autorizado" placeholder="Autorizado por..." class="w-full p-3 border rounded-xl bg-indigo-50 font-medium text-sm" required><div class="grid grid-cols-2 gap-3 mt-2"><div><label class="text-[10px] font-bold text-slate-500">MONTO (₡)</label><input type="number" id="n_monto" class="w-full p-3 border rounded-xl font-black text-indigo-700 text-lg" required></div><div><label class="text-[10px] font-bold text-slate-500">INTERÉS MENS. (%)</label><input type="number" id="n_interes_pct" class="w-full p-3 border rounded-xl font-black text-lg text-center" required></div></div><div class="grid grid-cols-2 gap-3 text-xs bg-slate-100 p-4 rounded-xl mt-2 border border-slate-200"><div><label class="font-bold block mb-2 text-slate-600">📸 CÉDULA</label><input type="file" id="n_img_cedula" accept="image/*" class="w-full text-slate-500 text-[10px]"></div><div><label class="font-bold block mb-2 text-slate-600">📸 PRENDA</label><input type="file" id="n_img_prenda" accept="image/*" class="w-full text-slate-500 text-[10px]"></div></div>
     <label class="flex items-start gap-2 text-[10px] text-slate-600 mt-2 bg-slate-50 p-2 rounded border">
         <input type="checkbox" required class="mt-0.5">
@@ -362,6 +356,7 @@
     </label>
     <div class="flex gap-2 pt-4"><button type="button" onclick="closeModal('addModal')" class="flex-1 py-3 font-bold bg-slate-200 text-slate-700 rounded-xl">Cancelar</button><button type="submit" id="btnSaveClient" class="flex-[2] bg-indigo-600 text-white py-3 rounded-xl font-black shadow-lg">Crear y Aprobar</button></div></form></div></div>
 
+    <!-- MODAL EDITAR CLIENTE -->
     <div id="editModal" class="fixed inset-0 bg-slate-900/80 hidden z-[100] flex items-center justify-center p-0 md:p-4 backdrop-blur-sm"><div class="bg-white md:rounded-2xl w-full max-w-5xl h-full md:h-[95vh] flex flex-col shadow-2xl overflow-hidden"><div class="p-4 border-b flex justify-between items-center bg-slate-50 shrink-0"><div><h3 id="edit_titulo" class="text-xl md:text-2xl font-black text-slate-800 leading-none"></h3><p id="edit_cedula" class="text-[10px] md:text-xs text-slate-500 font-bold mt-1"></p></div><div class="flex items-center gap-2"><button onclick="compartirReporteWA()" class="bg-emerald-100 text-emerald-800 border border-emerald-200 px-3 py-2 rounded-lg text-xs font-bold hover:bg-emerald-200 transition hidden sm:block">📲 Compartir PDF</button><button onclick="generarPDF()" class="bg-slate-200 text-slate-800 px-3 py-2 rounded-lg text-xs font-bold hover:bg-slate-300">📄 PDF</button><button onclick="closeModal('editModal')" class="text-slate-400 hover:text-slate-700 bg-white border rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">&times;</button></div></div><div class="flex-1 overflow-y-auto flex flex-col lg:flex-row p-4 gap-6 bg-slate-100"><div class="w-full lg:w-1/2 space-y-4"><div id="solicitudContainer" class="hidden bg-amber-100 border border-amber-300 p-4 rounded-xl shadow-sm"><h4 class="text-sm font-black text-amber-800 mb-2 flex items-center gap-2">📢 NUEVA SOLICITUD DE PRÉSTAMO</h4><div id="solicitudDetalle" class="text-sm font-medium text-amber-900 mb-3 bg-white p-3 rounded-lg border border-amber-200"></div><div id="solicitudAprobarForm" class="hidden bg-white p-3 rounded-xl border border-amber-200 mb-3 space-y-3"><h5 class="text-xs font-bold text-slate-600">Nuevas Condiciones:</h5><div class="grid grid-cols-2 gap-2 text-sm"><div><label class="block text-[10px] font-bold text-slate-500">Monto Final</label><input type="number" id="ap_monto" class="w-full border p-2 rounded font-bold bg-slate-50"></div><div><label class="block text-[10px] font-bold text-slate-500">Interés (%)</label><input type="number" id="ap_interes" class="w-full border p-2 rounded font-bold bg-slate-50"></div><div class="col-span-2"><label class="block text-[10px] font-bold text-slate-500">Día Pago Mensual (1-31)</label><input type="number" id="ap_dia" min="1" max="31" class="w-full border p-2 rounded font-bold bg-slate-50"></div></div><button onclick="confirmarAprobacion()" class="w-full bg-emerald-600 text-white py-2.5 rounded-lg font-black shadow">✅ Confirmar Aprobación</button></div><div class="flex gap-2" id="solicitudActionBtns"><button onclick="mostrarFormAprobacion()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold text-sm shadow">Aprobar...</button><button onclick="responderSolicitud('rechazado')" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-bold text-sm shadow">Rechazar</button></div></div><div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative"><button onclick="deleteCurrentClient()" class="absolute top-3 right-3 text-red-500 hover:bg-red-50 p-1.5 rounded-lg text-xs" title="Borrar todo">🗑️</button><h4 class="font-black text-slate-800 mb-3 text-sm">📝 DATOS DEL CLIENTE</h4><div class="grid grid-cols-2 gap-3 text-xs"><div class="col-span-2"><label class="font-bold text-slate-400">NOMBRE</label><input type="text" id="f_nombre" class="w-full p-2 border rounded bg-slate-50 font-bold"></div><div><label class="font-bold text-slate-400">CÉDULA</label><input type="text" id="f_cedula" class="w-full p-2 border rounded bg-slate-50" readonly></div><div><label class="font-bold text-slate-400">TELÉFONO</label><input type="text" id="f_telefono" class="w-full p-2 border rounded bg-slate-50"></div><div class="col-span-2"><label class="font-bold text-slate-400">DIRECCIÓN</label><input type="text" id="f_direccion" class="w-full p-2 border rounded bg-slate-50"></div><div class="col-span-2"><label class="font-bold text-slate-400">CORREO (Logueo)</label><input type="text" id="f_correo" class="w-full p-2 border rounded bg-slate-50"></div><div class="col-span-2"><label class="font-bold text-slate-400">CONTRASEÑA ASIGNADA</label><input type="text" id="f_password" class="w-full p-2 border rounded bg-yellow-50 border-yellow-200 text-slate-700 font-mono"></div><div class="col-span-2"><label class="font-bold text-indigo-400">AUTORIZADO POR</label><input type="text" id="f_autorizado" class="w-full p-2 border border-indigo-200 rounded bg-indigo-50 font-medium"></div></div><button onclick="guardarFicha()" class="mt-4 w-full bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg font-bold text-xs shadow">Guardar Cambios Personales</button><p class="text-[9px] text-slate-400 mt-2 text-center">*Nota: Cambiar la contraseña y correo aquí solo actualiza el registro visible. El acceso Auth oficial debe restaurarse si el usuario lo olvida.</p></div><div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm"><h4 class="font-black text-slate-800 mb-3 text-sm">📊 FINANZAS Y CONDICIONES</h4><div class="flex items-center justify-between bg-slate-50 border p-2 rounded-lg mb-3"><span class="text-[11px] font-bold text-slate-600">Estado Cálculo:</span><select id="e_estado" class="p-1 rounded border text-xs font-bold outline-none" onchange="updateStatusManual()"><option value="auto">Automático (Mensual)</option><option value="al_dia">Forzar: Al Día</option><option value="moroso">Forzar: Moroso</option></select></div><div class="grid grid-cols-3 gap-2 text-xs"><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">DÍA PAGO</label><input type="number" id="e_dia" min="1" max="31" class="w-full p-2 border rounded-lg font-bold text-indigo-700 text-center bg-slate-50"></div><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">SALDO ₡</label><input type="number" id="e_saldo" class="w-full p-2 border rounded-lg font-bold text-indigo-700 bg-slate-50"></div><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">INTERÉS %</label><input type="number" id="e_interes_pct" class="w-full p-2 border rounded-lg font-bold text-indigo-700 bg-slate-50 text-center"></div>
         <button onclick="capitalizarIntereses()" class="col-span-3 bg-amber-100 border border-amber-300 text-amber-800 py-2 rounded-lg font-black text-[11px] mt-1 shadow-sm hover:bg-amber-200 transition">⚠️ CAPITALIZAR INTERÉS (Sumar mora al saldo)</button>
         <button onclick="updateAmounts()" class="col-span-3 bg-slate-200 hover:bg-slate-300 text-slate-800 py-2.5 rounded-lg font-black text-[11px] mt-2">APLICAR REAJUSTE NUMÉRICO MANUAL</button></div></div></div><div class="w-full lg:w-1/2 flex flex-col gap-4"><div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 shadow-sm shrink-0"><label class="block text-sm font-black text-emerald-800 mb-2">💰 REGISTRAR ABONO</label><div class="flex flex-col gap-2"><div class="relative"><span class="absolute left-3 top-2 text-emerald-600 font-bold">₡</span><input type="number" id="abono_monto" class="w-full pl-8 pr-3 py-2 border border-emerald-300 rounded-lg font-black text-emerald-900 outline-none text-lg bg-white shadow-inner" placeholder="Monto entregado"></div><div class="flex items-center gap-2"><input type="file" id="abono_img" accept="image/*" required class="text-[10px] w-full text-slate-500 bg-white p-1.5 rounded-lg border border-red-300" title="Comprobante obligatorio"><button onclick="calculateAndAddPayment()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-black shadow-md whitespace-nowrap">ABONAR</button></div><p class="text-[9px] text-emerald-700 font-bold">*Foto de comprobante requerida por seguridad.</p></div></div><div id="historialComprasSocio" class="bg-white border rounded-xl p-3 shadow-sm shrink-0 hidden"><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-b pb-1">Pedidos de Tienda de este Cliente</h4><div id="comprasBodySocio" class="space-y-2 text-xs max-h-48 overflow-y-auto"></div></div><div class="bg-white border border-slate-200 rounded-xl flex flex-col overflow-hidden h-[200px] shrink-0 shadow-sm"><div class="bg-indigo-50 p-2 border-b text-[10px] font-black tracking-widest text-indigo-800 text-center uppercase">Chat Interno con Cliente</div><div id="chatSocio" class="flex-1 p-2 chat-container bg-slate-50"></div><div class="p-2 bg-white border-t flex gap-2"><input type="text" id="chatInputSocio" class="flex-1 border rounded-lg px-2 text-sm outline-none" placeholder="Escribe..."><button onclick="sendMsg('socio')" class="bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm font-bold">→</button></div></div><div class="bg-white border border-slate-200 rounded-xl p-4 flex-1 overflow-y-auto shadow-sm min-h-[200px]"><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-b pb-2">Historial de Pagos</h4><div id="historyBody" class="space-y-2 text-sm"></div></div></div></div></div></div>
@@ -375,10 +370,12 @@
     <div id="toast" class="fixed bottom-12 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-4 rounded-full shadow-2xl transform transition-all duration-300 translate-y-32 opacity-0 z-[999] font-bold text-sm flex items-center gap-3"><span id="toastIcon">✅</span><span id="toastMsg">Mensaje</span></div>
     <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 hidden z-[700] flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center"><h3 class="text-xl font-black mb-2 text-slate-800">¿Confirmar Acción?</h3><p id="confirmMessage" class="text-sm text-slate-500 mb-6">Esta acción es irreversible.</p><div class="flex gap-2"><button onclick="closeConfirm()" class="flex-1 py-3 font-bold bg-slate-100 rounded-xl hover:bg-slate-200">Atrás</button><button id="confirmBtn" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-red-700">Proceder</button></div></div></div>
 
+    <!-- FOOTER GLOBAL DINÁMICO -->
     <div class="fixed bottom-0 w-full bg-slate-100 border-t border-slate-200 p-2 text-center text-[10px] font-bold text-slate-400 z-30" id="globalFooterText">
         derechos reservados prodigital /7228-4602
     </div>
 
+    <!-- SCRIPT PRINCIPAL Y SEGURIDAD -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updatePassword, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -396,14 +393,12 @@
         };
         
         // MULTI-TENANT (APP_ID DINÁMICO)
-        // Lee la URL en busca de "?tenant=empresa2". Si no existe, usa la base principal.
         const urlParams = new URLSearchParams(window.location.search);
         const appFirebaseId = urlParams.get('tenant') || 'prestamos-c97ed'; 
         
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         
-        // MODO OFFLINE NATIVO ACTIVADO
         const dbFirestore = initializeFirestore(app, {
             localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
         });
@@ -428,12 +423,11 @@
             return DOMPurify.sanitize(str.trim(), { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
         };
 
-        // LIBRO MAYOR INMUTABLE (Auditoría Financiera)
+        // LIBRO MAYOR INMUTABLE
         async function registrarAuditoria(tipo, monto, detalle, clienteId) {
             if (currentRole !== 'socio') return;
             try {
                 const tx = { id: Date.now(), tipo, monto, detalle, clienteId, fecha: new Date().toISOString(), usuario: currentUser.email };
-                // Se guarda en /usuarios/auditoria porque las reglas permiten write a esSocio() en /usuarios/{usuarioId}
                 await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'auditoria'), {
                     transacciones: arrayUnion(tx)
                 }, { merge: true });
@@ -471,7 +465,6 @@
                         
                         document.getElementById('globalFooterText').innerText = adminData.footerText || 'derechos reservados prodigital /7228-4602';
 
-                        // Validación Automática de Bloqueo / Suspensión de Servicio
                         if(adminData.estadoTenant === 'Suspendido' && currentRole !== 'admin') {
                             document.getElementById('suspendedOverlay').classList.remove('hidden');
                             document.getElementById('suspendedOverlay').classList.add('flex');
@@ -494,39 +487,33 @@
             if (unsubVentas) unsubVentas();
 
             if (currentRole === 'cliente') {
-                // SOLUCIÓN: El cliente busca su documento directamente por ID para que Firestore no bloquee la lectura
+                // SOLUCIÓN AL ERROR 2: Búsqueda directa al documento, sin bloqueos de reglas
                 const docRef = doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', currentUser.uid);
-                
                 unsubClientes = onSnapshot(docRef, (docSnap) => {
                     dbLocal = [];
                     if (docSnap.exists()) {
                         dbLocal.push(docSnap.data());
                     } else {
-                        console.warn("No se encontró el documento financiero del cliente.");
+                        console.warn("Aún no tienes un perfil financiero asignado.");
                     }
                     routeAndRender();
-                }, e => {
-                    console.error("Acceso denegado para el cliente. Error:", e);
-                });
-                
+                }, e => console.error("Error cliente:", e));
+
             } else if (currentRole === 'socio') {
-                // El socio sí tiene permiso para leer toda la colección
-                let qClientes = collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes');
-                
+                const qClientes = collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes');
                 unsubClientes = onSnapshot(qClientes, (snap) => {
                     dbLocal = [];
                     snap.forEach(d => dbLocal.push(d.data()));
-                    dbLocal.sort((a,b) => a.nombre.localeCompare(b.nombre));
+                    // Evita caídas si algún cliente no tiene nombre
+                    dbLocal.sort((a,b) => (a.nombre || '').localeCompare(b.nombre || ''));
                     routeAndRender();
-                }, e => {
-                    console.error("Acceso denegado o error de lectura. Revisa Firestore Rules.", e);
-                });
+                }, e => console.error("Error lectura socio:", e));
 
                 unsubVentas = onSnapshot(collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'ventas'), (snap) => {
                     dbVentas = [];
                     snap.forEach(d => dbVentas.push({id: d.id, ...d.data()}));
                     renderVentasSocio();
-                }, e => console.error("Error ventas:", e));
+                });
             }
         }
 
@@ -619,46 +606,6 @@
             }
         });
 
-        // NUEVA FUNCIÓN: Registro Inicial del Socio
-        window.registerSocio = async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btnRegisterSocio');
-            btn.disabled = true; btn.innerText = "Activando...";
-
-            try {
-                const nombre = sanitizeInput(document.getElementById('rs_nombre').value);
-                const email = sanitizeInput(document.getElementById('rs_email').value);
-                const pwd = document.getElementById('rs_password').value.trim();
-
-                // 1. Crear el usuario en Firebase Authentication
-                const userCred = await createUserWithEmailAndPassword(auth, email, pwd);
-                const uid = userCred.user.uid;
-
-                // 2. INYECCIÓN DEL PERFIL COMO 'socio'. 
-                // Esto es posible si habilitaste la regla de creación con el mismo UID en Firestore
-                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', uid), {
-                    uid: uid,
-                    email: email,
-                    nombreEmpresa: nombre,
-                    rol: 'socio',
-                    estado: 'Activo',
-                    fechaRegistro: new Date().toISOString()
-                });
-
-                closeModal('registerSocioModal'); e.target.reset();
-                showToast("Plataforma Inicializada. Bienvenido Socio.", "✅");
-            } catch (err) {
-                console.error(err);
-                if (err.code === 'auth/email-already-in-use') {
-                    showToast("Este correo ya está registrado.", "❌");
-                } else {
-                    showToast("Error al inicializar. Revisa las reglas de Firestore.", "❌");
-                }
-            } finally {
-                btn.disabled = false; btn.innerText = "Activar mi Plataforma";
-            }
-        };
-
         window.registerClient = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnRegister');
@@ -714,8 +661,6 @@
                 if (user.isAnonymous) {
                     currentRole = null;
                 } else {
-                    // ABSTRACCIÓN DE IDENTIDAD (Multi-tenant)
-                    // Verifica si en la BD el usuario tiene rol 'socio'
                     let isDynamicSocio = false;
                     try {
                         const userDoc = await getDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', user.uid));
@@ -741,7 +686,6 @@
                     document.getElementById('globalNav').className = `text-white p-3 md:p-4 flex justify-between items-center shadow-lg sticky top-0 z-40 shrink-0 ${navColor}`;
                     document.getElementById('navRoleBadge').innerText = currentRole.toUpperCase();
                     
-                    // Show/Hide specific nav buttons
                     document.getElementById('btnNavContrato').classList.toggle('hidden', currentRole !== 'socio');
                     document.getElementById('btnNavSoporte').classList.toggle('hidden', currentRole !== 'socio');
                     document.getElementById('navBtnCarrito').classList.toggle('hidden', currentRole === 'socio' || currentRole === 'admin');
@@ -965,7 +909,6 @@
                 clienteId: isClienteLogueado ? clienteDoc.userId : 'publico'
             };
 
-            // Deduct stock
             for(let p of carrito) {
                 let currentStock = p.stock || 0;
                 await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'productos', p.id), {stock: Math.max(0, currentStock - 1)}, {merge:true});
@@ -1110,7 +1053,6 @@
                 capTotal += item.saldo;
                 interesEsperado += intMonto;
 
-                // Sumar abonos de hoy para cierre de caja
                 if(item.historial) {
                     item.historial.forEach(h => { if(h.fecha === hoyFormat) cierreCajaHoy += h.total; });
                 }
@@ -1119,7 +1061,11 @@
                 let stBadge = estado === 'moroso' ? '<span class="bg-red-600 text-white px-2 py-1 rounded text-[10px] font-bold">MOROSO</span>' : 
                              '<span class="bg-emerald-500 text-white px-2 py-1 rounded text-[10px] font-bold">AL DÍA</span>';
 
-                const reqBadge = item.solicitudPrestamo && item.solicitudPrestamo.estado === 'pendiente' ? '<div class="text-[10px] text-amber-600 font-bold mt-1 animate-pulse">📢 NUEVA SOLICITUD</div>' : '';
+                // BOTÓN INTERACTIVO PARA NUEVA SOLICITUD DE PRÉSTAMO
+                const reqBadge = item.solicitudPrestamo && item.solicitudPrestamo.estado === 'pendiente' 
+                    ? `<button onclick="openEdit('${item.userId}')" class="text-[10px] bg-amber-100 text-amber-800 px-2 py-1 rounded font-bold mt-2 animate-pulse shadow-sm hover:bg-amber-200 transition border border-amber-300 w-full text-left">📢 VER SOLICITUD DE PRÉSTAMO</button>` 
+                    : '';
+                
                 const unreadBadge = item.chat && item.chat.length > 0 && item.chat[item.chat.length-1].sender === 'cliente' ? '💬 ' : '';
 
                 body.innerHTML += `
@@ -1149,7 +1095,6 @@
                     </tr>
                 `;
 
-                // Agregar a Lista de Cobro Inteligente
                 if(estado === 'moroso' || item.diaPago === new Date().getDate()) {
                     let msgCobro = encodeURIComponent(`Hola ${item.nombre.split(' ')[0]}, te recuerdo amablemente el pago de tu cuota de ₡${fColones(intMonto)} correspondiente al mes. ¡Gracias!`);
                     let badgeColor = estado === 'moroso' ? 'bg-red-100 text-red-800 border-red-300' : 'bg-amber-100 text-amber-800 border-amber-300';
@@ -1165,7 +1110,7 @@
                                 <span class="text-[9px] font-black uppercase px-2 py-1 rounded bg-white/50 border border-white">${badgeText}</span>
                             </div>
                             <div class="flex gap-2">
-                                <button onclick="window.open('https://wa.me/${item.telefono}?text=${msgCobro}', '_blank')" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 rounded-lg shadow-sm">📲 Notificar Cobro</button>
+                                <button onclick="window.open('https://wa.me/${item.telefono}?text=${msgCobro}', '_blank')" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 rounded-lg shadow-sm">📲 Notificar</button>
                                 <button onclick="openEdit('${item.userId}')" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-2 rounded-lg shadow-sm">Ver Ficha</button>
                             </div>
                         </div>
@@ -1543,7 +1488,6 @@
             showToast("Estado actualizado");
         };
 
-        // CAPITALIZAR INTERESES (Acumulativo)
         window.capitalizarIntereses = async () => {
             openConfirm("¿Deseas sumar el interés del mes actual al saldo principal? El saldo aumentará.", async () => {
                 const item = dbLocal.find(l => l.userId === currentEditId);
@@ -1581,7 +1525,6 @@
             item.historial.push({ fecha: new Date().toLocaleDateString('es-CR'), total: monto, int: pInt, cap: pCap, sFinal: item.saldo, img: imgB64 });
             await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', item.userId), item);
             
-            // Asentar pago en libro mayor
             await registrarAuditoria('ABONO', monto, 'Abono registrado con comprobante', item.userId);
 
             document.getElementById('abono_monto').value = ''; fileInput.value = '';
