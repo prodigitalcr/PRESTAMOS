@@ -476,7 +476,10 @@
                 await setDoc(doc(db, 'artifacts', id, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: 'Activo',
                     nombreEmpresa: name,
-                    tenantId: id
+                    tenantId: id,
+                    htmlMora: '',
+                    mensajeSuspension: '',
+                    htmlMantenimiento: ''
                 }, { merge: true });
 
                 showToast("Nueva plataforma activada");
@@ -518,7 +521,7 @@
                     htmlMantenimiento: hMant
                 }, { merge: true });
 
-                // Sincronizar App del Socio (El cliente lee estos campos con la inyección aplicada de inmediato)
+                // Sincronizar App del Socio (Utiliza la ruta exacta que requiere el listener del Tenant para cambios instantáneos)
                 await setDoc(doc(db, 'artifacts', editingId, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: status,
                     htmlMora: hMora,
