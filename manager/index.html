@@ -254,7 +254,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -311,18 +311,37 @@
             });
         };
 
-        // Autenticación
+        // Autenticación inicial (Regla 3)
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (e) {
+                console.error("Auth init error:", e);
+            }
+        };
+        initAuth();
+
+        // Autenticación interactiva y cambio de estado
         window.handleLogin = async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value.trim();
             const pass = document.getElementById('password').value;
-            if(email !== 'norercarlop04@gmail.com') return;
+            if(email !== 'norercarlop04@gmail.com') {
+                const errBox = document.getElementById('auth-error');
+                errBox.innerText = "Error: Acceso Denegado (Solo Administrador)";
+                errBox.classList.remove('hidden');
+                return;
+            }
             try {
                 await setPersistence(auth, browserLocalPersistence);
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (err) {
                 const errBox = document.getElementById('auth-error');
-                errBox.innerText = "Error: Acceso Denegado";
+                errBox.innerText = "Error: Credenciales Incorrectas";
                 errBox.classList.remove('hidden');
             }
         };
@@ -330,7 +349,7 @@
         window.handleLogout = () => signOut(auth);
 
         onAuthStateChanged(auth, (user) => {
-            if (user) {
+            if (user && user.email === 'norercarlop04@gmail.com') {
                 document.getElementById('auth-overlay').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 loadData();
@@ -394,7 +413,7 @@
                         <td class="p-6">
                             <div class="font-black text-white text-xs uppercase group-hover:text-indigo-400 transition-colors">${t.empresa}</div>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="text-[9px] text-slate-500 font-mono tracking-widest bg-slate-950/60 px-2 py-0.5 rounded truncate max-w-[200px]">${tenantUrl}</span>
+                                <span class="text-[9px] text-slate-500 font-mono tracking-widest bg-slate-900/60 px-2 py-0.5 rounded truncate max-w-[200px]">${tenantUrl}</span>
                                 <button onclick="copyToClipboard('${tenantUrl}')" class="text-indigo-400 hover:text-indigo-300" title="Copiar URL"><i data-lucide="copy" class="w-3 h-3"></i></button>
                             </div>
                         </td>
