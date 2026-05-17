@@ -493,22 +493,35 @@
             if (unsubClientes) unsubClientes();
             if (unsubVentas) unsubVentas();
 
-            let qClientes = collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes');
-            
             if (currentRole === 'cliente') {
-                qClientes = query(qClientes, where('userId', '==', currentUser.uid));
-            }
+                // SOLUCIÓN: El cliente busca su documento directamente por ID para que Firestore no bloquee la lectura
+                const docRef = doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', currentUser.uid);
+                
+                unsubClientes = onSnapshot(docRef, (docSnap) => {
+                    dbLocal = [];
+                    if (docSnap.exists()) {
+                        dbLocal.push(docSnap.data());
+                    } else {
+                        console.warn("No se encontró el documento financiero del cliente.");
+                    }
+                    routeAndRender();
+                }, e => {
+                    console.error("Acceso denegado para el cliente. Error:", e);
+                });
+                
+            } else if (currentRole === 'socio') {
+                // El socio sí tiene permiso para leer toda la colección
+                let qClientes = collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes');
+                
+                unsubClientes = onSnapshot(qClientes, (snap) => {
+                    dbLocal = [];
+                    snap.forEach(d => dbLocal.push(d.data()));
+                    dbLocal.sort((a,b) => a.nombre.localeCompare(b.nombre));
+                    routeAndRender();
+                }, e => {
+                    console.error("Acceso denegado o error de lectura. Revisa Firestore Rules.", e);
+                });
 
-            unsubClientes = onSnapshot(qClientes, (snap) => {
-                dbLocal = [];
-                snap.forEach(d => dbLocal.push(d.data()));
-                dbLocal.sort((a,b) => a.nombre.localeCompare(b.nombre));
-                routeAndRender();
-            }, e => {
-                console.error("Acceso denegado o error de lectura. Revisa Firestore Rules.", e);
-            });
-
-            if (currentRole === 'socio') {
                 unsubVentas = onSnapshot(collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'ventas'), (snap) => {
                     dbVentas = [];
                     snap.forEach(d => dbVentas.push({id: d.id, ...d.data()}));
