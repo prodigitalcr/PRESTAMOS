@@ -34,7 +34,6 @@
 </head>
 <body class="antialiased text-slate-800 flex flex-col min-h-screen relative pb-10">
 
-    <!-- BLOQUEO POR SUSPENSIÓN DE ALQUILER (SAAS) -->
     <div id="suspendedOverlay" class="fixed inset-0 bg-slate-900 z-[9999] hidden flex-col items-center justify-center text-white text-center p-6 backdrop-blur-md">
         <div class="text-6xl mb-4">⚠️</div>
         <h1 class="text-3xl md:text-5xl font-black text-red-500 mb-4 tracking-tighter">SERVICIO SUSPENDIDO</h1>
@@ -43,13 +42,11 @@
         <button onclick="logout()" class="mt-8 bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-6 rounded-lg transition">Cerrar Sesión</button>
     </div>
 
-    <!-- LOADER INICIAL GLOBAL -->
     <div id="globalLoader" class="fixed inset-0 bg-slate-900 z-[999] flex flex-col items-center justify-center">
         <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
         <p class="text-sm font-bold text-white tracking-widest">INICIANDO SISTEMA SEGURO...</p>
     </div>
 
-    <!-- ==================== LANDING PAGE PÚBLICA ==================== -->
     <div id="landingPage" class="hidden flex-col min-h-screen bg-slate-50">
         <nav class="bg-indigo-900 text-white p-4 flex justify-between items-center shadow-lg sticky top-0 z-40">
             <div class="font-black text-lg tracking-tight flex items-center gap-2"><span>💸</span> V8 PRÉSTAMOS</div>
@@ -70,7 +67,6 @@
         </div>
     </div>
 
-    <!-- MODAL DE LOGIN -->
     <div id="loginModal" class="fixed inset-0 bg-slate-900/80 hidden z-[200] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-t-4 border-indigo-600 relative">
             <button onclick="closeModal('loginModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 text-2xl font-bold">&times;</button>
@@ -92,7 +88,6 @@
         </div>
     </div>
 
-    <!-- MODAL DE REGISTRO CLIENTE -->
     <div id="registerModal" class="fixed inset-0 bg-slate-900/80 hidden z-[200] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-t-4 border-emerald-600 relative">
             <button onclick="closeModal('registerModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 text-2xl font-bold">&times;</button>
@@ -117,7 +112,6 @@
         </div>
     </div>
 
-    <!-- MODAL DE REGISTRO SOCIO (NUEVO TENANT) -->
     <div id="registerSocioModal" class="fixed inset-0 bg-slate-900/80 hidden z-[200] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-t-4 border-indigo-600 relative max-h-[90vh] overflow-y-auto">
             <button onclick="closeModal('registerSocioModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 text-2xl font-bold">&times;</button>
@@ -143,13 +137,13 @@
         </div>
     </div>
 
-    <!-- NAVEGACIÓN GLOBAL -->
     <nav id="globalNav" class="hidden text-white p-4 flex justify-between items-center shadow-lg sticky top-0 z-40 shrink-0">
         <div class="flex items-center gap-3">
             <div id="navRoleBadge" class="px-2 py-1 rounded text-[10px] font-black tracking-widest border border-white/30 bg-black/20">ROL</div>
             <span id="navTitle" class="font-bold tracking-tight text-sm md:text-base hidden sm:inline">SISTEMA V8</span>
             
             <button id="btnSwitchRole" onclick="toggleAdminRole()" class="hidden text-xs bg-amber-500 hover:bg-amber-400 text-white font-bold px-3 py-1.5 rounded-lg transition border border-amber-300 shadow">Ver como Socio</button>
+            <button id="btnCopiarLink" onclick="copiarLinkSocio()" class="hidden bg-indigo-500 hover:bg-indigo-400 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-indigo-300 shadow transition">🔗 Link Clientes</button>
             <button id="btnNavContrato" onclick="verContratoSocio()" class="hidden bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-300 shadow transition">📄 Contrato ProDigital</button>
             <button id="btnNavSoporte" onclick="window.open('https://wa.me/50672284602?text=Hola%20Soporte%20ProDigital,%20necesito%20ayuda%20con%20la%20plataforma.', '_blank')" class="hidden bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-blue-300 shadow transition">🎧 Soporte Técnico</button>
         </div>
@@ -162,13 +156,10 @@
         </div>
     </nav>
 
-    <!-- ==================== VISTA SOCIO ==================== -->
     <div id="app-socio" class="hidden flex-col flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 pb-24 md:pb-6">
         
-        <!-- ALERTAS GLOBALES DEL SOCIO -->
         <div id="socio-alertas" class="w-full"></div>
 
-        <!-- KPIs Avanzados -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-200">
                 <h3 class="text-indigo-700 font-bold text-[10px] uppercase mb-1">Cierre de Caja Hoy</h3>
@@ -216,19 +207,16 @@
             </table>
         </div>
 
-        <!-- Cobro Inteligente -->
         <div id="cobroInteligenteSec" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
             <h3 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">🎯 Lista de Cobro Inteligente <span class="text-xs font-normal text-slate-500">(1 mes después de emitido)</span></h3>
             <div id="listaCobroBody" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
     </div>
 
-    <!-- ==================== VISTA CLIENTE ==================== -->
     <div id="app-cliente" class="hidden flex-col flex-1 w-full max-w-4xl mx-auto p-4 md:p-6 pb-24 md:pb-6 relative">
         <div id="cliente-content-wrapper" class="w-full"></div>
     </div>
 
-    <!-- ==================== VISTA SOPORTE (ADMIN) ==================== -->
     <div id="app-admin" class="hidden flex-col flex-1 w-full max-w-7xl mx-auto p-6 space-y-6">
         <div class="flex justify-between items-center">
             <h2 class="text-3xl font-black text-slate-800">Panel ProDigital (Admin)</h2>
@@ -273,13 +261,12 @@
 
         <div class="bg-white mt-6 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="p-4 bg-slate-900 text-white flex justify-between items-center">
-                <h3 class="font-black text-lg">Directorio de Socios (Clientes ProDigital)</h3>
-                <button onclick="openModal('addSocioAdminModal')" class="bg-emerald-500 hover:bg-emerald-400 text-white px-3 py-1.5 rounded font-bold text-sm">+ Registrar Socio</button>
+                <h3 class="font-black text-lg">Directorio Maéstro de Socios (Tenants Activos)</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse min-w-[800px]">
                     <thead class="bg-slate-100 text-slate-600 border-b text-[10px] uppercase font-black">
-                        <tr><th class="p-4">Socio / Proyecto</th><th class="p-4">Plan</th><th class="p-4">Estado</th><th class="p-4">Suscripción</th><th class="p-4 text-center">Acciones</th></tr>
+                        <tr><th class="p-4">Socio / Contacto</th><th class="p-4">Estado</th><th class="p-4">Fecha Creación</th><th class="p-4 text-center">Gestión Rápida</th></tr>
                     </thead>
                     <tbody id="adminSociosListBody" class="divide-y text-sm"></tbody>
                 </table>
@@ -287,35 +274,6 @@
         </div>
     </div>
 
-    <!-- MODAL AGREGAR SOCIO (ADMIN) -->
-    <div id="addSocioAdminModal" class="fixed inset-0 bg-slate-900/80 hidden z-[200] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-md">
-            <h3 class="text-xl font-black mb-4">Registrar Nuevo Socio</h3>
-            <form id="addSocioFormAdmin" onsubmit="guardarSocioAdmin(event)" class="space-y-3">
-                <input type="hidden" id="as_id">
-                <input type="text" id="as_nombre" placeholder="Nombre del Socio / Empresa" class="w-full p-2 border rounded bg-slate-50" required>
-                <input type="text" id="as_tel" placeholder="WhatsApp (Ej: 50688888888)" class="w-full p-2 border rounded bg-slate-50" required>
-                <div class="grid grid-cols-2 gap-2">
-                    <select id="as_plan" class="w-full p-2 border rounded bg-slate-50 font-bold text-sm">
-                        <option value="Mensual">Plan Mensual</option>
-                        <option value="Anual">Plan Anual</option>
-                    </select>
-                    <select id="as_estado" class="w-full p-2 border rounded bg-slate-50 font-bold text-sm">
-                        <option value="Activo">🟢 Activo</option>
-                        <option value="Moroso">🔴 Moroso</option>
-                        <option value="Suspendido">⚫ Suspendido</option>
-                    </select>
-                </div>
-                <input type="date" id="as_fecha" class="w-full p-2 border rounded bg-slate-50 text-sm" required>
-                <div class="flex gap-2 pt-4">
-                    <button type="button" onclick="closeModal('addSocioAdminModal')" class="flex-1 py-2 bg-slate-200 rounded font-bold">Cancelar</button>
-                    <button type="submit" class="flex-1 py-2 bg-indigo-600 text-white rounded font-bold hover:bg-indigo-700">Guardar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ==================== RESTO DE MODALES ==================== -->
     <div id="tiendaOverlay" class="fixed inset-0 bg-slate-100 z-[150] hidden flex-col">
         <div class="bg-slate-900 text-white p-4 flex justify-between items-center shrink-0 shadow-lg sticky top-0 z-50">
             <h2 class="text-lg font-black flex items-center gap-2"><span>🛍️</span> Catálogo de Productos</h2>
@@ -379,7 +337,6 @@
         </div>
     </div>
 
-    <!-- MODAL AGREGAR CLIENTE -->
     <div id="addModal" class="fixed inset-0 bg-slate-900/70 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto"><h3 class="text-2xl font-black mb-6 text-slate-800">Registrar Préstamo</h3><form id="loanForm" class="space-y-3"><input type="text" id="n_nombre" placeholder="Nombre del Cliente" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><div class="grid grid-cols-2 gap-3"><input type="text" id="n_cedula" placeholder="Cédula" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><input type="text" id="n_password" placeholder="Contraseña Prov." class="w-full p-3 border border-indigo-200 rounded-xl bg-indigo-50 text-sm font-bold placeholder-indigo-300 text-indigo-800" required></div><input type="text" id="n_telefono" placeholder="WhatsApp" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><input type="text" id="n_direccion" placeholder="Dirección Exacta" class="w-full p-3 border rounded-xl bg-slate-50 text-sm" required><input type="text" id="n_autorizado" placeholder="Autorizado por..." class="w-full p-3 border rounded-xl bg-indigo-50 font-medium text-sm" required><div class="grid grid-cols-2 gap-3 mt-2"><div><label class="text-[10px] font-bold text-slate-500">MONTO (₡)</label><input type="number" id="n_monto" class="w-full p-3 border rounded-xl font-black text-indigo-700 text-lg" required></div><div><label class="text-[10px] font-bold text-slate-500">INTERÉS MENS. (%)</label><input type="number" id="n_interes_pct" class="w-full p-3 border rounded-xl font-black text-lg text-center" required></div></div><div class="grid grid-cols-2 gap-3 text-xs bg-slate-100 p-4 rounded-xl mt-2 border border-slate-200"><div><label class="font-bold block mb-2 text-slate-600">📸 CÉDULA</label><input type="file" id="n_img_cedula" accept="image/*" class="w-full text-slate-500 text-[10px]"></div><div><label class="font-bold block mb-2 text-slate-600">📸 PRENDA</label><input type="file" id="n_img_prenda" accept="image/*" class="w-full text-slate-500 text-[10px]"></div></div>
     <label class="flex items-start gap-2 text-[10px] text-slate-600 mt-2 bg-slate-50 p-2 rounded border">
         <input type="checkbox" required class="mt-0.5">
@@ -387,7 +344,6 @@
     </label>
     <div class="flex gap-2 pt-4"><button type="button" onclick="closeModal('addModal')" class="flex-1 py-3 font-bold bg-slate-200 text-slate-700 rounded-xl">Cancelar</button><button type="submit" id="btnSaveClient" class="flex-[2] bg-indigo-600 text-white py-3 rounded-xl font-black shadow-lg">Crear y Aprobar</button></div></form></div></div>
 
-    <!-- MODAL EDITAR CLIENTE -->
     <div id="editModal" class="fixed inset-0 bg-slate-900/80 hidden z-[100] flex items-center justify-center p-0 md:p-4 backdrop-blur-sm"><div class="bg-white md:rounded-2xl w-full max-w-5xl h-full md:h-[95vh] flex flex-col shadow-2xl overflow-hidden"><div class="p-4 border-b flex justify-between items-center bg-slate-50 shrink-0"><div><h3 id="edit_titulo" class="text-xl md:text-2xl font-black text-slate-800 leading-none"></h3><p id="edit_cedula" class="text-[10px] md:text-xs text-slate-500 font-bold mt-1"></p></div><div class="flex items-center gap-2"><button onclick="compartirReporteWA()" class="bg-emerald-100 text-emerald-800 border border-emerald-200 px-3 py-2 rounded-lg text-xs font-bold hover:bg-emerald-200 transition hidden sm:block">📲 Compartir PDF</button><button onclick="generarPDF()" class="bg-slate-200 text-slate-800 px-3 py-2 rounded-lg text-xs font-bold hover:bg-slate-300">📄 PDF</button><button onclick="closeModal('editModal')" class="text-slate-400 hover:text-slate-700 bg-white border rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">&times;</button></div></div><div class="flex-1 overflow-y-auto flex flex-col lg:flex-row p-4 gap-6 bg-slate-100"><div class="w-full lg:w-1/2 space-y-4"><div id="solicitudContainer" class="hidden bg-amber-100 border border-amber-300 p-4 rounded-xl shadow-sm"><h4 class="text-sm font-black text-amber-800 mb-2 flex items-center gap-2">📢 NUEVA SOLICITUD DE PRÉSTAMO</h4><div id="solicitudDetalle" class="text-sm font-medium text-amber-900 mb-3 bg-white p-3 rounded-lg border border-amber-200"></div><div id="solicitudAprobarForm" class="hidden bg-white p-3 rounded-xl border border-amber-200 mb-3 space-y-3"><h5 class="text-xs font-bold text-slate-600">Nuevas Condiciones:</h5><div class="grid grid-cols-2 gap-2 text-sm"><div><label class="block text-[10px] font-bold text-slate-500">Monto Final</label><input type="number" id="ap_monto" class="w-full border p-2 rounded font-bold bg-slate-50"></div><div><label class="block text-[10px] font-bold text-slate-500">Interés (%)</label><input type="number" id="ap_interes" class="w-full border p-2 rounded font-bold bg-slate-50"></div><div class="col-span-2"><label class="block text-[10px] font-bold text-slate-500">Día Pago Mensual (1-31)</label><input type="number" id="ap_dia" min="1" max="31" class="w-full border p-2 rounded font-bold bg-slate-50"></div></div><button onclick="confirmarAprobacion()" class="w-full bg-emerald-600 text-white py-2.5 rounded-lg font-black shadow">✅ Confirmar Aprobación</button></div><div class="flex gap-2" id="solicitudActionBtns"><button onclick="mostrarFormAprobacion()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold text-sm shadow">Aprobar...</button><button onclick="responderSolicitud('rechazado')" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-bold text-sm shadow">Rechazar</button></div></div><div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative"><button onclick="deleteCurrentClient()" class="absolute top-3 right-3 text-red-500 hover:bg-red-50 p-1.5 rounded-lg text-xs" title="Borrar todo">🗑️</button><h4 class="font-black text-slate-800 mb-3 text-sm">📝 DATOS DEL CLIENTE</h4><div class="grid grid-cols-2 gap-3 text-xs"><div class="col-span-2"><label class="font-bold text-slate-400">NOMBRE</label><input type="text" id="f_nombre" class="w-full p-2 border rounded bg-slate-50 font-bold"></div><div><label class="font-bold text-slate-400">CÉDULA</label><input type="text" id="f_cedula" class="w-full p-2 border rounded bg-slate-50" readonly></div><div><label class="font-bold text-slate-400">TELÉFONO</label><input type="text" id="f_telefono" class="w-full p-2 border rounded bg-slate-50"></div><div class="col-span-2"><label class="font-bold text-slate-400">DIRECCIÓN</label><input type="text" id="f_direccion" class="w-full p-2 border rounded bg-slate-50"></div><div class="col-span-2"><label class="font-bold text-slate-400">CORREO (Logueo)</label><input type="text" id="f_correo" class="w-full p-2 border rounded bg-slate-50"></div><div class="col-span-2"><label class="font-bold text-slate-400">CONTRASEÑA ASIGNADA</label><input type="text" id="f_password" class="w-full p-2 border rounded bg-yellow-50 border-yellow-200 text-slate-700 font-mono"></div><div class="col-span-2"><label class="font-bold text-indigo-400">AUTORIZADO POR</label><input type="text" id="f_autorizado" class="w-full p-2 border border-indigo-200 rounded bg-indigo-50 font-medium"></div></div><button onclick="guardarFicha()" class="mt-4 w-full bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg font-bold text-xs shadow">Guardar Cambios Personales</button><p class="text-[9px] text-slate-400 mt-2 text-center">*Nota: Cambiar la contraseña y correo aquí solo actualiza el registro visible. El acceso Auth oficial debe restaurarse si el usuario lo olvida.</p></div><div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm"><h4 class="font-black text-slate-800 mb-3 text-sm">📊 FINANZAS Y CONDICIONES</h4><div class="flex items-center justify-between bg-slate-50 border p-2 rounded-lg mb-3"><span class="text-[11px] font-bold text-slate-600">Estado Cálculo:</span><select id="e_estado" class="p-1 rounded border text-xs font-bold outline-none" onchange="updateStatusManual()"><option value="auto">Automático (Mensual)</option><option value="al_dia">Forzar: Al Día</option><option value="moroso">Forzar: Moroso</option></select></div><div class="grid grid-cols-3 gap-2 text-xs"><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">DÍA PAGO</label><input type="number" id="e_dia" min="1" max="31" class="w-full p-2 border rounded-lg font-bold text-indigo-700 text-center bg-slate-50"></div><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">SALDO ₡</label><input type="number" id="e_saldo" class="w-full p-2 border rounded-lg font-bold text-indigo-700 bg-slate-50"></div><div class="col-span-1"><label class="font-black text-slate-400 block mb-1">INTERÉS %</label><input type="number" id="e_interes_pct" class="w-full p-2 border rounded-lg font-bold text-indigo-700 bg-slate-50 text-center"></div>
         <button onclick="capitalizarIntereses()" class="col-span-3 bg-amber-100 border border-amber-300 text-amber-800 py-2 rounded-lg font-black text-[11px] mt-1 shadow-sm hover:bg-amber-200 transition">⚠️ CAPITALIZAR INTERÉS (Sumar mora al saldo)</button>
         <button onclick="updateAmounts()" class="col-span-3 bg-slate-200 hover:bg-slate-300 text-slate-800 py-2.5 rounded-lg font-black text-[11px] mt-2">APLICAR REAJUSTE NUMÉRICO MANUAL</button></div></div></div><div class="w-full lg:w-1/2 flex flex-col gap-4"><div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 shadow-sm shrink-0"><label class="block text-sm font-black text-emerald-800 mb-2">💰 REGISTRAR ABONO</label><div class="flex flex-col gap-2"><div class="relative"><span class="absolute left-3 top-2 text-emerald-600 font-bold">₡</span><input type="number" id="abono_monto" class="w-full pl-8 pr-3 py-2 border border-emerald-300 rounded-lg font-black text-emerald-900 outline-none text-lg bg-white shadow-inner" placeholder="Monto entregado"></div><div class="flex items-center gap-2"><input type="file" id="abono_img" accept="image/*" required class="text-[10px] w-full text-slate-500 bg-white p-1.5 rounded-lg border border-red-300" title="Comprobante obligatorio"><button onclick="calculateAndAddPayment()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-black shadow-md whitespace-nowrap">ABONAR</button></div><p class="text-[9px] text-emerald-700 font-bold">*Foto de comprobante requerida por seguridad.</p></div></div><div id="historialComprasSocio" class="bg-white border rounded-xl p-3 shadow-sm shrink-0 hidden"><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-b pb-1">Pedidos de Tienda de este Cliente</h4><div id="comprasBodySocio" class="space-y-2 text-xs max-h-48 overflow-y-auto"></div></div><div class="bg-white border border-slate-200 rounded-xl flex flex-col overflow-hidden h-[200px] shrink-0 shadow-sm"><div class="bg-indigo-50 p-2 border-b text-[10px] font-black tracking-widest text-indigo-800 text-center uppercase">Chat Interno con Cliente</div><div id="chatSocio" class="flex-1 p-2 chat-container bg-slate-50"></div><div class="p-2 bg-white border-t flex gap-2"><input type="text" id="chatInputSocio" class="flex-1 border rounded-lg px-2 text-sm outline-none" placeholder="Escribe..."><button onclick="sendMsg('socio')" class="bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm font-bold">→</button></div></div><div class="bg-white border border-slate-200 rounded-xl p-4 flex-1 overflow-y-auto shadow-sm min-h-[200px]"><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-b pb-2">Historial de Pagos</h4><div id="historyBody" class="space-y-2 text-sm"></div></div></div></div></div></div>
@@ -401,12 +357,10 @@
     <div id="toast" class="fixed bottom-12 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-4 rounded-full shadow-2xl transform transition-all duration-300 translate-y-32 opacity-0 z-[999] font-bold text-sm flex items-center gap-3"><span id="toastIcon">✅</span><span id="toastMsg">Mensaje</span></div>
     <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 hidden z-[700] flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center"><h3 class="text-xl font-black mb-2 text-slate-800">¿Confirmar Acción?</h3><p id="confirmMessage" class="text-sm text-slate-500 mb-6">Esta acción es irreversible.</p><div class="flex gap-2"><button onclick="closeConfirm()" class="flex-1 py-3 font-bold bg-slate-100 rounded-xl hover:bg-slate-200">Atrás</button><button id="confirmBtn" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-red-700">Proceder</button></div></div></div>
 
-    <!-- FOOTER GLOBAL DINÁMICO -->
     <div class="fixed bottom-0 w-full bg-slate-100 border-t border-slate-200 p-2 text-center text-[10px] font-bold text-slate-400 z-30" id="globalFooterText">
         derechos reservados prodigital /7228-4602
     </div>
 
-    <!-- SCRIPT PRINCIPAL Y SEGURIDAD -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updatePassword, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -438,11 +392,12 @@
         let dbLocal = [];
         let dbProductos = [];
         let dbVentas = []; 
+        let dbTenantsAdmin = []; // Para la tabla maestra del admin
         let socioConfig = { whatsapp: '', sinpe: '', nombre: '' }; 
-        let adminData = { pagos: [], mantenimientos: [], contrato: null, footerText: 'derechos reservados prodigital /7228-4602', sociosSuscritos: [] };
+        let adminData = { pagos: [], mantenimientos: [], contrato: null, footerText: 'derechos reservados prodigital /7228-4602' };
         
         let currentUser = null;
-        let originalRole = null; // Guarda el rol original del admin
+        let originalRole = null; 
         let currentRole = null; 
         let currentEditId = null;
 
@@ -467,7 +422,7 @@
             }
         }
 
-        let unsubProductos = null, unsubConfig = null, unsubClientes = null, unsubVentas = null, unsubAdminData = null;
+        let unsubProductos = null, unsubConfig = null, unsubClientes = null, unsubVentas = null, unsubAdminData = null, unsubAdminTenants = null;
 
         function subscribePublicData() {
             if (!unsubProductos) {
@@ -492,7 +447,7 @@
                         adminData = { ...adminData, ...docSnap.data() };
                         document.getElementById('globalFooterText').innerText = adminData.footerText || 'derechos reservados prodigital /7228-4602';
 
-                        // LÓGICA DE BLOQUEO (Excluye al admin)
+                        // LÓGICA DE BLOQUEO (Excluye al admin maestro)
                         const overlay = document.getElementById('suspendedOverlay');
                         if((adminData.estadoTenant === 'Suspendido' || adminData.estadoTenant === 'Mantenimiento') && originalRole !== 'admin') {
                             overlay.classList.remove('hidden'); overlay.classList.add('flex');
@@ -522,6 +477,7 @@
         function subscribePrivateData() {
             if (unsubClientes) unsubClientes();
             if (unsubVentas) unsubVentas();
+            if (unsubAdminTenants) unsubAdminTenants();
 
             if (currentRole === 'cliente') {
                 const docRef = doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', currentUser.uid);
@@ -544,9 +500,19 @@
                     snap.forEach(d => dbVentas.push({id: d.id, ...d.data()}));
                     renderVentasSocio();
                 });
+
+                if (currentRole === 'admin') {
+                    // El Admin escucha a la colección maestra de todos los Tenants (Socios)
+                    unsubAdminTenants = onSnapshot(collection(dbFirestore, 'artifacts', 'MASTER_ADMIN_SaaS', 'tenants'), (snap) => {
+                        dbTenantsAdmin = [];
+                        snap.forEach(d => dbTenantsAdmin.push({ id: d.id, ...d.data() }));
+                        renderDirectorioSocios();
+                    });
+                }
             }
         }
 
+        // Resto del código (getEstadoCalculado, modal logic, compressImage...)
         function getEstadoCalculado(cliente) {
             if (cliente.estadoManual && cliente.estadoManual !== 'auto') return cliente.estadoManual;
             const hoy = new Date();
@@ -668,7 +634,6 @@
                     historial: [], chat: [], compras: []
                 };
 
-                // El cliente siempre se registra en el Tenant actual (`appFirebaseId`)
                 await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', userUid), nuevo);
                 
                 closeModal('registerModal'); e.target.reset();
@@ -694,11 +659,9 @@
                 const email = document.getElementById('rs_correo').value.trim();
                 const password = document.getElementById('rs_password').value.trim();
 
-                // 1. Crear el usuario en Firebase Authentication
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const nuevoSocioUid = userCredential.user.uid;
 
-                // 2. Inicializar dinámicamente su propio documento de configuración dentro de su propio Tenant
                 await setDoc(doc(dbFirestore, 'artifacts', nuevoSocioUid, 'public', 'data', 'usuarios', 'socio'), {
                     uid: nuevoSocioUid,
                     correo: email,
@@ -709,7 +672,6 @@
                     fechaRegistro: new Date().toISOString()
                 });
 
-                // 3. Crear el documento base de la App para que la plataforma funcione
                 await setDoc(doc(dbFirestore, 'artifacts', nuevoSocioUid, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: 'Activo',
                     htmlMora: '',
@@ -717,27 +679,22 @@
                     footerText: 'derechos reservados / Tel: ' + telefono
                 });
 
-                // Opcional: Registrarlo en el Master Admin. 
-                // Esto podría fallar según las reglas de seguridad si solo es client-side self-registration, 
-                // pero lo intentamos y lo capturamos silenciosamente.
                 try {
-                    let nextMonth = new Date();
-                    nextMonth.setMonth(nextMonth.getMonth() + 1);
                     await setDoc(doc(dbFirestore, 'artifacts', 'MASTER_ADMIN_SaaS', 'tenants', nuevoSocioUid), {
                         socioId: nuevoSocioUid,
                         correo: email,
                         nombre: nombre,
-                        estado: 'activo',
-                        fechaCorte: nextMonth.toISOString()
+                        telefono: telefono,
+                        estado: 'Activo',
+                        fechaRegistro: new Date().toLocaleDateString('es-CR')
                     });
                 } catch(errAdmin) {
-                    console.warn("Autoregistro maestro bloqueado por reglas, registro local de Tenant completado.", errAdmin);
+                    console.warn("Autoregistro maestro bloqueado por reglas, registro local de Tenant completado.");
                 }
 
                 showToast("¡Plataforma creada con éxito!", "🎉");
                 closeModal('registerSocioModal');
                 
-                // Redirigir y forzar al socio a iniciar en su propia plataforma
                 setTimeout(() => {
                     window.location.href = '?tenant=' + nuevoSocioUid;
                 }, 1500);
@@ -763,27 +720,21 @@
                 } else {
                     let isDynamicSocio = false;
                     try {
-                        // Validación 1: ¿Es el dueño de ESTE tenant en el que está logueado?
-                        const socioDoc = await getDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'socio'));
-                        if(socioDoc.exists() && socioDoc.data().uid === user.uid) {
-                            isDynamicSocio = true;
-                        } else {
-                            // Validación 2: Redirección automática si inició sesión en la URL incorrecta (raíz)
-                            const ownTenantDoc = await getDoc(doc(dbFirestore, 'artifacts', user.uid, 'public', 'data', 'usuarios', 'socio'));
-                            if(ownTenantDoc.exists() && ownTenantDoc.data().uid === user.uid) {
-                                if (appFirebaseId !== user.uid) {
-                                    // Forzar la redirección a su propio Tenant
-                                    window.location.href = '?tenant=' + user.uid;
-                                    return; // Se detiene para que recargue en su entorno correcto
-                                } else {
-                                    isDynamicSocio = true;
-                                }
+                        const ownTenantDoc = await getDoc(doc(dbFirestore, 'artifacts', user.uid, 'public', 'data', 'usuarios', 'socio'));
+                        if(ownTenantDoc.exists() && ownTenantDoc.data().uid === user.uid) {
+                            // ES UN SOCIO
+                            // Regla Estricta: Si el URL no tiene su UID, y no es el Admin Maestro, se le fuerza a su entorno.
+                            if (appFirebaseId !== user.uid && user.email !== 'norercarlop04@gmail.com') {
+                                window.location.replace('?tenant=' + user.uid);
+                                return;
                             } else {
-                                // Validación 3 (Legacy support)
-                                const oldUserDoc = await getDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', user.uid));
-                                if(oldUserDoc.exists() && oldUserDoc.data().rol === 'socio') {
-                                    isDynamicSocio = true;
-                                }
+                                isDynamicSocio = true;
+                            }
+                        } else {
+                            // Validar soporte heredado por si el admin entró al appFirebaseId
+                            const oldUserDoc = await getDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', user.uid));
+                            if(oldUserDoc.exists() && oldUserDoc.data().rol === 'socio') {
+                                isDynamicSocio = true;
                             }
                         }
                     } catch(e) {}
@@ -821,7 +772,6 @@
             }
         });
 
-        // FUNCIONALIDAD: Toggle Rol (Admin -> Socio)
         window.toggleAdminRole = () => {
             if (originalRole !== 'admin') return;
             currentRole = currentRole === 'admin' ? 'socio' : 'admin';
@@ -829,12 +779,20 @@
             routeAndRender();
         };
 
+        window.copiarLinkSocio = () => {
+            const url = window.location.origin + window.location.pathname + '?tenant=' + currentUser.uid;
+            navigator.clipboard.writeText(url).then(() => {
+                showToast("¡Enlace de clientes copiado!", "🔗");
+            }).catch(err => {
+                prompt("Copia este enlace y envíalo a tus clientes:", url);
+            });
+        };
+
         function actualizarNav() {
             let navColor = currentRole === 'socio' ? 'bg-indigo-900' : currentRole === 'admin' ? 'bg-slate-900' : 'bg-emerald-900';
             document.getElementById('globalNav').className = `text-white p-3 md:p-4 flex justify-between items-center shadow-lg sticky top-0 z-40 shrink-0 ${navColor}`;
             document.getElementById('navRoleBadge').innerText = currentRole.toUpperCase();
             
-            // Mostrar botón "Ver como Socio/Admin" SOLO si eres superadmin
             const btnSwitch = document.getElementById('btnSwitchRole');
             if (originalRole === 'admin') {
                 btnSwitch.classList.remove('hidden');
@@ -843,6 +801,7 @@
                 btnSwitch.classList.add('hidden');
             }
 
+            document.getElementById('btnCopiarLink').classList.toggle('hidden', currentRole !== 'socio');
             document.getElementById('btnNavContrato').classList.toggle('hidden', currentRole !== 'socio');
             document.getElementById('btnNavSoporte').classList.toggle('hidden', currentRole !== 'socio');
             document.getElementById('navBtnCarrito').classList.toggle('hidden', currentRole === 'socio' || currentRole === 'admin');
@@ -1127,7 +1086,6 @@
 
         // ================= PERFIL GLOBAL =================
         window.openPerfil = () => {
-            // Se asegura de cargar la data real del socio guardada previamente
             if (currentRole === 'socio' || currentRole === 'admin') {
                 document.getElementById('perfil_nombre').value = socioConfig.nombre || currentRole.toUpperCase();
                 document.getElementById('perfil_whatsapp').value = socioConfig.whatsapp || '';
@@ -1153,7 +1111,6 @@
                 const pwd = document.getElementById('perfil_pwd').value;
                 if(pwd) { await updatePassword(auth.currentUser, pwd); }
 
-                // Se aseguran de guardar todos los campos
                 if (currentRole === 'socio' || currentRole === 'admin') {
                     const uActualizado = {
                         nombre: sanitizeInput(document.getElementById('perfil_nombre').value),
@@ -1241,7 +1198,6 @@
                     </tr>
                 `;
 
-                // LOGICA DE COBRO INTELIGENTE: Aparece tras 1 mes y se cobra solo el Interés. Opción de ocultar por el mes.
                 const partesF = item.fecha.split('/'); 
                 let fInicio = new Date();
                 if(partesF.length === 3) fInicio = new Date(partesF[2], partesF[1] - 1, partesF[0]);
@@ -1274,7 +1230,6 @@
                 }
             });
 
-            // MOSTRAR ALERTA GLOBAL SI HAY SOLICITUDES DE PRÉSTAMOS NUEVAS
             if (pendientesPrestamo > 0) {
                 alertasSocio.innerHTML = `
                     <div class="bg-amber-100 border border-amber-300 text-amber-800 p-4 rounded-xl mb-4 font-black flex items-center justify-between shadow-sm animate-pulse">
@@ -1367,7 +1322,6 @@
             finally { btn.disabled = false; btn.innerText = "Crear y Aprobar"; }
         });
 
-        // SOCIO: Tienda Management e Inventario
         window.switchTiendaTab = (tab) => {
             const btnInv = document.getElementById('tabBtnInv'); const btnVen = document.getElementById('tabBtnVentas');
             const secInv = document.getElementById('tiendaTabInv'); const secVen = document.getElementById('tiendaTabVentas');
@@ -1781,7 +1735,6 @@
             }, 1500);
         };
 
-
         // ================= CLIENTE =================
         let countdownInterval;
         
@@ -1923,7 +1876,6 @@
 
             const cliente = dbLocal[0];
             
-            // LA SIGUIENTE ACTUALIZACIÓN FUNCIONARÁ CORRECTAMENTE AL APLICAR LA NUEVA REGLA EN FIREBASE
             await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.userId), {
                 solicitudPrestamo: { monto, direccion: direccion, telefono: telefono, imgCedula: imgB64, fecha: new Date().toLocaleDateString('es-CR'), estado: 'pendiente' },
                 chat: arrayUnion({ sender: 'cliente', msg: "🔔 He enviado una nueva solicitud de préstamo para su revisión.", time: new Date().toLocaleString('es-CR') })
@@ -1938,7 +1890,6 @@
             const imgB64 = await compressImage(input.files[0]);
             const cliente = dbLocal[0];
             
-            // ESTO AHORA FUNCIONARÁ CON LA ACTUALIZACIÓN DE LA REGLA
             await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.userId), {
                 chat: arrayUnion({ sender: 'cliente', msg: "🧾 He enviado un comprobante de abono al SINPE indicado.", img: imgB64, time: new Date().toLocaleString('es-CR') })
             });
@@ -1974,7 +1925,6 @@
         function renderAdminData() {
             const pagosList = document.getElementById('adminPagosList');
             const mantList = document.getElementById('adminMantList');
-            const sociosList = document.getElementById('adminSociosListBody');
             const btnVer = document.getElementById('btnAdminVerContrato');
             
             document.getElementById('adminFooterText').value = adminData.footerText || '';
@@ -1993,26 +1943,57 @@
                         <span class="text-slate-800 font-medium">${DOMPurify.sanitize(m.desc)}</span>
                     </div>`).join('');
             }
-            if(sociosList) {
-                sociosList.innerHTML = (adminData.sociosSuscritos || []).slice().reverse().map((s, idx) => {
-                    let badgeColor = s.estado === 'Activo' ? 'bg-emerald-100 text-emerald-800' : (s.estado === 'Moroso' ? 'bg-red-100 text-red-800' : 'bg-slate-200 text-slate-800');
-                    return `
-                    <tr class="hover:bg-slate-50 border-b">
-                        <td class="p-4"><span class="font-bold block">${DOMPurify.sanitize(s.nombre)}</span><span class="text-[10px] text-slate-400">Tel: ${DOMPurify.sanitize(s.tel)}</span></td>
-                        <td class="p-4"><span class="font-bold text-indigo-700">${DOMPurify.sanitize(s.plan)}</span></td>
-                        <td class="p-4"><span class="text-[10px] font-bold px-2 py-1 rounded border ${badgeColor}">${DOMPurify.sanitize(s.estado)}</span></td>
-                        <td class="p-4 text-[10px] font-bold text-slate-500">${DOMPurify.sanitize(s.fecha)}</td>
-                        <td class="p-4 text-center">
-                            <button onclick="window.open('https://wa.me/${DOMPurify.sanitize(s.tel)}', '_blank')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 px-2 py-1 rounded text-xs">📲 WA</button>
-                            <button onclick="borrarSocioAdmin(${idx})" class="text-red-400 hover:bg-red-50 px-2 py-1 rounded ml-1 text-xs">🗑️</button>
-                        </td>
-                    </tr>`;
-                }).join('');
-            }
             if(btnVer) {
                 btnVer.classList.toggle('hidden', !adminData.contrato);
             }
         }
+
+        // Nueva función maestra para renderizar socios y sus UIDs
+        window.renderDirectorioSocios = () => {
+            const tbody = document.getElementById('adminSociosListBody');
+            if(!tbody) return;
+            tbody.innerHTML = dbTenantsAdmin.map(s => {
+                let badgeColor = s.estado === 'Activo' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800';
+                return `
+                <tr class="hover:bg-slate-50 border-b">
+                    <td class="p-4">
+                        <span class="font-bold block text-slate-800">${DOMPurify.sanitize(s.nombre)}</span>
+                        <span class="text-[10px] text-slate-500 font-mono">UID: ${s.socioId}</span><br>
+                        <span class="text-[10px] text-indigo-500">${DOMPurify.sanitize(s.correo)}</span>
+                    </td>
+                    <td class="p-4"><span class="text-[10px] font-bold px-2 py-1 rounded border ${badgeColor}">${DOMPurify.sanitize(s.estado)}</span></td>
+                    <td class="p-4 text-[10px] font-bold text-slate-500">${DOMPurify.sanitize(s.fechaRegistro || 'N/A')}</td>
+                    <td class="p-4 text-center space-x-1 flex justify-center items-center h-full">
+                        <button onclick="window.open('?tenant=${s.socioId}', '_blank')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 px-2 py-1 rounded text-[10px] font-bold" title="Entrar al Tenant">🔗 Ver</button>
+                        ${s.estado === 'Activo' 
+                            ? `<button onclick="cambiarEstadoSocio('${s.socioId}', 'Suspendido')" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-2 py-1 rounded text-[10px] font-bold">🔴 Bloquear</button>`
+                            : `<button onclick="cambiarEstadoSocio('${s.socioId}', 'Activo')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 px-2 py-1 rounded text-[10px] font-bold">🟢 Activar</button>`
+                        }
+                    </td>
+                </tr>`;
+            }).join('');
+        };
+
+        window.cambiarEstadoSocio = async (uid, nuevoEstado) => {
+            openConfirm(`¿Seguro que deseas cambiar el estado de este socio a ${nuevoEstado}?`, async () => {
+                try {
+                    // Bloqueo estricto del tenant
+                    await setDoc(doc(dbFirestore, 'artifacts', uid, 'public', 'data', 'usuarios', 'admin_data'), {
+                        estadoTenant: nuevoEstado
+                    }, { merge: true });
+
+                    // Actualizar tabla maestra
+                    await setDoc(doc(dbFirestore, 'artifacts', 'MASTER_ADMIN_SaaS', 'tenants', uid), {
+                        estado: nuevoEstado
+                    }, { merge: true });
+
+                    showToast(`Socio ${nuevoEstado}`, "✅");
+                } catch(e) {
+                    console.error(e);
+                    showToast("Error al actualizar estado", "❌");
+                }
+            });
+        };
 
         window.guardarPagoAdmin = async () => {
             const desc = document.getElementById('adminPagoDesc').value;
@@ -2070,39 +2051,6 @@
             } else {
                 showToast("El administrador no ha subido ningún contrato", "⚠️");
             }
-        };
-
-        window.guardarSocioAdmin = async (e) => {
-            e.preventDefault();
-            const nuevo = {
-                nombre: sanitizeInput(document.getElementById('as_nombre').value),
-                tel: sanitizeInput(document.getElementById('as_tel').value),
-                plan: document.getElementById('as_plan').value,
-                estado: document.getElementById('as_estado').value,
-                fecha: document.getElementById('as_fecha').value
-            };
-
-            await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'admin_data'), {
-                sociosSuscritos: arrayUnion(nuevo)
-            }, { merge: true });
-
-            closeModal('addSocioAdminModal');
-            document.getElementById('addSocioFormAdmin').reset();
-            showToast("Socio suscrito agregado", "✅");
-        };
-
-        window.borrarSocioAdmin = async (idxReversed) => {
-            openConfirm("¿Eliminar este socio de la lista de suscripciones?", async () => {
-                const arr = adminData.sociosSuscritos || [];
-                const realIdx = arr.length - 1 - idxReversed;
-                arr.splice(realIdx, 1);
-
-                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'admin_data'), {
-                    sociosSuscritos: arr
-                }, { merge: true });
-                
-                showToast("Socio eliminado");
-            });
         };
 
     </script>
