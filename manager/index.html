@@ -10,58 +10,9 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        
-        /* Visor de HTML Inyectado (Garantiza ver el mensaje en móvil y PC por igual) */
-        #global-html-viewer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%; /* Uso de 100% en lugar de 100vh corrige saltos en móviles iOS/Safari */
-            z-index: 10000;
-            background: white;
-            display: none;
-            overflow: hidden; /* El iframe manejará su propio scroll */
-        }
-        
-        #injected-content-frame {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background-color: #ffffff;
-        }
-
-        #close-viewer-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10001;
-            background: #ef4444;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 50px;
-            font-weight: 800;
-            text-transform: uppercase;
-            font-size: 12px;
-            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        #close-viewer-btn:hover {
-            background: #dc2626;
-            transform: scale(1.05);
-        }
     </style>
 </head>
 <body class="bg-[#0b1120] text-slate-200 min-h-screen font-sans overflow-x-hidden">
-
-    <!-- Capa de Visualización Forzada (Aislada en Iframe para evitar conflictos CSS) -->
-    <div id="global-html-viewer">
-        <button id="close-viewer-btn" onclick="closeGlobalViewer()">Regresar al Panel</button>
-        <iframe id="injected-content-frame" sandbox="allow-scripts allow-same-origin"></iframe>
-    </div>
 
     <div id="toast-container" class="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2"></div>
 
@@ -311,7 +262,7 @@
             });
         };
 
-        // Autenticación inicial (Regla 3)
+        // Autenticación inicial
         const initAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -360,34 +311,10 @@
             lucide.createIcons();
         });
 
-        // VISUALIZACIÓN FORZADA EN IFRAME
+        // SOLUCIÓN: Abre directamente el sitio oficial del Tenant en lugar de simularlo aquí
         window.visualizeTenant = (id) => {
-            const t = currentTenants.find(x => x.id === id);
-            if (!t) return;
-
-            if (t.estado === 'Suspendido' || t.estado === 'Mantenimiento') {
-                const content = t.estado === 'Suspendido' ? (t.htmlMora || t.mensajeSuspension) : t.htmlMantenimiento;
-                
-                if (!content) return showToast("No hay HTML guardado para este estado", "error");
-
-                const iframe = document.getElementById('injected-content-frame');
-                const finalContent = formatForDesktopView(content);
-
-                iframe.srcdoc = finalContent;
-                document.getElementById('global-html-viewer').style.display = 'block';
-                document.body.style.overflow = 'hidden';
-                showToast(`Visualizando vista de ${t.estado}`);
-            } else {
-                const url = `${BASE_URL}?tenant=${id}`;
-                const win = window.open(url, '_blank');
-                if(!win) showToast("Permita ventanas emergentes para ver el sitio activo", "error");
-            }
-        };
-
-        window.closeGlobalViewer = () => {
-            document.getElementById('global-html-viewer').style.display = 'none';
-            document.getElementById('injected-content-frame').srcdoc = ''; 
-            document.body.style.overflow = 'auto';
+            const url = `${BASE_URL}?tenant=${id}`;
+            window.open(url, '_blank');
         };
 
         // Carga de Datos Realtime
@@ -435,9 +362,9 @@
                                 <a href="${waLink}" target="_blank" class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl hover:bg-emerald-500 hover:text-white transition-all shadow-lg" title="Contactar Socio por WhatsApp">
                                     <i data-lucide="message-circle" class="w-4 h-4"></i>
                                 </a>
-                                <!-- Botón de Visualizar (Ojo) -->
-                                <button onclick="visualizeTenant('${id}')" class="p-2.5 bg-slate-700/50 text-slate-300 rounded-xl hover:bg-white hover:text-black transition-all shadow-lg" title="Visualizar Estado">
-                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                <!-- Botón de Visualizar (Ojo) que ahora lleva al Tenant Real -->
+                                <button onclick="visualizeTenant('${id}')" class="p-2.5 bg-slate-700/50 text-slate-300 rounded-xl hover:bg-white hover:text-black transition-all shadow-lg" title="Ver el Sitio Real">
+                                    <i data-lucide="external-link" class="w-4 h-4"></i>
                                 </button>
                                 <!-- Botón de Editar -->
                                 <button onclick="openEdit('${id}')" class="p-2.5 bg-indigo-600/20 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-lg" title="Configurar">
@@ -540,7 +467,7 @@
                     htmlMantenimiento: hMant
                 }, { merge: true });
 
-                // Sincronizar App del Socio (Utiliza la ruta exacta que requiere el listener del Tenant para cambios instantáneos)
+                // Sincronizar App del Socio
                 await setDoc(doc(db, 'artifacts', editingId, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: status,
                     htmlMora: hMora,
