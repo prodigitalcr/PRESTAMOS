@@ -122,6 +122,7 @@
             <div id="navRoleBadge" class="px-2 py-1 rounded text-[10px] font-black tracking-widest border border-white/30 bg-black/20">ROL</div>
             <span id="navTitle" class="font-bold tracking-tight text-sm md:text-base hidden sm:inline">SISTEMA V8</span>
             
+            <button id="btnSwitchRole" onclick="toggleAdminRole()" class="hidden text-xs bg-amber-500 hover:bg-amber-400 text-white font-bold px-3 py-1.5 rounded-lg transition border border-amber-300 shadow">Ver como Socio</button>
             <button id="btnNavContrato" onclick="verContratoSocio()" class="hidden bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-300 shadow transition">📄 Contrato ProDigital</button>
             <button id="btnNavSoporte" onclick="window.open('https://wa.me/50672284602?text=Hola%20Soporte%20ProDigital,%20necesito%20ayuda%20con%20la%20plataforma.', '_blank')" class="hidden bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-blue-300 shadow transition">🎧 Soporte Técnico</button>
         </div>
@@ -137,6 +138,9 @@
     <!-- ==================== VISTA SOCIO ==================== -->
     <div id="app-socio" class="hidden flex-col flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 pb-24 md:pb-6">
         
+        <!-- ALERTAS GLOBALES DEL SOCIO -->
+        <div id="socio-alertas" class="w-full"></div>
+
         <!-- KPIs Avanzados -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-200">
@@ -187,7 +191,7 @@
 
         <!-- Cobro Inteligente -->
         <div id="cobroInteligenteSec" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <h3 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">🎯 Lista de Cobro Inteligente <span class="text-xs font-normal text-slate-500">(Vencen hoy o están en mora)</span></h3>
+            <h3 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">🎯 Lista de Cobro Inteligente <span class="text-xs font-normal text-slate-500">(1 mes después de emitido)</span></h3>
             <div id="listaCobroBody" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
     </div>
@@ -381,7 +385,7 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updatePassword, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getDoc, collection, doc, setDoc, updateDoc, arrayUnion, onSnapshot, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // CREDENCIALES OFICIALES (INTACTAS)
+        // CREDENCIALES OFICIALES
         const firebaseConfig = {
             apiKey: "AIzaSyCtPXuvsDuLDkpIJBlEEHFll6N-NofQ3bI",
             authDomain: "prestamos-c97ed.firebaseapp.com",
@@ -407,10 +411,11 @@
         let dbLocal = [];
         let dbProductos = [];
         let dbVentas = []; 
-        let socioConfig = { whatsapp: '', sinpe: '' }; 
+        let socioConfig = { whatsapp: '', sinpe: '', nombre: '' }; 
         let adminData = { pagos: [], mantenimientos: [], contrato: null, footerText: 'derechos reservados prodigital /7228-4602', sociosSuscritos: [] };
         
         let currentUser = null;
+        let originalRole = null; // Guarda el rol original del admin
         let currentRole = null; 
         let currentEditId = null;
 
@@ -423,9 +428,8 @@
             return DOMPurify.sanitize(str.trim(), { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
         };
 
-        // LIBRO MAYOR INMUTABLE
         async function registrarAuditoria(tipo, monto, detalle, clienteId) {
-            if (currentRole !== 'socio') return;
+            if (currentRole !== 'socio' && currentRole !== 'admin') return;
             try {
                 const tx = { id: Date.now(), tipo, monto, detalle, clienteId, fecha: new Date().toISOString(), usuario: currentUser.email };
                 await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'auditoria'), {
@@ -459,46 +463,24 @@
                 unsubAdminData = onSnapshot(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'usuarios', 'admin_data'), (docSnap) => {
                     if(docSnap.exists()) {
                         adminData = { ...adminData, ...docSnap.data() };
-                        if(!adminData.pagos) adminData.pagos = [];
-                        if(!adminData.mantenimientos) adminData.mantenimientos = [];
-                        if(!adminData.sociosSuscritos) adminData.sociosSuscritos = [];
-                        
                         document.getElementById('globalFooterText').innerText = adminData.footerText || 'derechos reservados prodigital /7228-4602';
 
-                        // NUEVA LÓGICA DE BLOQUEO: Inyección del HTML del Master Control
+                        // LÓGICA DE BLOQUEO (Excluye al admin)
                         const overlay = document.getElementById('suspendedOverlay');
-                        if((adminData.estadoTenant === 'Suspendido' || adminData.estadoTenant === 'Mantenimiento') && currentRole !== 'admin') {
-                            overlay.classList.remove('hidden');
-                            overlay.classList.add('flex');
-                            overlay.style.padding = '0'; // Quita el padding para que el HTML ocupe toda la pantalla
-
-                            let htmlContent = '';
-                            if (adminData.estadoTenant === 'Suspendido' && adminData.htmlMora) {
-                                htmlContent = adminData.htmlMora;
-                            } else if (adminData.estadoTenant === 'Mantenimiento' && adminData.htmlMantenimiento) {
-                                htmlContent = adminData.htmlMantenimiento;
-                            }
-
+                        if((adminData.estadoTenant === 'Suspendido' || adminData.estadoTenant === 'Mantenimiento') && originalRole !== 'admin') {
+                            overlay.classList.remove('hidden'); overlay.classList.add('flex');
+                            overlay.style.padding = '0';
+                            let htmlContent = adminData.estadoTenant === 'Suspendido' ? adminData.htmlMora : adminData.htmlMantenimiento;
+                            
                             if (htmlContent) {
-                                // Muestra el HTML subido por el manager en pantalla completa bloqueando el uso
                                 overlay.innerHTML = `<iframe id="block-iframe" style="width:100%; height:100%; border:none; background:white;"></iframe>`;
                                 document.getElementById('block-iframe').srcdoc = htmlContent;
                             } else {
-                                // Mensaje de emergencia por defecto si el Manager no subió un archivo HTML
-                                overlay.innerHTML = `
-                                    <div class="flex flex-col items-center justify-center w-full h-full p-6 text-center bg-slate-900">
-                                        <div class="text-6xl mb-4">⚠️</div>
-                                        <h1 class="text-3xl md:text-5xl font-black text-red-500 mb-4 tracking-tighter">ACCESO DENEGADO</h1>
-                                        <p class="text-lg md:text-xl text-slate-300 max-w-lg mb-6">El sistema se encuentra en estado: ${adminData.estadoTenant}</p>
-                                        <button onclick="logout()" class="mt-8 bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-6 rounded-lg transition">Cerrar Sesión</button>
-                                    </div>
-                                `;
+                                overlay.innerHTML = `<div class="flex flex-col items-center justify-center w-full h-full p-6 text-center bg-slate-900"><h1 class="text-4xl font-black text-red-500 mb-4 tracking-tighter">SISTEMA RESTRINGIDO</h1><button onclick="logout()" class="mt-8 bg-white/10 text-white font-bold py-2 px-6 rounded-lg">Cerrar Sesión</button></div>`;
                             }
                         } else {
-                            overlay.classList.add('hidden');
-                            overlay.classList.remove('flex');
-                            overlay.innerHTML = ''; // Limpia el bloqueo si vuelve a estar Activo
-                            overlay.style.padding = '1.5rem';
+                            overlay.classList.add('hidden'); overlay.classList.remove('flex');
+                            overlay.innerHTML = ''; overlay.style.padding = '1.5rem';
                         }
                     }
                     if (currentRole === 'admin') renderAdminData();
@@ -515,27 +497,20 @@
             if (unsubVentas) unsubVentas();
 
             if (currentRole === 'cliente') {
-                // SOLUCIÓN AL ERROR 2: Búsqueda directa al documento, sin bloqueos de reglas
                 const docRef = doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', currentUser.uid);
                 unsubClientes = onSnapshot(docRef, (docSnap) => {
                     dbLocal = [];
-                    if (docSnap.exists()) {
-                        dbLocal.push(docSnap.data());
-                    } else {
-                        console.warn("Aún no tienes un perfil financiero asignado.");
-                    }
+                    if (docSnap.exists()) dbLocal.push(docSnap.data());
                     routeAndRender();
                 }, e => console.error("Error cliente:", e));
-
-            } else if (currentRole === 'socio') {
+            } else if (currentRole === 'socio' || currentRole === 'admin') {
                 const qClientes = collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes');
                 unsubClientes = onSnapshot(qClientes, (snap) => {
                     dbLocal = [];
                     snap.forEach(d => dbLocal.push(d.data()));
-                    // Evita caídas si algún cliente no tiene nombre
                     dbLocal.sort((a,b) => (a.nombre || '').localeCompare(b.nombre || ''));
                     routeAndRender();
-                }, e => console.error("Error lectura socio:", e));
+                }, e => console.error("Error lectura socio/admin:", e));
 
                 unsubVentas = onSnapshot(collection(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'ventas'), (snap) => {
                     dbVentas = [];
@@ -687,7 +662,7 @@
             if (user) {
                 currentUser = user;
                 if (user.isAnonymous) {
-                    currentRole = null;
+                    currentRole = null; originalRole = null;
                 } else {
                     let isDynamicSocio = false;
                     try {
@@ -698,44 +673,64 @@
                     } catch(e) {}
 
                     if (user.email === 'norercarlop04@gmail.com') {
-                        currentRole = 'admin';
+                        originalRole = 'admin';
+                        currentRole = 'admin'; 
                     } else if (user.email === 'socio@prestamos.com' || isDynamicSocio) {
+                        originalRole = 'socio';
                         currentRole = 'socio';
                     } else {
+                        originalRole = 'cliente';
                         currentRole = 'cliente';
                     }
                     
                     document.getElementById('landingPage').classList.add('hidden');
                     document.getElementById('landingPage').classList.remove('flex');
                     document.getElementById('tiendaOverlay').classList.add('hidden');
-                    
                     document.getElementById('globalNav').classList.remove('hidden');
-                    let navColor = currentRole === 'socio' ? 'bg-indigo-900' : currentRole === 'admin' ? 'bg-slate-900' : 'bg-emerald-900';
-                    document.getElementById('globalNav').className = `text-white p-3 md:p-4 flex justify-between items-center shadow-lg sticky top-0 z-40 shrink-0 ${navColor}`;
-                    document.getElementById('navRoleBadge').innerText = currentRole.toUpperCase();
                     
-                    document.getElementById('btnNavContrato').classList.toggle('hidden', currentRole !== 'socio');
-                    document.getElementById('btnNavSoporte').classList.toggle('hidden', currentRole !== 'socio');
-                    document.getElementById('navBtnCarrito').classList.toggle('hidden', currentRole === 'socio' || currentRole === 'admin');
-
+                    actualizarNav();
                     subscribePrivateData();
                 }
             } else {
-                currentRole = null; currentUser = null;
+                currentRole = null; currentUser = null; originalRole = null;
                 document.getElementById('loginForm').reset();
                 document.getElementById('globalNav').classList.add('hidden');
                 ['app-socio', 'app-admin', 'app-cliente', 'tiendaOverlay'].forEach(id => document.getElementById(id).classList.add('hidden'));
-                
                 document.getElementById('landingPage').classList.remove('hidden');
                 document.getElementById('landingPage').classList.add('flex');
                 document.getElementById('suspendedOverlay').classList.add('hidden');
-                
                 if(countdownInterval) clearInterval(countdownInterval);
                 carrito = []; actualizarCarritoUI();
-                
                 signInAnonymously(auth).catch(e => console.error(e));
             }
         });
+
+        // FUNCIONALIDAD: Toggle Rol (Admin -> Socio)
+        window.toggleAdminRole = () => {
+            if (originalRole !== 'admin') return;
+            currentRole = currentRole === 'admin' ? 'socio' : 'admin';
+            actualizarNav();
+            routeAndRender();
+        };
+
+        function actualizarNav() {
+            let navColor = currentRole === 'socio' ? 'bg-indigo-900' : currentRole === 'admin' ? 'bg-slate-900' : 'bg-emerald-900';
+            document.getElementById('globalNav').className = `text-white p-3 md:p-4 flex justify-between items-center shadow-lg sticky top-0 z-40 shrink-0 ${navColor}`;
+            document.getElementById('navRoleBadge').innerText = currentRole.toUpperCase();
+            
+            // Mostrar botón "Ver como Socio/Admin" SOLO si eres superadmin
+            const btnSwitch = document.getElementById('btnSwitchRole');
+            if (originalRole === 'admin') {
+                btnSwitch.classList.remove('hidden');
+                btnSwitch.innerText = currentRole === 'admin' ? 'Ver como Socio' : 'Ver como Admin';
+            } else {
+                btnSwitch.classList.add('hidden');
+            }
+
+            document.getElementById('btnNavContrato').classList.toggle('hidden', currentRole !== 'socio');
+            document.getElementById('btnNavSoporte').classList.toggle('hidden', currentRole !== 'socio');
+            document.getElementById('navBtnCarrito').classList.toggle('hidden', currentRole === 'socio' || currentRole === 'admin');
+        }
 
         function routeAndRender() {
             if(!currentRole) return;
@@ -1016,8 +1011,9 @@
 
         // ================= PERFIL GLOBAL =================
         window.openPerfil = () => {
+            // Se asegura de cargar la data real del socio guardada previamente
             if (currentRole === 'socio' || currentRole === 'admin') {
-                document.getElementById('perfil_nombre').value = currentRole.toUpperCase();
+                document.getElementById('perfil_nombre').value = socioConfig.nombre || currentRole.toUpperCase();
                 document.getElementById('perfil_whatsapp').value = socioConfig.whatsapp || '';
                 document.getElementById('perfil_sinpe').value = socioConfig.sinpe || '';
                 
@@ -1041,8 +1037,10 @@
                 const pwd = document.getElementById('perfil_pwd').value;
                 if(pwd) { await updatePassword(auth.currentUser, pwd); }
 
-                if (currentRole === 'socio') {
+                // Se aseguran de guardar todos los campos
+                if (currentRole === 'socio' || currentRole === 'admin') {
                     const uActualizado = {
+                        nombre: sanitizeInput(document.getElementById('perfil_nombre').value),
                         whatsapp: sanitizeInput(document.getElementById('perfil_whatsapp').value),
                         sinpe: sanitizeInput(document.getElementById('perfil_sinpe').value)
                     };
@@ -1050,13 +1048,13 @@
                 } else if (currentRole === 'cliente') {
                     if(dbLocal.length > 0) {
                         const cliente = dbLocal[0];
-                        await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.userId), {
+                        await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.userId), {
                             nombre: sanitizeInput(document.getElementById('perfil_nombre').value)
-                        });
+                        }, { merge: true });
                     }
                 }
 
-                showToast("Perfil actualizado", "🔒");
+                showToast("Perfil actualizado correctamente", "🔒");
                 closeModal('perfilModal');
             } catch(err) { 
                 console.error(err);
@@ -1069,9 +1067,12 @@
         function renderSocio() {
             const body = document.getElementById('tableBody'); body.innerHTML = '';
             const listCobro = document.getElementById('listaCobroBody'); listCobro.innerHTML = '';
+            const alertasSocio = document.getElementById('socio-alertas'); alertasSocio.innerHTML = '';
             
-            let cAlDia = 0, cMorosos = 0, capTotal = 0, interesEsperado = 0, cierreCajaHoy = 0;
-            const hoyFormat = new Date().toLocaleDateString('es-CR');
+            let cAlDia = 0, cMorosos = 0, capTotal = 0, interesEsperado = 0, cierreCajaHoy = 0, pendientesPrestamo = 0;
+            const hoy = new Date();
+            const hoyFormat = hoy.toLocaleDateString('es-CR');
+            const currentMonthStr = hoy.getFullYear() + '-' + (hoy.getMonth() + 1);
             
             dbLocal.forEach(item => {
                 const estado = getEstadoCalculado(item);
@@ -1089,7 +1090,8 @@
                 let stBadge = estado === 'moroso' ? '<span class="bg-red-600 text-white px-2 py-1 rounded text-[10px] font-bold">MOROSO</span>' : 
                              '<span class="bg-emerald-500 text-white px-2 py-1 rounded text-[10px] font-bold">AL DÍA</span>';
 
-                // BOTÓN INTERACTIVO PARA NUEVA SOLICITUD DE PRÉSTAMO
+                if(item.solicitudPrestamo && item.solicitudPrestamo.estado === 'pendiente') pendientesPrestamo++;
+
                 const reqBadge = item.solicitudPrestamo && item.solicitudPrestamo.estado === 'pendiente' 
                     ? `<button onclick="openEdit('${item.userId}')" class="text-[10px] bg-amber-100 text-amber-800 px-2 py-1 rounded font-bold mt-2 animate-pulse shadow-sm hover:bg-amber-200 transition border border-amber-300 w-full text-left">📢 VER SOLICITUD DE PRÉSTAMO</button>` 
                     : '';
@@ -1123,36 +1125,64 @@
                     </tr>
                 `;
 
-                if(estado === 'moroso' || item.diaPago === new Date().getDate()) {
-                    let msgCobro = encodeURIComponent(`Hola ${item.nombre.split(' ')[0]}, te recuerdo amablemente el pago de tu cuota de ₡${fColones(intMonto)} correspondiente al mes. ¡Gracias!`);
-                    let badgeColor = estado === 'moroso' ? 'bg-red-100 text-red-800 border-red-300' : 'bg-amber-100 text-amber-800 border-amber-300';
-                    let badgeText = estado === 'moroso' ? '🔴 MOROSO' : '🟡 VENCE HOY';
-                    
-                    listCobro.innerHTML += `
-                        <div class="p-3 border rounded-xl flex flex-col justify-between ${badgeColor} shadow-sm">
-                            <div class="flex justify-between items-start mb-2">
-                                <div>
-                                    <span class="font-black block">${DOMPurify.sanitize(item.nombre)}</span>
-                                    <span class="text-[10px] font-bold">Cuota int: ₡${fColones(intMonto)}</span>
+                // LOGICA DE COBRO INTELIGENTE: Aparece tras 1 mes y se cobra solo el Interés. Opción de ocultar por el mes.
+                const partesF = item.fecha.split('/'); 
+                let fInicio = new Date();
+                if(partesF.length === 3) fInicio = new Date(partesF[2], partesF[1] - 1, partesF[0]);
+                
+                const unMesDespues = new Date(fInicio);
+                unMesDespues.setMonth(unMesDespues.getMonth() + 1);
+
+                if(hoy >= unMesDespues && item.cobroDescartadoMes !== currentMonthStr) {
+                    if(estado === 'moroso' || item.diaPago === hoy.getDate()) {
+                        let msgCobro = encodeURIComponent(`Hola ${item.nombre.split(' ')[0]}, te recuerdo amablemente el pago de tu cuota de intereses de ₡${fColones(intMonto)}. ¡Gracias!`);
+                        let badgeColor = estado === 'moroso' ? 'bg-red-100 text-red-800 border-red-300' : 'bg-amber-100 text-amber-800 border-amber-300';
+                        let badgeText = estado === 'moroso' ? '🔴 MOROSO' : '🟡 VENCE HOY';
+                        
+                        listCobro.innerHTML += `
+                            <div class="p-3 border rounded-xl flex flex-col justify-between ${badgeColor} shadow-sm">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <span class="font-black block">${DOMPurify.sanitize(item.nombre)}</span>
+                                        <span class="text-[10px] font-bold">Cobro de interés: ₡${fColones(intMonto)}</span>
+                                    </div>
+                                    <span class="text-[9px] font-black uppercase px-2 py-1 rounded bg-white/50 border border-white">${badgeText}</span>
                                 </div>
-                                <span class="text-[9px] font-black uppercase px-2 py-1 rounded bg-white/50 border border-white">${badgeText}</span>
+                                <div class="flex gap-2">
+                                    <button onclick="window.open('https://wa.me/${item.telefono}?text=${msgCobro}', '_blank')" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold py-2 rounded-lg shadow-sm">📲 Notificar</button>
+                                    <button onclick="descartarCobro('${item.userId}', '${currentMonthStr}')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-[10px] font-bold py-2 rounded-lg shadow-sm">Ocultar (Este mes)</button>
+                                </div>
                             </div>
-                            <div class="flex gap-2">
-                                <button onclick="window.open('https://wa.me/${item.telefono}?text=${msgCobro}', '_blank')" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-2 rounded-lg shadow-sm">📲 Notificar</button>
-                                <button onclick="openEdit('${item.userId}')" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-2 rounded-lg shadow-sm">Ver Ficha</button>
-                            </div>
-                        </div>
-                    `;
+                        `;
+                    }
                 }
             });
 
-            if(listCobro.innerHTML === '') listCobro.innerHTML = '<p class="text-sm text-slate-400 col-span-full">No hay cobros pendientes urgentes para hoy.</p>';
+            // MOSTRAR ALERTA GLOBAL SI HAY SOLICITUDES DE PRÉSTAMOS NUEVAS
+            if (pendientesPrestamo > 0) {
+                alertasSocio.innerHTML = `
+                    <div class="bg-amber-100 border border-amber-300 text-amber-800 p-4 rounded-xl mb-4 font-black flex items-center justify-between shadow-sm animate-pulse">
+                        <span>⚠️ Tienes ${pendientesPrestamo} nueva(s) solicitud(es) de préstamo esperando aprobación. Revisa la Cartera.</span>
+                    </div>`;
+            }
+
+            if(listCobro.innerHTML === '') listCobro.innerHTML = '<p class="text-sm text-slate-400 col-span-full">No hay cobros pendientes para hoy.</p>';
 
             document.getElementById('s-cierre-hoy').innerText = `₡${fColones(cierreCajaHoy)}`;
             document.getElementById('s-capital').innerText = `₡${fColones(capTotal)}`;
             document.getElementById('s-interes-proy').innerText = `₡${fColones(interesEsperado)}`;
             document.getElementById('s-morosos').innerText = cMorosos;
         }
+
+        window.descartarCobro = async (userId, mesStr) => {
+            const item = dbLocal.find(l => l.userId === userId);
+            if(item) {
+                await setDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', userId), {
+                    cobroDescartadoMes: mesStr
+                }, { merge: true });
+                showToast("Cobro ocultado por este mes", "👁️");
+            }
+        };
 
         window.exportarCSV = () => {
             let csv = "Nombre,Cedula,Telefono,Saldo_Capital,Interes_Mensual_Pct,Dia_Pago,Estado_Calculado\n";
@@ -1228,11 +1258,11 @@
 
             if(tab === 'inv') {
                 btnInv.className = "pb-2 font-black border-b-2 border-indigo-600 text-indigo-600 transition";
-                btnVen.className = "pb-2 font-bold text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition";
+                btnVen.className = "pb-2 font-bold text-slate-50 border-b-2 border-transparent hover:text-slate-800 transition";
                 secInv.classList.remove('hidden'); secVen.classList.add('hidden');
             } else {
                 btnVen.className = "pb-2 font-black border-b-2 border-indigo-600 text-indigo-600 transition";
-                btnInv.className = "pb-2 font-bold text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition";
+                btnInv.className = "pb-2 font-bold text-slate-50 border-b-2 border-transparent hover:text-slate-800 transition";
                 secVen.classList.remove('hidden'); secInv.classList.add('hidden');
                 renderVentasSocio();
             }
@@ -1777,8 +1807,10 @@
 
             const cliente = dbLocal[0];
             
+            // LA SIGUIENTE ACTUALIZACIÓN FUNCIONARÁ CORRECTAMENTE AL APLICAR LA NUEVA REGLA EN FIREBASE
             await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.userId), {
-                solicitudPrestamo: { monto, direccion: direccion, telefono: telefono, imgCedula: imgB64, fecha: new Date().toLocaleDateString('es-CR'), estado: 'pendiente' }
+                solicitudPrestamo: { monto, direccion: direccion, telefono: telefono, imgCedula: imgB64, fecha: new Date().toLocaleDateString('es-CR'), estado: 'pendiente' },
+                chat: arrayUnion({ sender: 'cliente', msg: "🔔 He enviado una nueva solicitud de préstamo para su revisión.", time: new Date().toLocaleString('es-CR') })
             });
             showToast("Solicitud enviada al Socio"); closeModal('reqLoanModal');
         };
@@ -1790,6 +1822,7 @@
             const imgB64 = await compressImage(input.files[0]);
             const cliente = dbLocal[0];
             
+            // ESTO AHORA FUNCIONARÁ CON LA ACTUALIZACIÓN DE LA REGLA
             await updateDoc(doc(dbFirestore, 'artifacts', appFirebaseId, 'public', 'data', 'clientes', cliente.userId), {
                 chat: arrayUnion({ sender: 'cliente', msg: "🧾 He enviado un comprobante de abono al SINPE indicado.", img: imgB64, time: new Date().toLocaleString('es-CR') })
             });
