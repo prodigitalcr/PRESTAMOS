@@ -465,12 +465,40 @@
                         
                         document.getElementById('globalFooterText').innerText = adminData.footerText || 'derechos reservados prodigital /7228-4602';
 
-                        if(adminData.estadoTenant === 'Suspendido' && currentRole !== 'admin') {
-                            document.getElementById('suspendedOverlay').classList.remove('hidden');
-                            document.getElementById('suspendedOverlay').classList.add('flex');
+                        // NUEVA LÓGICA DE BLOQUEO: Inyección del HTML del Master Control
+                        const overlay = document.getElementById('suspendedOverlay');
+                        if((adminData.estadoTenant === 'Suspendido' || adminData.estadoTenant === 'Mantenimiento') && currentRole !== 'admin') {
+                            overlay.classList.remove('hidden');
+                            overlay.classList.add('flex');
+                            overlay.style.padding = '0'; // Quita el padding para que el HTML ocupe toda la pantalla
+
+                            let htmlContent = '';
+                            if (adminData.estadoTenant === 'Suspendido' && adminData.htmlMora) {
+                                htmlContent = adminData.htmlMora;
+                            } else if (adminData.estadoTenant === 'Mantenimiento' && adminData.htmlMantenimiento) {
+                                htmlContent = adminData.htmlMantenimiento;
+                            }
+
+                            if (htmlContent) {
+                                // Muestra el HTML subido por el manager en pantalla completa bloqueando el uso
+                                overlay.innerHTML = `<iframe id="block-iframe" style="width:100%; height:100%; border:none; background:white;"></iframe>`;
+                                document.getElementById('block-iframe').srcdoc = htmlContent;
+                            } else {
+                                // Mensaje de emergencia por defecto si el Manager no subió un archivo HTML
+                                overlay.innerHTML = `
+                                    <div class="flex flex-col items-center justify-center w-full h-full p-6 text-center bg-slate-900">
+                                        <div class="text-6xl mb-4">⚠️</div>
+                                        <h1 class="text-3xl md:text-5xl font-black text-red-500 mb-4 tracking-tighter">ACCESO DENEGADO</h1>
+                                        <p class="text-lg md:text-xl text-slate-300 max-w-lg mb-6">El sistema se encuentra en estado: ${adminData.estadoTenant}</p>
+                                        <button onclick="logout()" class="mt-8 bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-6 rounded-lg transition">Cerrar Sesión</button>
+                                    </div>
+                                `;
+                            }
                         } else {
-                            document.getElementById('suspendedOverlay').classList.add('hidden');
-                            document.getElementById('suspendedOverlay').classList.remove('flex');
+                            overlay.classList.add('hidden');
+                            overlay.classList.remove('flex');
+                            overlay.innerHTML = ''; // Limpia el bloqueo si vuelve a estar Activo
+                            overlay.style.padding = '1.5rem';
                         }
                     }
                     if (currentRole === 'admin') renderAdminData();
