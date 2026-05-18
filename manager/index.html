@@ -431,7 +431,10 @@
                 showToast("Nueva plataforma activada");
                 document.getElementById('new-id').value = "";
                 document.getElementById('new-name').value = "";
-            } catch (e) { showToast("Error al desplegar socio", "error"); }
+            } catch (e) { 
+                console.error("Error al crear inquilino:", e);
+                showToast("Error al desplegar socio: " + e.message, "error"); 
+            }
         };
 
         window.openEdit = (id) => {
@@ -477,7 +480,10 @@
 
                 showToast("Cambios sincronizados globalmente");
                 closeModal('manageModal');
-            } catch (e) { showToast("Error de sincronización", "error"); }
+            } catch (e) { 
+                console.error("Error al sincronizar cambios:", e);
+                showToast("Error de sincronización: " + e.message, "error"); 
+            }
         };
 
         window.deleteTenant = async (id) => {
