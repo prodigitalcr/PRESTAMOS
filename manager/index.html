@@ -126,7 +126,7 @@
                             </tr>
                         </thead>
                         <tbody id="tenant-list" class="divide-y divide-slate-700/40">
-                            </tbody>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -305,9 +305,19 @@
             lucide.createIcons();
         });
 
-        window.visualizeTenant = (id) => {
-            const url = `${BASE_URL}?tenant=${id}`;
-            window.open(url, '_blank');
+        // NUEVA FUNCIÓN PARA ABRIR LA URL USANDO EL TENANT (CARPETA) CORRECTO Y PASANDO EL UID OCULTO
+        window.verSitioSocio = (tenantId, socioUid) => {
+            // Siempre abre usando el Tenant ID en la URL (ej: ?tenant=ferreteria_sj)
+            let urlDestino = `${BASE_URL}?tenant=${tenantId}`;
+            
+            // Adjuntamos el UID para que el sistema destino sepa a quién bloquear o destruir la sesión al cerrar
+            if (socioUid && socioUid.trim() !== '') {
+                urlDestino += `&uid=${socioUid.trim()}`;
+            } else {
+                showToast("Advertencia: Este socio no tiene un UID de Firebase registrado.", "error");
+            }
+            
+            window.open(urlDestino, '_blank');
         };
 
         function loadData() {
@@ -324,7 +334,9 @@
                     const badge = t.estado === 'Activo' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : (t.estado === 'Mantenimiento' ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' : 'text-red-400 bg-red-500/10 border-red-500/20');
                     
                     const waLink = `https://wa.me/${t.telefono ? t.telefono.replace(/\D/g,'') : ''}?text=${encodeURIComponent('Hola ' + t.empresa + ', te contactamos de ProDigital soporte técnico.')}`;
-                    const tenantUrl = `${BASE_URL}?tenant=${t.adminUid || id}`;
+                    
+                    // CORRECCIÓN: La URL a copiar SIEMPRE muestra el ID (nombre de carpeta) para que sea la correcta
+                    const tenantUrl = `${BASE_URL}?tenant=${id}`;
 
                     const row = document.createElement('tr');
                     row.className = "hover:bg-slate-800/30 transition-all border-b border-slate-700/30 group";
@@ -356,9 +368,12 @@
                                 <a href="${waLink}" target="_blank" class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl hover:bg-emerald-500 hover:text-white transition-all shadow-lg" title="Contactar Socio por WhatsApp">
                                     <i data-lucide="message-circle" class="w-4 h-4"></i>
                                 </a>
-                                <button onclick="visualizeTenant('${t.adminUid || id}')" class="p-2.5 bg-slate-700/50 text-slate-300 rounded-xl hover:bg-white hover:text-black transition-all shadow-lg" title="Ver el Sitio Real">
+                                
+                                <!-- CORRECCIÓN: Botón "Ver Sitio" ahora usa el enlace con ID de carpeta -->
+                                <button onclick="verSitioSocio('${id}', '${t.adminUid || ''}')" class="p-2.5 bg-slate-700/50 text-slate-300 rounded-xl hover:bg-white hover:text-black transition-all shadow-lg" title="Ver el Sitio Real">
                                     <i data-lucide="external-link" class="w-4 h-4"></i>
                                 </button>
+                                
                                 <button onclick="openEdit('${id}')" class="p-2.5 bg-indigo-600/20 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-lg" title="Configurar (Bloquear/Activar)">
                                     <i data-lucide="settings" class="w-4 h-4"></i>
                                 </button>
@@ -414,7 +429,7 @@
                 // 1. Guardar en estructura de Control Global Maestro
                 await setDoc(doc(db, 'artifacts', APP_MASTER_ID, 'public', 'data', 'tenants', id), payload);
                 
-                // 2. Guardar en el documento raíz de la URL (Por si entra por el ID viejo)
+                // 2. Guardar en el documento raíz de la URL
                 await setDoc(doc(db, 'artifacts', id, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: 'Activo',
                     nombreEmpresa: name,
@@ -425,7 +440,7 @@
                     htmlMantenimiento: ''
                 }, { merge: true });
 
-                // 3. (CRÍTICO) Guardar directamente en la ruta del UID (Donde la app redirige al usuario por seguridad)
+                // 3. (CRÍTICO) Guardar directamente en la ruta del UID
                 await setDoc(doc(db, 'artifacts', uid, 'public', 'data', 'usuarios', 'admin_data'), {
                     estadoTenant: 'Activo',
                     nombreEmpresa: name,
@@ -494,7 +509,7 @@
                     htmlMantenimiento: hMant
                 }, { merge: true });
 
-                // 3. (CRÍTICO) Disparo al UID Exacto: Aplica la restricción directo al ID del cliente para bloqueo total.
+                // 3. (CRÍTICO) Disparo al UID Exacto para bloqueo total
                 if (uid && uid.trim() !== '') {
                     await setDoc(doc(db, 'artifacts', uid.trim(), 'public', 'data', 'usuarios', 'admin_data'), {
                         estadoTenant: status,
