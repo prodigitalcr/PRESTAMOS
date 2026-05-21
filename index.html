@@ -365,6 +365,8 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updatePassword, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getDoc, collection, doc, setDoc, updateDoc, arrayUnion, onSnapshot, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // 1. IMPORTAR APP CHECK
+        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app-check.js";
 
         // CREDENCIALES OFICIALES
         const firebaseConfig = {
@@ -382,6 +384,24 @@
         const appFirebaseId = urlParams.get('tenant') || 'prestamos-c97ed'; 
         
         const app = initializeApp(firebaseConfig);
+
+        // =======================================================================
+        // 2. CONFIGURACIÓN DE APP CHECK (ESCUDO reCAPTCHA v3)
+        // =======================================================================
+        // Activar modo debug automáticamente solo si estamos en localhost
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+            console.log("⚠️ App Check Debug Mode Activado para desarrollo local");
+        }
+
+        // Inicializar App Check
+        const appCheck = initializeAppCheck(app, {
+            // ---> ¡OJO AQUÍ! PEGA TU CLAVE ENTRE LAS COMILLAS SIMPLES <---
+            provider: new ReCaptchaV3Provider('6LfRqvQsAAAAACVFUx7eEAp2nVTDApNYJKvQLDgh'),
+            isTokenAutoRefreshEnabled: true
+        });
+        // =======================================================================
+
         const auth = getAuth(app);
         
         const dbFirestore = initializeFirestore(app, {
